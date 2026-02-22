@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAA — Gestion des tâches</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--color-primary:#1B4965;--color-primary-light:#5FA8D3;--color-primary-hover:#153a52;--color-primary-bg:#e8f1f8;--color-secondary:#3C4858;--color-accent:#E6A817;--color-accent-bg:#fdf5e0;--color-success:#2D6A4F;--color-success-bg:#e6f3ed;--color-danger:#C1292E;--color-danger-bg:#fbe8e8;--color-warning:#E76F51;--color-warning-bg:#fdf0ec;--color-bg:#F8F9FA;--color-surface:#FFFFFF;--color-border:#DEE2E6;--color-text:#212529;--color-text-muted:#6C757D;--color-muted:#ADB5BD;--font-sans:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;--font-mono:'JetBrains Mono',monospace;--radius-sm:4px;--radius-md:8px;--radius-lg:12px;--shadow-sm:0 1px 3px rgba(0,0,0,.06);--shadow-md:0 4px 12px rgba(0,0,0,.08);--shadow-lg:0 8px 32px rgba(0,0,0,.12);--transition:.2s ease;--sidebar-width:260px;--sidebar-collapsed:64px;--header-height:56px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);font-size:14px;line-height:1.5;color:var(--color-text);background:var(--color-bg);overflow-x:hidden}
+a{color:var(--color-primary);text-decoration:none}a:hover{color:var(--color-primary-light)}
+.layout{display:flex;min-height:100vh}
+/* Sidebar — hidden in embedded mode */
+.sidebar{display:none!important}
+.topbar{display:none!important}
+.main{flex:1;margin-left:0!important;display:flex;flex-direction:column;min-height:100vh}
+.page{flex:1;padding:24px;max-width:1360px;width:100%;margin:0 auto}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius-md);font-family:var(--font-sans);font-size:13px;font-weight:500;border:1px solid transparent;cursor:pointer;transition:all var(--transition);white-space:nowrap}
+.btn--primary{background:var(--color-primary);color:#fff;border-color:var(--color-primary)}.btn--primary:hover{background:var(--color-primary-hover)}
+.btn--secondary{background:var(--color-surface);color:var(--color-text);border-color:var(--color-border)}.btn--secondary:hover{background:var(--color-bg)}
+.btn--ghost{background:transparent;color:var(--color-text-muted)}.btn--ghost:hover{background:var(--color-bg);color:var(--color-text)}
+.btn--sm{padding:5px 10px;font-size:12px}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;white-space:nowrap}
+.badge--primary{background:var(--color-primary-bg);color:var(--color-primary)}
+.badge--success{background:var(--color-success-bg);color:var(--color-success)}
+.badge--danger{background:var(--color-danger-bg);color:var(--color-danger)}
+.badge--warning{background:var(--color-warning-bg);color:var(--color-warning)}
+.badge--muted{background:#EBEDEF;color:var(--color-text-muted)}
+.badge--accent{background:var(--color-accent-bg);color:#b8860b}
+.card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);overflow:hidden;transition:box-shadow var(--transition)}
+.card:hover{box-shadow:var(--shadow-sm)}
+.card__header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--color-border)}
+.card__title{font-size:14px;font-weight:600}
+.card__body{padding:16px 20px}.card__body--flush{padding:0}
+.text-muted{color:var(--color-text-muted)}.text-mono{font-family:var(--font-mono)}.text-sm{font-size:12px}
+.text-success{color:var(--color-success)}.text-danger{color:var(--color-danger)}.text-warning{color:var(--color-warning)}
+.mb-24{margin-bottom:24px}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--color-text-muted);margin-bottom:16px}
+.breadcrumb a{color:var(--color-text-muted)}.breadcrumb a:hover{color:var(--color-primary)}
+.breadcrumb__current{color:var(--color-text);font-weight:500}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:24px}
+.page-header__left{display:flex;align-items:flex-start;gap:16px}
+.page-header__icon{width:48px;height:48px;background:var(--color-primary-bg);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.page-header__title{font-size:24px;font-weight:600;letter-spacing:-.02em;line-height:1.3}
+.page-header__meta{display:flex;align-items:center;gap:12px;margin-top:4px;flex-wrap:wrap}
+.page-header__actions{display:flex;gap:8px;flex-shrink:0}
+.progress{height:6px;background:var(--color-bg);border-radius:3px;overflow:hidden}
+.progress__bar{height:100%;border-radius:3px;transition:width .5s ease}
+.avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;color:#fff;flex-shrink:0}
+
+/* Toolbar */
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.toolbar__search{position:relative;flex:1;min-width:200px;max-width:320px}
+.toolbar__search input{width:100%;padding:7px 10px 7px 32px;border:1px solid var(--color-border);border-radius:var(--radius-md);font-family:var(--font-sans);font-size:13px;outline:none;transition:all var(--transition)}
+.toolbar__search input:focus{border-color:var(--color-primary-light);box-shadow:0 0 0 3px rgba(95,168,211,.15)}
+.toolbar__search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--color-text-muted);font-size:13px}
+.filter-chip{display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--color-border);background:var(--color-surface);cursor:pointer;transition:all var(--transition);color:var(--color-text-muted)}
+.filter-chip:hover{border-color:var(--color-primary-light);color:var(--color-text)}
+.filter-chip--active{background:var(--color-primary-bg);border-color:var(--color-primary);color:var(--color-primary)}
+.toolbar__right{margin-left:auto;display:flex;gap:6px;align-items:center}
+
+/* View switch */
+.view-switch{display:flex;border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden}
+.view-switch__btn{padding:6px 12px;font-size:12px;font-weight:500;background:var(--color-surface);border:none;cursor:pointer;color:var(--color-text-muted);font-family:var(--font-sans);transition:all var(--transition);display:flex;align-items:center;gap:4px}
+.view-switch__btn:not(:last-child){border-right:1px solid var(--color-border)}
+.view-switch__btn:hover{background:var(--color-bg);color:var(--color-text)}
+.view-switch__btn--active{background:var(--color-primary);color:#fff}
+
+.view-panel{display:none;animation:fadeIn .3s ease}.view-panel--active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* ============ KANBAN ============ */
+.kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;min-height:500px;align-items:start}
+.kanban__col{background:var(--color-bg);border-radius:var(--radius-lg);padding:12px;display:flex;flex-direction:column;gap:8px;min-height:200px}
+.kanban__col-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;padding-bottom:8px;border-bottom:2px solid var(--color-border)}
+.kanban__col-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;display:flex;align-items:center;gap:6px}
+.kanban__col-count{font-size:11px;background:var(--color-surface);padding:1px 7px;border-radius:10px;color:var(--color-text-muted);font-weight:600}
+.kanban__col-add{width:24px;height:24px;border-radius:var(--radius-sm);border:1px dashed var(--color-border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--color-text-muted);font-size:14px;transition:all var(--transition)}
+.kanban__col-add:hover{border-color:var(--color-primary);color:var(--color-primary);background:var(--color-primary-bg)}
+
+/* Kanban card */
+.task-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:12px;cursor:pointer;transition:all var(--transition);position:relative}
+.task-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.task-card--blocked{border-left:3px solid var(--color-danger)}
+.task-card--overdue{border-left:3px solid var(--color-warning)}
+.task-card__priority{position:absolute;top:8px;right:8px}
+.task-card__priority-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.task-card__title{font-size:13px;font-weight:500;margin-bottom:6px;padding-right:20px;line-height:1.4}
+.task-card__meta{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.task-card__tag{font-size:10px;padding:2px 6px;border-radius:3px;font-weight:500}
+.task-card__footer{display:flex;align-items:center;justify-content:space-between}
+.task-card__date{font-size:11px;color:var(--color-text-muted);display:flex;align-items:center;gap:3px}
+.task-card__date--overdue{color:var(--color-danger);font-weight:500}
+.task-card__assignee{width:24px;height:24px;font-size:9px}
+.task-card__checklist{font-size:11px;color:var(--color-text-muted);display:flex;align-items:center;gap:3px}
+.task-card__dep{font-size:10px;color:var(--color-danger);display:flex;align-items:center;gap:3px;margin-top:6px;padding-top:6px;border-top:1px solid var(--color-bg)}
+
+/* ============ LIST VIEW ============ */
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--color-text-muted);font-weight:600;padding:8px 14px;border-bottom:2px solid var(--color-border);background:var(--color-bg)}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--color-border);font-size:13px;vertical-align:middle}
+.data-table tr{transition:background var(--transition);cursor:pointer}.data-table tr:hover td{background:rgba(248,249,250,.5)}
+.data-table .mono{font-family:var(--font-mono);font-size:12px}
+
+/* ============ CALENDAR VIEW ============ */
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--color-border);border:1px solid var(--color-border);border-radius:var(--radius-lg);overflow:hidden}
+.calendar__header{background:var(--color-primary);color:#fff;padding:8px;text-align:center;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.calendar__day{background:var(--color-surface);min-height:100px;padding:6px;display:flex;flex-direction:column;gap:3px}
+.calendar__day--other{background:var(--color-bg)}
+.calendar__day--today{background:var(--color-primary-bg)}
+.calendar__day-number{font-size:12px;font-weight:600;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
+.calendar__day-number--today{color:var(--color-primary)}
+.calendar__event{font-size:10px;padding:2px 5px;border-radius:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;font-weight:500}
+.calendar__event--task{background:var(--color-primary-bg);color:var(--color-primary)}
+.calendar__event--deadline{background:var(--color-danger-bg);color:var(--color-danger)}
+.calendar__event--meeting{background:var(--color-accent-bg);color:#b8860b}
+.calendar__event--review{background:var(--color-warning-bg);color:var(--color-warning)}
+
+/* ============ DRAWER ============ */
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:900;display:none;opacity:0;transition:opacity .25s ease}
+.drawer-overlay--visible{display:block;opacity:1}
+.drawer{position:fixed;right:-560px;top:0;bottom:0;width:560px;background:var(--color-surface);box-shadow:var(--shadow-lg);z-index:910;transition:right .3s ease;display:flex;flex-direction:column}
+.drawer--open{right:0}
+.drawer__header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--color-border);flex-shrink:0}
+.drawer__title{font-size:16px;font-weight:600}
+.drawer__body{flex:1;overflow-y:auto;padding:20px}
+.drawer__close{width:32px;height:32px;border-radius:var(--radius-md);border:none;background:transparent;cursor:pointer;font-size:18px;color:var(--color-text-muted);display:flex;align-items:center;justify-content:center}
+.drawer__close:hover{background:var(--color-bg);color:var(--color-text)}
+
+/* Checklist in drawer */
+.checklist{display:flex;flex-direction:column;gap:6px}
+.checklist__item{display:flex;align-items:center;gap:8px;padding:6px 0}
+.checklist__check{width:18px;height:18px;border:2px solid var(--color-border);border-radius:var(--radius-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--transition);flex-shrink:0;font-size:11px}
+.checklist__check--done{background:var(--color-success);border-color:var(--color-success);color:#fff}
+.checklist__text{font-size:13px}
+.checklist__text--done{text-decoration:line-through;color:var(--color-text-muted)}
+
+/* Comments */
+.comment{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--color-bg)}
+.comment__body{flex:1}
+.comment__author{font-size:12px;font-weight:600}
+.comment__time{font-size:11px;color:var(--color-text-muted)}
+.comment__text{font-size:13px;margin-top:2px;line-height:1.5}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:none;align-items:center;justify-content:center;opacity:0;transition:opacity .25s ease}
+.modal-overlay--visible{display:flex;opacity:1}
+.modal{background:var(--color-surface);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);width:90%;max-width:580px;max-height:85vh;overflow-y:auto;transform:scale(.95);transition:transform .25s ease}
+.modal-overlay--visible .modal{transform:scale(1)}
+.modal__header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--color-border)}
+.modal__title{font-size:17px;font-weight:600}
+.modal__close{width:32px;height:32px;border-radius:var(--radius-md);border:none;background:transparent;cursor:pointer;font-size:18px;color:var(--color-text-muted);display:flex;align-items:center;justify-content:center}
+.modal__close:hover{background:var(--color-bg);color:var(--color-text)}
+.modal__body{padding:24px}
+.modal__footer{padding:16px 24px;border-top:1px solid var(--color-border);display:flex;justify-content:flex-end;gap:8px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:500;color:var(--color-secondary);margin-bottom:6px}
+.form-input,.form-select{width:100%;padding:9px 12px;border:1px solid var(--color-border);border-radius:var(--radius-md);font-family:var(--font-sans);font-size:14px;outline:none;transition:all var(--transition);background:var(--color-surface)}
+.form-input:focus,.form-select:focus{border-color:var(--color-primary-light);box-shadow:0 0 0 3px rgba(95,168,211,.15)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* Toast */
+.toast-container{position:fixed;top:16px;right:16px;z-index:2000;display:flex;flex-direction:column;gap:8px}
+.toast{padding:12px 16px;border-radius:var(--radius-md);background:var(--color-surface);border:1px solid var(--color-border);box-shadow:var(--shadow-md);display:flex;align-items:center;gap:10px;font-size:13px;animation:slideIn .3s ease,fadeOut .3s ease 2.5s forwards;min-width:280px}
+.toast--success{border-left:3px solid var(--color-success)}.toast--info{border-left:3px solid var(--color-primary-light)}
+@keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes fadeOut{to{opacity:0;transform:translateX(40px)}}
+
+@media(max-width:1279px){.kanban{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:767px){.kanban{grid-template-columns:1fr}.page{padding:16px}.drawer{width:100%}.calendar{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<div class="layout">
+  <div class="main">
+    <main class="page">
+      <nav class="breadcrumb"><a href="#">Accueil</a><span style="font-size:10px">›</span><span class="breadcrumb__current">Gestion des tâches</span></nav>
+      <div class="page-header">
+        <div class="page-header__left">
+          <div class="page-header__icon">✅</div>
+          <div><h1 class="page-header__title">Gestion des tâches</h1>
+            <div class="page-header__meta"><span class="badge badge--primary">5 à faire</span><span class="badge badge--accent">3 en cours</span><span class="badge badge--warning">2 en revue</span><span class="badge badge--success">8 terminées</span></div>
+          </div>
+        </div>
+        <div class="page-header__actions"><button class="btn btn--secondary">📋 Modèles</button><button class="btn btn--primary" onclick="openModal()">+ Nouvelle tâche</button></div>
+      </div>
+
+      <div class="toolbar">
+        <div class="toolbar__search"><span class="toolbar__search-icon">🔍</span><input type="text" placeholder="Filtrer les tâches…"></div>
+        <select class="form-select" style="width:180px;padding:6px 10px;font-size:12px;border-radius:20px"><option>Tous les projets</option><option>Grp. scolaire V. Hugo</option><option>Résidence Les Oliviers</option><option>Médiathèque Brest</option><option>Campus Numérique</option></select>
+        <select class="form-select" style="width:140px;padding:6px 10px;font-size:12px;border-radius:20px"><option>Toutes phases</option><option>PRO</option><option>DCE</option><option>DET</option></select>
+        <div class="toolbar__right">
+          <div class="view-switch">
+            <button class="view-switch__btn view-switch__btn--active" data-view="kanban" onclick="switchView('kanban')">▦ Kanban</button>
+            <button class="view-switch__btn" data-view="list" onclick="switchView('list')">☰ Liste</button>
+            <button class="view-switch__btn" data-view="calendar" onclick="switchView('calendar')">📅 Calendrier</button>
+          </div>
+        </div>
+      </div>
+      <!-- ========== KANBAN ========== -->
+      <div class="view-panel view-panel--active" id="view-kanban">
+        <div class="kanban">
+          <!-- À faire -->
+          <div class="kanban__col">
+            <div class="kanban__col-header"><span class="kanban__col-title"><span style="color:var(--color-text-muted)">●</span> À faire</span><div style="display:flex;gap:4px"><span class="kanban__col-count">5</span><span class="kanban__col-add" onclick="openModal()">+</span></div></div>
+            <div class="task-card" onclick="openDrawer()">
+              <span class="task-card__priority"><span class="task-card__priority-dot" style="background:var(--color-danger)" title="Haute"></span></span>
+              <div class="task-card__title">CCTP lots architecturaux</div>
+              <div class="task-card__meta"><span class="task-card__tag" style="background:var(--color-primary-bg);color:var(--color-primary)">PRO</span><span class="task-card__tag" style="background:#f3e8ff;color:#6b21a8">Grp. scolaire</span></div>
+              <div class="task-card__footer"><span class="task-card__date task-card__date--overdue">📅 21/02 ⚠️</span><div class="avatar task-card__assignee" style="background:#2D6A4F">TD</div></div>
+            </div>
+            <div class="task-card">
+              <span class="task-card__priority"><span class="task-card__priority-dot" style="background:var(--color-warning)" title="Moyenne"></span></span>
+              <div class="task-card__title">Quantitatif estimatif</div>
+              <div class="task-card__meta"><span class="task-card__tag" style="background:var(--color-primary-bg);color:var(--color-primary)">PRO</span><span class="task-card__tag" style="background:#f3e8ff;color:#6b21a8">Grp. scolaire</span></div>
+              <div class="task-card__footer"><span class="task-card__date">📅 28/02</span><div class="avatar task-card__assignee" style="background:#E76F51">SC</div></div>
+              <div class="task-card__dep">🔗 Dépend de : Plans PRO niveaux</div>
+            </div>
+            <div class="task-card">
+              <span class="task-card__priority"><span class="task-card__priority-dot" style="background:var(--color-muted)" title="Basse"></span></span>
+              <div class="task-card__title">Recherche fournisseur menuiseries ext.</div>
+              <div class="task-card__meta"><span class="task-card__tag" style="background:var(--color-primary-bg);color:var(--color-primary)">PRO</span><span class="task-card__tag" style="background:var(--color-accent-bg);color:#b8860b">Rés. Oliviers</span></div>
+              <div class="task-card__footer"><span class="task-card__date">📅 05/03</span><div class="avatar task-card__assignee" style="background:#5FA8D3">JB</div></div>
+            </div>
+            <div class="task-card">
+              <span class="task-card__priority"><span class="task-card__priority-dot" style="background:var(--color-warning)"></span></span>
+              <div class="task-card__title">Mise à jour notice sécurité incendie</div>
+              <div class="task-card__meta"><span class="task-card__tag" style="background:var(--color-primary-bg);color:var(--color-primary)">PRO</span><span class="task-card__tag" style="background:#dbeafe;color:#1e40af">Campus Num.</span></div>
+              <div class="task-card__footer"><span class="task-card__date">📅 07/03</span><div class="avatar task-card__assignee" style="background:#1B4965">ML</div></div>
+            </div>
+            <div class="task-card">
+              <span class="task-card__priority"><span class="task-card__priority-dot" style="background:var(--color-muted)"></span></span>
+              <div class="task-card__title">Vérification conformité PMR</div>
+              <div class="task-card__meta"><span class="task-card__tag" style="background:var(--color-primary-bg);color:var(--color-primary)">APD</span><span class="task-card__tag" style="background:#d1fae5;color:#065f46">EHPAD</span></div>
+              <div class="task-card__footer"><span class="task-card__date">📅 10/03</span><div class="avatar task-card__assignee" style="background:#E76F51">SC</div></div>
+            </div>
+          </div>
+
+          <!-- En cours -->
+          <div class="kanban__col">
+            <div class="kanban__col-header"><span class="kanban__col-title"><span style="color:var(--color-primary-light)">●</span> En cours</span><span class="kanban__col-count">3</span></div>
+            <div class="task-card" onclick="openDrawer()">
+              <span class="task-card__priority"><span class="task-card__priority-dot" style="background:var(--color-danger)"></span></span>
+              <div class="task-card__title">Plans PRO niveaux R+1 à R+3</div>
+              <div class="task-card__meta"><span class="task-card__tag" style="background:var(--color-primary-bg);color:var(--color-primary)">PRO</span><span class="task-card__tag" style="background:#f3e8ff;color:#6b21a8">Grp. scolaire</span></div>
+              <div class="task-card__footer"><span class="task-card__date">📅 25/02</span><div class="avatar task-card__assignee" style="background:#2D6A4F">TD</div></div>
+              <div style="margin-top:8px"><div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px"><span class="text-muted">Sous-tâches</span><span class="text-mono">3/5</span></div><div class="progress"><div class="progress__bar" style="width:60%;background:var(--color-primary-light)"></div></div></div>
+            </div>
+            <div class="task-card task-card--overdue">
+              <span class="task-card__priority"><span class="task-card__priority-dot" style="background:var(--color-warning)"></span></span>
+              <div class="task-card__title">Notice descriptive</div>
+              <div class="task-card__meta"><span class="task-card__tag" style="background:var(--color-primary-bg);color:var(--color-primary)">PRO</span><span class="task-card__tag" style="background:#f3e8ff;color:#6b21a8">Grp. scolaire</span></div>
+              <div class="task-card__footer"><span class="task-card__date task-card__date--overdue">📅 19/02 · en retard</span><div class="avatar task-card__assignee" style="background:#1B4965">ML</div></div>
+            </div>
+            <div class="task-card">
+              <span class="task-card__priority"><span class="task-card__priority-dot" style="background:var(--color-warning)"></span></span>
+              <div class="task-card__title">Coordination BET fluides — plans CVC</div>
+              <div class="task-card__meta"><span class="task-card__tag" style="background:var(--color-primary-bg);color:var(--color-primary)">DET</span><span class="task-card__tag" style="background:var(--color-success-bg);color:var(--color-success)">Médiathèque</span></div>
+              <div class="task-card__footer"><span class="task-card__date">📅 01/03</span><div class="avatar task-card__assignee" style="background:#E76F51">SC</div></div>
+            </div>
+          </div>
+
+          <!-- En revue -->
+          <div class="kanban__col">
+            <div class="kanban__col-header"><span class="kanban__col-title"><span style="color:var(--color-accent)">●</span> En revue</span><span class="kanban__col-count">2</span></div>
+            <div class="task-card" onclick="openDrawer()">
+              <span class="task-card__priority"><span class="task-card__priority-dot" style="background:var(--color-danger)"></span></span>
+              <div class="task-card__title">Plans PRO niveaux RDC & SS</div>
+              <div class="task-card__meta"><span class="task-card__tag" style="background:var(--color-primary-bg);color:var(--color-primary)">PRO</span><span class="task-card__tag" style="background:#f3e8ff;color:#6b21a8">Grp. scolaire</span></div>
+              <div class="task-card__footer"><span class="task-card__date">📅 20/02 · envoyé hier</span><div class="avatar task-card__assignee" style="background:#2D6A4F">TD</div></div>
+              <div class="task-card__checklist" style="margin-top:6px">💬 2 commentaires</div>
+            </div>
+            <div class="task-card">
+              <span class="task-card__priority"><span class="task-card__priority-dot" style="background:var(--color-warning)"></span></span>
+              <div class="task-card__title">CR chantier n°18</div>
+              <div class="task-card__meta"><span class="task-card__tag" style="background:var(--color-primary-bg);color:var(--color-primary)">DET</span><span class="task-card__tag" style="background:var(--color-success-bg);color:var(--color-success)">Médiathèque</span><span class="task-card__tag" style="background:var(--color-accent-bg);color:#b8860b">🔄 Récurrente</span></div>
+              <div class="task-card__footer"><span class="task-card__date">📅 20/02</span><div class="avatar task-card__assignee" style="background:#E76F51">SC</div></div>
+            </div>
+          </div>
+
+          <!-- Terminé -->
+          <div class="kanban__col" style="background:var(--color-success-bg)">
+            <div class="kanban__col-header" style="border-color:rgba(45,106,79,.2)"><span class="kanban__col-title"><span style="color:var(--color-success)">●</span> Terminé</span><span class="kanban__col-count">8</span></div>
+            <div class="task-card" style="opacity:.7">
+              <div class="task-card__title" style="text-decoration:line-through;color:var(--color-text-muted)">Plans PRO coupes</div>
+              <div class="task-card__meta"><span class="task-card__tag" style="background:var(--color-primary-bg);color:var(--color-primary)">PRO</span></div>
+              <div class="task-card__footer"><span class="task-card__date">✅ 17/02</span><div class="avatar task-card__assignee" style="background:#2D6A4F">TD</div></div>
+            </div>
+            <div class="task-card" style="opacity:.7">
+              <div class="task-card__title" style="text-decoration:line-through;color:var(--color-text-muted)">Schéma VRD — coordination concessionnaires</div>
+              <div class="task-card__meta"><span class="task-card__tag" style="background:var(--color-primary-bg);color:var(--color-primary)">PRO</span></div>
+              <div class="task-card__footer"><span class="task-card__date">✅ 14/02</span><div class="avatar task-card__assignee" style="background:#5FA8D3">JB</div></div>
+            </div>
+            <div class="task-card" style="opacity:.7">
+              <div class="task-card__title" style="text-decoration:line-through;color:var(--color-text-muted)">CR chantier n°17</div>
+              <div class="task-card__meta"><span class="task-card__tag" style="background:var(--color-primary-bg);color:var(--color-primary)">DET</span></div>
+              <div class="task-card__footer"><span class="task-card__date">✅ 13/02</span><div class="avatar task-card__assignee" style="background:#E76F51">SC</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- ========== LIST VIEW ========== -->
+      <div class="view-panel" id="view-list">
+        <div class="card">
+          <div class="card__body card__body--flush">
+            <table class="data-table">
+              <thead><tr><th style="width:30px"></th><th>Tâche</th><th>Projet / Phase</th><th>Assigné</th><th>Priorité</th><th>Échéance</th><th>Statut</th></tr></thead>
+              <tbody>
+                <tr onclick="openDrawer()"><td><input type="checkbox" style="cursor:pointer"></td><td style="font-weight:500">CCTP lots architecturaux</td><td><span class="text-sm">Grp. scolaire · PRO</span></td><td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="width:22px;height:22px;font-size:8px;background:#2D6A4F">TD</div><span class="text-sm">T. Durand</span></div></td><td><span class="badge badge--danger" style="font-size:10px">Haute</span></td><td class="mono text-sm text-danger">21/02 ⚠️</td><td><span class="badge badge--muted" style="font-size:10px">À faire</span></td></tr>
+                <tr onclick="openDrawer()"><td><input type="checkbox" style="cursor:pointer"></td><td style="font-weight:500">Plans PRO niveaux R+1 à R+3</td><td><span class="text-sm">Grp. scolaire · PRO</span></td><td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="width:22px;height:22px;font-size:8px;background:#2D6A4F">TD</div><span class="text-sm">T. Durand</span></div></td><td><span class="badge badge--danger" style="font-size:10px">Haute</span></td><td class="mono text-sm">25/02</td><td><span class="badge badge--primary" style="font-size:10px">En cours</span></td></tr>
+                <tr><td><input type="checkbox" style="cursor:pointer"></td><td style="font-weight:500">Notice descriptive</td><td><span class="text-sm">Grp. scolaire · PRO</span></td><td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="width:22px;height:22px;font-size:8px;background:#1B4965">ML</div><span class="text-sm">M. Lefort</span></div></td><td><span class="badge badge--warning" style="font-size:10px">Moyenne</span></td><td class="mono text-sm text-danger">19/02 ⚠️</td><td><span class="badge badge--primary" style="font-size:10px">En cours</span></td></tr>
+                <tr><td><input type="checkbox" style="cursor:pointer"></td><td style="font-weight:500">Plans PRO niveaux RDC & SS</td><td><span class="text-sm">Grp. scolaire · PRO</span></td><td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="width:22px;height:22px;font-size:8px;background:#2D6A4F">TD</div><span class="text-sm">T. Durand</span></div></td><td><span class="badge badge--danger" style="font-size:10px">Haute</span></td><td class="mono text-sm">20/02</td><td><span class="badge badge--accent" style="font-size:10px">En revue</span></td></tr>
+                <tr><td><input type="checkbox" style="cursor:pointer"></td><td style="font-weight:500">Quantitatif estimatif</td><td><span class="text-sm">Grp. scolaire · PRO</span></td><td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="width:22px;height:22px;font-size:8px;background:#E76F51">SC</div><span class="text-sm">S. Caron</span></div></td><td><span class="badge badge--warning" style="font-size:10px">Moyenne</span></td><td class="mono text-sm">28/02</td><td><span class="badge badge--muted" style="font-size:10px">À faire</span></td></tr>
+                <tr><td><input type="checkbox" style="cursor:pointer"></td><td style="font-weight:500">Coordination BET fluides</td><td><span class="text-sm">Médiathèque · DET</span></td><td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="width:22px;height:22px;font-size:8px;background:#E76F51">SC</div><span class="text-sm">S. Caron</span></div></td><td><span class="badge badge--warning" style="font-size:10px">Moyenne</span></td><td class="mono text-sm">01/03</td><td><span class="badge badge--primary" style="font-size:10px">En cours</span></td></tr>
+                <tr><td><input type="checkbox" style="cursor:pointer"></td><td style="font-weight:500">CR chantier n°18</td><td><span class="text-sm">Médiathèque · DET</span></td><td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="width:22px;height:22px;font-size:8px;background:#E76F51">SC</div><span class="text-sm">S. Caron</span></div></td><td><span class="badge badge--warning" style="font-size:10px">Moyenne</span></td><td class="mono text-sm">20/02</td><td><span class="badge badge--accent" style="font-size:10px">En revue</span></td></tr>
+                <tr style="opacity:.5"><td><input type="checkbox" checked style="cursor:pointer"></td><td style="font-weight:500;text-decoration:line-through">Plans PRO coupes</td><td><span class="text-sm">Grp. scolaire · PRO</span></td><td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="width:22px;height:22px;font-size:8px;background:#2D6A4F">TD</div><span class="text-sm">T. Durand</span></div></td><td><span class="badge badge--muted" style="font-size:10px">—</span></td><td class="mono text-sm">✅ 17/02</td><td><span class="badge badge--success" style="font-size:10px">Terminé</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== CALENDAR VIEW ========== -->
+      <div class="view-panel" id="view-calendar">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="display:flex;gap:8px;align-items:center"><button class="btn btn--ghost btn--sm">◀</button><span style="font-size:16px;font-weight:600">Février 2025</span><button class="btn btn--ghost btn--sm">▶</button></div>
+          <button class="btn btn--ghost btn--sm">Aujourd'hui</button>
+        </div>
+        <div class="calendar">
+          <div class="calendar__header">Lun</div><div class="calendar__header">Mar</div><div class="calendar__header">Mer</div><div class="calendar__header">Jeu</div><div class="calendar__header">Ven</div><div class="calendar__header">Sam</div><div class="calendar__header">Dim</div>
+          <!-- Week 1 -->
+          <div class="calendar__day calendar__day--other"><div class="calendar__day-number">27</div></div>
+          <div class="calendar__day calendar__day--other"><div class="calendar__day-number">28</div></div>
+          <div class="calendar__day calendar__day--other"><div class="calendar__day-number">29</div></div>
+          <div class="calendar__day calendar__day--other"><div class="calendar__day-number">30</div></div>
+          <div class="calendar__day calendar__day--other"><div class="calendar__day-number">31</div></div>
+          <div class="calendar__day calendar__day--other"><div class="calendar__day-number">1</div></div>
+          <div class="calendar__day calendar__day--other"><div class="calendar__day-number">2</div></div>
+          <!-- Week 2 -->
+          <div class="calendar__day"><div class="calendar__day-number">3</div></div>
+          <div class="calendar__day"><div class="calendar__day-number">4</div></div>
+          <div class="calendar__day"><div class="calendar__day-number">5</div></div>
+          <div class="calendar__day"><div class="calendar__day-number">6</div></div>
+          <div class="calendar__day"><div class="calendar__day-number">7</div></div>
+          <div class="calendar__day"><div class="calendar__day-number">8</div></div>
+          <div class="calendar__day"><div class="calendar__day-number">9</div></div>
+          <!-- Week 3 -->
+          <div class="calendar__day"><div class="calendar__day-number">10</div></div>
+          <div class="calendar__day"><div class="calendar__day-number">11</div></div>
+          <div class="calendar__day"><div class="calendar__day-number">12</div></div>
+          <div class="calendar__day"><div class="calendar__day-number">13</div><div class="calendar__event calendar__event--meeting">Réunion MOA V. Hugo</div></div>
+          <div class="calendar__day"><div class="calendar__day-number">14</div><div class="calendar__event calendar__event--task">Schéma VRD ✅</div></div>
+          <div class="calendar__day"><div class="calendar__day-number">15</div></div>
+          <div class="calendar__day"><div class="calendar__day-number">16</div></div>
+          <!-- Week 4 -->
+          <div class="calendar__day"><div class="calendar__day-number">17</div><div class="calendar__event calendar__event--task">Plans PRO coupes ✅</div></div>
+          <div class="calendar__day"><div class="calendar__day-number">18</div></div>
+          <div class="calendar__day"><div class="calendar__day-number">19</div><div class="calendar__event calendar__event--deadline">Notice descriptive ⚠️</div></div>
+          <div class="calendar__day"><div class="calendar__day-number">20</div><div class="calendar__event calendar__event--review">Plans RDC&SS (revue)</div><div class="calendar__event calendar__event--review">CR chantier n°18</div></div>
+          <div class="calendar__day calendar__day--today"><div class="calendar__day-number calendar__day-number--today">21 <span class="badge badge--primary" style="font-size:9px;padding:1px 5px">auj.</span></div><div class="calendar__event calendar__event--deadline">CCTP lots archi ⚠️</div></div>
+          <div class="calendar__day"><div class="calendar__day-number">22</div></div>
+          <div class="calendar__day"><div class="calendar__day-number">23</div></div>
+          <!-- Week 5 -->
+          <div class="calendar__day"><div class="calendar__day-number">24</div></div>
+          <div class="calendar__day"><div class="calendar__day-number">25</div><div class="calendar__event calendar__event--task">Plans R+1→R+3</div></div>
+          <div class="calendar__day"><div class="calendar__day-number">26</div></div>
+          <div class="calendar__day"><div class="calendar__day-number">27</div><div class="calendar__event calendar__event--meeting">Réunion chantier</div></div>
+          <div class="calendar__day"><div class="calendar__day-number">28</div><div class="calendar__event calendar__event--task">Quantitatif estimatif</div></div>
+          <div class="calendar__day calendar__day--other"><div class="calendar__day-number">1</div></div>
+          <div class="calendar__day calendar__day--other"><div class="calendar__day-number">2</div></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- DRAWER: Détail tâche -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer__header"><h3 class="drawer__title">CCTP lots architecturaux</h3><button class="drawer__close" onclick="closeDrawer()">✕</button></div>
+  <div class="drawer__body">
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <span class="badge badge--muted">À faire</span>
+      <span class="badge badge--danger" style="font-size:11px">Haute priorité</span>
+      <span class="badge badge--primary" style="font-size:11px">PRO</span>
+    </div>
+
+    <!-- Info grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+      <div><span class="text-sm text-muted">Projet</span><br><span style="font-weight:500">Grp. scolaire Victor Hugo</span></div>
+      <div><span class="text-sm text-muted">Phase</span><br><span style="font-weight:500">PRO — Études de projet</span></div>
+      <div><span class="text-sm text-muted">Assigné à</span><br><div style="display:flex;align-items:center;gap:6px;margin-top:2px"><div class="avatar" style="width:24px;height:24px;font-size:9px;background:#2D6A4F">TD</div><span style="font-weight:500">Thomas Durand</span></div></div>
+      <div><span class="text-sm text-muted">Échéance</span><br><span class="text-mono text-danger" style="font-weight:500">21/02/2025 ⚠️ Aujourd'hui</span></div>
+      <div><span class="text-sm text-muted">Durée estimée</span><br><span class="text-mono">24h</span></div>
+      <div><span class="text-sm text-muted">Temps passé</span><br><span class="text-mono">18h <span class="text-muted">(75%)</span></span></div>
+    </div>
+
+    <!-- Description -->
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">Description</div>
+      <div style="font-size:13px;line-height:1.6;color:var(--color-secondary)">Rédiger le CCTP pour les lots architecturaux du groupe scolaire : lot 01 (gros œuvre), lot 02 (charpente bois), lot 03 (couverture étanchéité), lot 04 (menuiseries extérieures). Se baser sur le descriptif PRO validé et les prescriptions du BET structure.</div>
+    </div>
+
+    <!-- Checklist -->
+    <div style="margin-bottom:20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.04em">Checklist <span class="text-mono">2/5</span></div>
+        <div class="progress" style="width:80px"><div class="progress__bar" style="width:40%;background:var(--color-primary-light)"></div></div>
+      </div>
+      <div class="checklist">
+        <div class="checklist__item"><div class="checklist__check checklist__check--done" onclick="this.classList.toggle('checklist__check--done')">✓</div><span class="checklist__text checklist__text--done">Lot 01 — Gros œuvre</span></div>
+        <div class="checklist__item"><div class="checklist__check checklist__check--done" onclick="this.classList.toggle('checklist__check--done')">✓</div><span class="checklist__text checklist__text--done">Lot 02 — Charpente bois</span></div>
+        <div class="checklist__item"><div class="checklist__check" onclick="this.classList.toggle('checklist__check--done')"></div><span class="checklist__text">Lot 03 — Couverture étanchéité</span></div>
+        <div class="checklist__item"><div class="checklist__check" onclick="this.classList.toggle('checklist__check--done')"></div><span class="checklist__text">Lot 04 — Menuiseries extérieures</span></div>
+        <div class="checklist__item"><div class="checklist__check" onclick="this.classList.toggle('checklist__check--done')"></div><span class="checklist__text">Relecture et mise en forme finale</span></div>
+      </div>
+    </div>
+
+    <!-- Pièces jointes -->
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Pièces jointes (2)</div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--color-bg);border-radius:var(--radius-md)"><span>📄</span><div style="flex:1"><div style="font-size:12px;font-weight:500">Descriptif_PRO_v2.pdf</div><div class="text-sm text-muted">1,2 Mo · 15/02/2025</div></div></div>
+        <div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--color-bg);border-radius:var(--radius-md)"><span>📄</span><div style="flex:1"><div style="font-size:12px;font-weight:500">Note_calcul_structure.pdf</div><div class="text-sm text-muted">3,8 Mo · BET Structura · 12/02/2025</div></div></div>
+      </div>
+    </div>
+
+    <!-- Dépendances -->
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Dépendances</div>
+      <div style="font-size:12px;padding:8px;background:var(--color-bg);border-radius:var(--radius-md)">
+        <span style="font-weight:500">Est requis par :</span> <span style="color:var(--color-primary)">Quantitatif estimatif</span>
+      </div>
+    </div>
+
+    <!-- Commentaires -->
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Commentaires (2)</div>
+      <div class="comment"><div class="avatar" style="width:28px;height:28px;font-size:9px;background:#1B4965">ML</div><div class="comment__body"><div style="display:flex;gap:8px;align-items:baseline"><span class="comment__author">M. Lefort</span><span class="comment__time">20/02 · 14h30</span></div><div class="comment__text">@Thomas, pense à reprendre les prescriptions acoustiques du BET pour le lot 02. Le rapport Acoustibel est dans la GED.</div></div></div>
+      <div class="comment"><div class="avatar" style="width:28px;height:28px;font-size:9px;background:#2D6A4F">TD</div><div class="comment__body"><div style="display:flex;gap:8px;align-items:baseline"><span class="comment__author">T. Durand</span><span class="comment__time">20/02 · 16h15</span></div><div class="comment__text">Noté, je l'intègre dans le lot 02. Je devrais finir les lots 03-04 demain matin.</div></div></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;padding-top:12px;border-top:1px solid var(--color-border)">
+      <input type="text" class="form-input" placeholder="Ajouter un commentaire…" style="font-size:13px">
+      <button class="btn btn--primary btn--sm">Envoyer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Nouvelle tâche -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal__header"><h2 class="modal__title">Nouvelle tâche</h2><button class="modal__close" onclick="closeModal()">✕</button></div>
+    <div class="modal__body">
+      <div class="form-group"><label>Titre</label><input type="text" class="form-input" placeholder="Ex: Plans PRO niveaux R+4"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Projet</label><select class="form-select"><option>Grp. scolaire Victor Hugo</option><option>Résidence Les Oliviers</option><option>Médiathèque de Brest</option><option>Campus Numérique</option><option>EHPAD Les Magnolias</option></select></div>
+        <div class="form-group"><label>Phase</label><select class="form-select"><option>PRO</option><option>DCE</option><option>DET</option><option>AOR</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Assigné à</label><select class="form-select"><option>Thomas Durand</option><option>Marie Lefort</option><option>Sophie Caron</option><option>Julien Bernard</option></select></div>
+        <div class="form-group"><label>Priorité</label><select class="form-select"><option>Haute</option><option selected>Moyenne</option><option>Basse</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Échéance</label><input type="date" class="form-input" value="2025-03-01"></div>
+        <div class="form-group"><label>Durée estimée (h)</label><input type="text" class="form-input" placeholder="16" style="font-family:var(--font-mono)"></div>
+      </div>
+      <div class="form-group"><label>Dépend de (optionnel)</label><select class="form-select"><option value="">Aucune dépendance</option><option>Plans PRO niveaux R+1 à R+3</option><option>CCTP lots architecturaux</option><option>Notice descriptive</option></select></div>
+      <div class="form-group"><label style="display:flex;gap:8px;align-items:center"><input type="checkbox"> Tâche récurrente</label></div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--secondary" onclick="closeModal()">Annuler</button>
+      <button class="btn btn--primary" onclick="closeModal();showToast('Tâche créée et assignée','success')">Créer la tâche</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+function switchView(v){document.querySelectorAll('.view-switch__btn').forEach(b=>b.classList.remove('view-switch__btn--active'));document.querySelector('[data-view="'+v+'"]').classList.add('view-switch__btn--active');document.querySelectorAll('.view-panel').forEach(p=>p.classList.remove('view-panel--active'));document.getElementById('view-'+v).classList.add('view-panel--active')}
+function openModal(){const o=document.getElementById('modalOverlay');o.style.display='flex';requestAnimationFrame(()=>o.classList.add('modal-overlay--visible'));document.body.style.overflow='hidden'}
+function closeModal(e){if(e&&e.target!==e.currentTarget)return;const o=document.getElementById('modalOverlay');o.classList.remove('modal-overlay--visible');setTimeout(()=>{o.style.display='none';document.body.style.overflow=''},250)}
+function openDrawer(){document.getElementById('drawerOverlay').classList.add('drawer-overlay--visible');document.getElementById('drawer').classList.add('drawer--open');document.body.style.overflow='hidden'}
+function closeDrawer(){document.getElementById('drawerOverlay').classList.remove('drawer-overlay--visible');document.getElementById('drawer').classList.remove('drawer--open');document.body.style.overflow=''}
+function showToast(msg,type='info'){const c=document.getElementById('toastContainer'),t=document.createElement('div');t.className='toast toast--'+type;t.innerHTML='<span>'+(type==='success'?'✅':'ℹ️')+'</span><span>'+msg+'</span>';c.appendChild(t);setTimeout(()=>t.remove(),3000)}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeDrawer()}})
+</script>
+</body>
+</html>

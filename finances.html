@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAA — Finances & Facturation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+.sidebar,.topbar{display:none!important;}
+:root{--color-primary:#1B4965;--color-primary-light:#5FA8D3;--color-primary-hover:#153a52;--color-primary-bg:#e8f1f8;--color-secondary:#3C4858;--color-accent:#E6A817;--color-accent-bg:#fdf5e0;--color-success:#2D6A4F;--color-success-bg:#e6f3ed;--color-danger:#C1292E;--color-danger-bg:#fbe8e8;--color-warning:#E76F51;--color-warning-bg:#fdf0ec;--color-bg:#F8F9FA;--color-surface:#FFFFFF;--color-border:#DEE2E6;--color-text:#212529;--color-text-muted:#6C757D;--color-muted:#ADB5BD;--font-sans:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;--font-mono:'JetBrains Mono',monospace;--radius-sm:4px;--radius-md:8px;--radius-lg:12px;--shadow-sm:0 1px 3px rgba(0,0,0,.06);--shadow-md:0 4px 12px rgba(0,0,0,.08);--shadow-lg:0 8px 32px rgba(0,0,0,.12);--transition:.2s ease;--sidebar-width:260px;--sidebar-collapsed:64px;--header-height:56px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);font-size:14px;line-height:1.5;color:var(--color-text);background:var(--color-bg);overflow-x:hidden}
+a{color:var(--color-primary);text-decoration:none}a:hover{color:var(--color-primary-light)}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:var(--sidebar-width);background:var(--color-primary);color:#fff;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:width .25s ease;overflow:hidden}
+.sidebar.sidebar--collapsed{width:var(--sidebar-collapsed)}
+.sidebar__logo{height:var(--header-height);display:flex;align-items:center;padding:0 16px;border-bottom:1px solid rgba(255,255,255,.1);gap:12px;flex-shrink:0}
+.sidebar__logo-icon{width:32px;height:32px;background:var(--color-accent);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:var(--color-primary);flex-shrink:0}
+.sidebar__logo-text{font-size:18px;font-weight:700;letter-spacing:-.02em;white-space:nowrap;transition:opacity var(--transition)}
+.sidebar--collapsed .sidebar__logo-text{opacity:0}
+.sidebar__nav{flex:1;padding:8px;overflow-y:auto}
+.sidebar__section-title{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.45);padding:16px 12px 6px;white-space:nowrap}
+.sidebar--collapsed .sidebar__section-title{opacity:0;height:0;padding:0}
+.sidebar__item{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:var(--radius-md);color:rgba(255,255,255,.7);cursor:pointer;transition:all var(--transition);white-space:nowrap;font-size:13.5px}
+.sidebar__item:hover{background:rgba(255,255,255,.1);color:#fff}
+.sidebar__item--active{background:rgba(255,255,255,.15);color:#fff;font-weight:500}
+.sidebar__item-icon{width:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px}
+.sidebar__item-label{transition:opacity var(--transition)}.sidebar--collapsed .sidebar__item-label{opacity:0}
+.sidebar__badge{margin-left:auto;background:var(--color-danger);color:#fff;font-size:11px;font-weight:600;padding:1px 7px;border-radius:10px}.sidebar--collapsed .sidebar__badge{display:none}
+.sidebar__toggle{padding:12px;border-top:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.5);flex-shrink:0}.sidebar__toggle:hover{color:#fff}
+.main{flex:1;margin-left:var(--sidebar-width);transition:margin-left .25s ease;display:flex;flex-direction:column;min-height:100vh}
+.sidebar--collapsed ~ .main{margin-left:var(--sidebar-collapsed)}
+.topbar{height:var(--header-height);background:var(--color-surface);border-bottom:1px solid var(--color-border);display:flex;align-items:center;padding:0 24px;gap:16px;position:sticky;top:0;z-index:50}
+.topbar__search{flex:1;max-width:480px;position:relative}
+.topbar__search input{width:100%;padding:8px 12px 8px 36px;border:1px solid var(--color-border);border-radius:var(--radius-md);font-family:var(--font-sans);font-size:13px;background:var(--color-bg);outline:none;transition:all var(--transition)}
+.topbar__search input:focus{border-color:var(--color-primary-light);box-shadow:0 0 0 3px rgba(95,168,211,.15);background:var(--color-surface)}
+.topbar__search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--color-text-muted);font-size:14px}
+.topbar__actions{display:flex;align-items:center;gap:8px;margin-left:auto}
+.topbar__btn{width:36px;height:36px;border-radius:var(--radius-md);border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--color-text-muted);font-size:18px;transition:all var(--transition);position:relative}
+.topbar__btn:hover{background:var(--color-bg);color:var(--color-text)}
+.topbar__btn .notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;background:var(--color-danger);border-radius:50%;border:2px solid var(--color-surface)}
+.topbar__avatar{width:34px;height:34px;border-radius:50%;background:var(--color-accent);color:var(--color-primary);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.page{flex:1;padding:24px;max-width:1360px;width:100%;margin:0 auto}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius-md);font-family:var(--font-sans);font-size:13px;font-weight:500;border:1px solid transparent;cursor:pointer;transition:all var(--transition);white-space:nowrap}
+.btn--primary{background:var(--color-primary);color:#fff;border-color:var(--color-primary)}.btn--primary:hover{background:var(--color-primary-hover)}
+.btn--secondary{background:var(--color-surface);color:var(--color-text);border-color:var(--color-border)}.btn--secondary:hover{background:var(--color-bg)}
+.btn--ghost{background:transparent;color:var(--color-text-muted)}.btn--ghost:hover{background:var(--color-bg);color:var(--color-text)}
+.btn--sm{padding:5px 10px;font-size:12px}
+.btn--danger{background:var(--color-danger);color:#fff;border-color:var(--color-danger)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;white-space:nowrap}
+.badge--primary{background:var(--color-primary-bg);color:var(--color-primary)}
+.badge--success{background:var(--color-success-bg);color:var(--color-success)}
+.badge--danger{background:var(--color-danger-bg);color:var(--color-danger)}
+.badge--warning{background:var(--color-warning-bg);color:var(--color-warning)}
+.badge--muted{background:#EBEDEF;color:var(--color-text-muted)}
+.badge--accent{background:var(--color-accent-bg);color:#b8860b}
+.card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);overflow:hidden;transition:box-shadow var(--transition)}
+.card:hover{box-shadow:var(--shadow-sm)}
+.card__header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--color-border)}
+.card__title{font-size:14px;font-weight:600}
+.card__body{padding:16px 20px}.card__body--flush{padding:0}
+.text-muted{color:var(--color-text-muted)}.text-mono{font-family:var(--font-mono)}.text-sm{font-size:12px}
+.text-success{color:var(--color-success)}.text-danger{color:var(--color-danger)}.text-warning{color:var(--color-warning)}
+.mb-24{margin-bottom:24px}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--color-text-muted);margin-bottom:16px}
+.breadcrumb a{color:var(--color-text-muted)}.breadcrumb a:hover{color:var(--color-primary)}
+.breadcrumb__current{color:var(--color-text);font-weight:500}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:24px}
+.page-header__left{display:flex;align-items:flex-start;gap:16px}
+.page-header__icon{width:48px;height:48px;background:var(--color-primary-bg);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.page-header__title{font-size:24px;font-weight:600;letter-spacing:-.02em;line-height:1.3}
+.page-header__meta{display:flex;align-items:center;gap:12px;margin-top:4px;flex-wrap:wrap}
+.page-header__actions{display:flex;gap:8px;flex-shrink:0}
+.progress{height:6px;background:var(--color-bg);border-radius:3px;overflow:hidden}
+.progress__bar{height:100%;border-radius:3px;transition:width .5s ease}
+.kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:24px}
+.kpi{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:14px 18px;transition:all var(--transition);position:relative;overflow:hidden}
+.kpi:hover{box-shadow:var(--shadow-sm);transform:translateY(-1px)}
+.kpi__accent{position:absolute;top:0;left:0;right:0;height:3px}
+.kpi__label{font-size:12px;color:var(--color-text-muted);margin-bottom:4px}
+.kpi__value{font-family:var(--font-mono);font-size:22px;font-weight:500;letter-spacing:-.02em}
+.kpi__sub{font-size:12px;color:var(--color-text-muted);margin-top:2px}
+.tabs{display:flex;border-bottom:2px solid var(--color-border);gap:0;margin-bottom:24px;overflow-x:auto}
+.tabs__item{padding:10px 20px;font-size:13.5px;font-weight:500;color:var(--color-text-muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all var(--transition);white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font-sans)}
+.tabs__item:hover{color:var(--color-text)}
+.tabs__item--active{color:var(--color-primary);border-bottom-color:var(--color-primary)}
+.tabs__count{background:var(--color-bg);padding:1px 7px;border-radius:10px;font-size:11px;font-weight:600;margin-left:6px;color:var(--color-text-muted)}
+.tab-panel{display:none;animation:fadeIn .3s ease}.tab-panel--active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--color-text-muted);font-weight:600;padding:8px 14px;border-bottom:2px solid var(--color-border);background:var(--color-bg)}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--color-border);font-size:13px;vertical-align:middle}
+.data-table tr{transition:background var(--transition)}.data-table tr:hover td{background:rgba(248,249,250,.5)}
+.data-table .mono{font-family:var(--font-mono);font-size:12px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-sidebar{display:grid;grid-template-columns:2fr 1fr;gap:20px}
+.stacked-bar{display:flex;height:24px;border-radius:4px;overflow:hidden;width:100%}
+.stacked-bar__segment{transition:width .5s ease;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;overflow:hidden;white-space:nowrap}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:120px}
+.bar-chart__col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.bar-chart__bar{width:100%;border-radius:3px 3px 0 0;position:relative}
+.bar-chart__label{font-size:10px;color:var(--color-text-muted);font-weight:500}
+.bar-chart__val{font-family:var(--font-mono);font-size:9px;color:var(--color-text-muted);position:absolute;top:-14px;left:50%;transform:translateX(-50%);white-space:nowrap}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:none;align-items:center;justify-content:center;opacity:0;transition:opacity .25s ease}
+.modal-overlay--visible{display:flex;opacity:1}
+.modal{background:var(--color-surface);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);width:90%;max-width:640px;max-height:85vh;overflow-y:auto;transform:scale(.95);transition:transform .25s ease}
+.modal-overlay--visible .modal{transform:scale(1)}
+.modal__header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--color-border)}
+.modal__title{font-size:17px;font-weight:600}
+.modal__close{width:32px;height:32px;border-radius:var(--radius-md);border:none;background:transparent;cursor:pointer;font-size:18px;color:var(--color-text-muted);display:flex;align-items:center;justify-content:center}
+.modal__close:hover{background:var(--color-bg);color:var(--color-text)}
+.modal__body{padding:24px}
+.modal__footer{padding:16px 24px;border-top:1px solid var(--color-border);display:flex;justify-content:flex-end;gap:8px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:500;color:var(--color-secondary);margin-bottom:6px}
+.form-input,.form-select{width:100%;padding:9px 12px;border:1px solid var(--color-border);border-radius:var(--radius-md);font-family:var(--font-sans);font-size:14px;outline:none;transition:all var(--transition);background:var(--color-surface)}
+.form-input:focus,.form-select:focus{border-color:var(--color-primary-light);box-shadow:0 0 0 3px rgba(95,168,211,.15)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:900;display:none;opacity:0;transition:opacity .25s ease}
+.drawer-overlay--visible{display:block;opacity:1}
+.drawer{position:fixed;right:-540px;top:0;bottom:0;width:540px;background:var(--color-surface);box-shadow:var(--shadow-lg);z-index:910;transition:right .3s ease;display:flex;flex-direction:column}
+.drawer--open{right:0}
+.drawer__header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--color-border);flex-shrink:0}
+.drawer__title{font-size:16px;font-weight:600}
+.drawer__body{flex:1;overflow-y:auto;padding:20px}
+.drawer__close{width:32px;height:32px;border-radius:var(--radius-md);border:none;background:transparent;cursor:pointer;font-size:18px;color:var(--color-text-muted);display:flex;align-items:center;justify-content:center}
+.drawer__close:hover{background:var(--color-bg);color:var(--color-text)}
+.toast-container{position:fixed;top:16px;right:16px;z-index:2000;display:flex;flex-direction:column;gap:8px}
+.toast{padding:12px 16px;border-radius:var(--radius-md);background:var(--color-surface);border:1px solid var(--color-border);box-shadow:var(--shadow-md);display:flex;align-items:center;gap:10px;font-size:13px;animation:slideIn .3s ease,fadeOut .3s ease 2.5s forwards;min-width:280px}
+.toast--success{border-left:3px solid var(--color-success)}.toast--info{border-left:3px solid var(--color-primary-light)}.toast--warning{border-left:3px solid var(--color-warning)}
+@keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes fadeOut{to{opacity:0;transform:translateX(40px)}}
+.relance-step{display:flex;align-items:flex-start;gap:8px;padding:6px 0}
+.relance-step__dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+@media(max-width:1279px){.kpi-strip{grid-template-columns:repeat(3,1fr)}.grid-2,.grid-sidebar{grid-template-columns:1fr}}
+@media(max-width:1023px){.sidebar{width:var(--sidebar-collapsed)}.sidebar .sidebar__logo-text,.sidebar .sidebar__item-label,.sidebar .sidebar__badge,.sidebar .sidebar__section-title{opacity:0}.main{margin-left:var(--sidebar-collapsed)}.kpi-strip{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:767px){.sidebar{display:none}.main{margin-left:0}.kpi-strip{grid-template-columns:1fr 1fr}.page{padding:16px}.drawer{width:100%}}
+</style>
+
+<style>
+/* Embedded mode overrides */
+.sidebar { display: none !important; }
+.topbar { display: none !important; }
+.main { margin-left: 0 !important; }
+body { background: var(--color-bg); }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__logo"><div class="sidebar__logo-icon">G</div><span class="sidebar__logo-text">GAA</span></div>
+    <nav class="sidebar__nav">
+      <div class="sidebar__section-title">Cœur métier</div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">📊</span><span class="sidebar__item-label">Tableau de bord</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">📁</span><span class="sidebar__item-label">Projets</span><span class="sidebar__badge">12</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">⏱️</span><span class="sidebar__item-label">Temps</span></div>
+      <div class="sidebar__item sidebar__item--active"><span class="sidebar__item-icon">💰</span><span class="sidebar__item-label">Finances</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">👥</span><span class="sidebar__item-label">Contacts</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">📅</span><span class="sidebar__item-label">Planning</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">🏗️</span><span class="sidebar__item-label">Chantier</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">📄</span><span class="sidebar__item-label">Documents</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">✅</span><span class="sidebar__item-label">Tâches</span><span class="sidebar__badge">5</span></div>
+      <div class="sidebar__section-title">Outils</div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">📈</span><span class="sidebar__item-label">Reporting</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">🔔</span><span class="sidebar__item-label">Alertes</span><span class="sidebar__badge">3</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">⚙️</span><span class="sidebar__item-label">Paramètres</span></div>
+    </nav>
+    <div class="sidebar__toggle" ><span id="toggleIcon">◀</span></div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__search"><span class="topbar__search-icon">🔍</span><input type="text" placeholder="Rechercher une facture, un devis…"/></div>
+      <div class="topbar__actions"><button class="topbar__btn">🔔<span class="notif-dot"></span></button><button class="topbar__btn">❓</button><div class="topbar__avatar">AM</div></div>
+    </header>
+    <main class="page">
+      <nav class="breadcrumb"><a href="#">Accueil</a><span style="font-size:10px">›</span><span class="breadcrumb__current">Finances & Facturation</span></nav>
+      <div class="page-header">
+        <div class="page-header__left">
+          <div class="page-header__icon">💰</div>
+          <div><h1 class="page-header__title">Finances & Facturation</h1><div class="page-header__meta"><span class="badge badge--muted">Exercice 2025</span><span class="badge badge--primary">Agence Paris</span></div></div>
+        </div>
+        <div class="page-header__actions">
+          <button class="btn btn--secondary" onclick="showToast('Export FEC généré','success')">📥 Export FEC</button>
+          <button class="btn btn--secondary">📊 Rapport PDF</button>
+          <button class="btn btn--primary" onclick="openModal()">+ Nouvelle facture</button>
+        </div>
+      </div>
+      <!-- KPIs -->
+      <div class="kpi-strip">
+        <div class="kpi"><div class="kpi__accent" style="background:var(--color-primary)"></div><div class="kpi__label">CA facturé 2025</div><div class="kpi__value">487 K€</div><div class="kpi__sub"><span style="color:var(--color-success);font-weight:600">↗ +18%</span> vs N-1</div></div>
+        <div class="kpi"><div class="kpi__accent" style="background:var(--color-success)"></div><div class="kpi__label">Encaissé</div><div class="kpi__value" style="color:var(--color-success)">423 K€</div><div class="kpi__sub">87% du facturé</div></div>
+        <div class="kpi"><div class="kpi__accent" style="background:var(--color-warning)"></div><div class="kpi__label">Encours clients</div><div class="kpi__value" style="color:var(--color-warning)">64 K€</div><div class="kpi__sub">3 factures en attente</div></div>
+        <div class="kpi"><div class="kpi__accent" style="background:var(--color-accent)"></div><div class="kpi__label">CA prévisionnel annuel</div><div class="kpi__value">695 K€</div><div class="kpi__sub">Basé sur plans de facturation</div></div>
+        <div class="kpi"><div class="kpi__accent" style="background:var(--color-danger)"></div><div class="kpi__label">Impayés > 30j</div><div class="kpi__value" style="color:var(--color-danger)">33,8 K€</div><div class="kpi__sub">2 factures en relance</div></div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tabs__item tabs__item--active" data-tab="global">Vue globale</button>
+        <button class="tabs__item" data-tab="factures">Factures<span class="tabs__count">24</span></button>
+        <button class="tabs__item" data-tab="devis">Devis & Honoraires<span class="tabs__count">8</span></button>
+        <button class="tabs__item" data-tab="rentabilite">Rentabilité</button>
+        <button class="tabs__item" data-tab="relances">Relances<span class="tabs__count">3</span></button>
+      </div>
+
+      <!-- TAB: Vue globale -->
+      <div class="tab-panel tab-panel--active" id="tab-global">
+        <div class="grid-sidebar mb-24">
+          <div class="card">
+            <div class="card__header"><span class="card__title">CA mensuel 2025</span><div style="display:flex;gap:8px"><span style="display:flex;align-items:center;gap:4px;font-size:11px"><span style="width:10px;height:10px;border-radius:2px;background:var(--color-primary)"></span>Facturé</span><span style="display:flex;align-items:center;gap:4px;font-size:11px"><span style="width:10px;height:10px;border-radius:2px;background:var(--color-success)"></span>Encaissé</span></div></div>
+            <div class="card__body">
+              <div class="bar-chart" style="height:130px">
+                <div class="bar-chart__col"><div style="display:flex;gap:2px;align-items:flex-end;height:100%;width:100%"><div class="bar-chart__bar" style="height:85%;background:var(--color-primary);flex:1"><span class="bar-chart__val">78K</span></div><div class="bar-chart__bar" style="height:75%;background:var(--color-success);flex:1"></div></div><span class="bar-chart__label">Jan</span></div>
+                <div class="bar-chart__col"><div style="display:flex;gap:2px;align-items:flex-end;height:100%;width:100%"><div class="bar-chart__bar" style="height:100%;background:var(--color-primary);flex:1"><span class="bar-chart__val">92K</span></div><div class="bar-chart__bar" style="height:85%;background:var(--color-success);flex:1"></div></div><span class="bar-chart__label">Fév</span></div>
+                <div class="bar-chart__col"><div style="display:flex;gap:2px;align-items:flex-end;height:100%;width:100%"><div class="bar-chart__bar" style="height:70%;background:var(--color-primary);flex:1"><span class="bar-chart__val">64K</span></div><div class="bar-chart__bar" style="height:60%;background:var(--color-success);flex:1"></div></div><span class="bar-chart__label">Mar</span></div>
+                <div class="bar-chart__col"><div style="display:flex;gap:2px;align-items:flex-end;height:100%;width:100%"><div class="bar-chart__bar" style="height:55%;background:var(--color-primary);flex:1"><span class="bar-chart__val">51K</span></div><div class="bar-chart__bar" style="height:50%;background:var(--color-success);flex:1"></div></div><span class="bar-chart__label">Avr</span></div>
+                <div class="bar-chart__col"><div style="display:flex;gap:2px;align-items:flex-end;height:100%;width:100%"><div class="bar-chart__bar" style="height:65%;background:var(--color-primary);flex:1"><span class="bar-chart__val">60K</span></div><div class="bar-chart__bar" style="height:55%;background:var(--color-success);flex:1"></div></div><span class="bar-chart__label">Mai</span></div>
+                <div class="bar-chart__col"><div style="display:flex;gap:2px;align-items:flex-end;height:100%;width:100%"><div class="bar-chart__bar" style="height:75%;background:var(--color-primary);flex:1"><span class="bar-chart__val">69K</span></div><div class="bar-chart__bar" style="height:70%;background:var(--color-success);flex:1"></div></div><span class="bar-chart__label">Jun</span></div>
+                <div class="bar-chart__col"><div style="display:flex;gap:2px;align-items:flex-end;height:100%;width:100%"><div class="bar-chart__bar" style="height:42%;background:var(--color-muted);flex:1;border:1px dashed var(--color-border)"><span class="bar-chart__val">38K</span></div><div style="flex:1"></div></div><span class="bar-chart__label">Jul</span></div>
+                <div class="bar-chart__col"><div style="display:flex;gap:2px;align-items:flex-end;height:100%;width:100%"><div class="bar-chart__bar" style="height:20%;background:var(--color-muted);flex:1;border:1px dashed var(--color-border)"><span class="bar-chart__val">18K</span></div><div style="flex:1"></div></div><span class="bar-chart__label">Aoû</span></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid var(--color-border)">
+                <div><span class="text-sm text-muted">CA facturé YTD</span><br><span class="text-mono" style="font-size:16px;font-weight:600">487 200 €</span></div>
+                <div style="text-align:right"><span class="text-sm text-muted">Prévisionnel annuel</span><br><span class="text-mono" style="font-size:16px;font-weight:600;color:var(--color-text-muted)">695 000 €</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card__header"><span class="card__title">Trésorerie prévisionnelle</span></div>
+            <div class="card__body">
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>Solde actuel</span><span class="text-mono" style="font-weight:600;color:var(--color-success)">148 200 €</span></div></div>
+                <div style="border-top:1px solid var(--color-border);padding-top:12px">
+                  <div style="font-size:11px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Prochaines entrées</div>
+                  <div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0"><span>FA-2025-034 — Nantes</span><span class="text-mono text-success">+17 100 €</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0"><span>FA-2025-041 — Bretagne</span><span class="text-mono text-success">+31 500 €</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0"><span>FA-2025-012 — SCI Oliviers</span><span class="text-mono text-success">+15 600 €</span></div>
+                </div>
+                <div style="border-top:1px solid var(--color-border);padding-top:12px">
+                  <div style="font-size:11px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Prévisionnel à 3 mois</div>
+                  <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:500"><span>Mars</span><span class="text-mono text-success">212 400 €</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:500"><span>Avril</span><span class="text-mono text-success">245 800 €</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:500"><span>Mai</span><span class="text-mono text-success">278 100 €</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Encours par projet -->
+        <div class="card mb-24">
+          <div class="card__header"><span class="card__title">Encours par projet</span></div>
+          <div class="card__body">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="font-weight:500">Groupe scolaire Victor Hugo</span><span class="text-mono text-sm">156 K€ / 238 K€</span></div><div class="stacked-bar"><div class="stacked-bar__segment" style="width:50%;background:var(--color-success)">Encaissé</div><div class="stacked-bar__segment" style="width:16%;background:var(--color-warning)">Attente</div><div class="stacked-bar__segment" style="width:34%;background:var(--color-bg);color:var(--color-text-muted)">Reste à facturer</div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="font-weight:500">Résidence Les Oliviers</span><span class="text-mono text-sm">98 K€ / 156 K€</span></div><div class="stacked-bar"><div class="stacked-bar__segment" style="width:53%;background:var(--color-success)">Encaissé</div><div class="stacked-bar__segment" style="width:10%;background:var(--color-danger)">Impayé</div><div class="stacked-bar__segment" style="width:37%;background:var(--color-bg);color:var(--color-text-muted)">Reste</div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="font-weight:500">Médiathèque de Brest</span><span class="text-mono text-sm">217 K€ / 310 K€</span></div><div class="stacked-bar"><div class="stacked-bar__segment" style="width:60%;background:var(--color-success)">Encaissé</div><div class="stacked-bar__segment" style="width:10%;background:var(--color-warning)">Attente</div><div class="stacked-bar__segment" style="width:30%;background:var(--color-bg);color:var(--color-text-muted)">Reste</div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="font-weight:500">Hôtel de ville — Extension</span><span class="text-mono text-sm">115 K€ / 192 K€</span></div><div class="stacked-bar"><div class="stacked-bar__segment" style="width:50%;background:var(--color-success)">Encaissé</div><div class="stacked-bar__segment" style="width:10%;background:var(--color-danger)">Impayé</div><div class="stacked-bar__segment" style="width:40%;background:var(--color-bg);color:var(--color-text-muted)">Reste</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- TAB: Factures -->
+      <div class="tab-panel" id="tab-factures">
+        <div style="display:flex;gap:8px;margin-bottom:16px;align-items:center;flex-wrap:wrap">
+          <input type="text" class="form-input" placeholder="Rechercher une facture…" style="max-width:280px;padding:7px 10px;font-size:12px">
+          <select class="form-select" style="width:150px;padding:7px 10px;font-size:12px"><option>Tous statuts</option><option>Brouillon</option><option>Émise</option><option>Encaissée</option><option>En retard</option></select>
+          <select class="form-select" style="width:160px;padding:7px 10px;font-size:12px"><option>Tous projets</option><option>Grp. scolaire V. Hugo</option><option>Rés. Les Oliviers</option><option>Hôtel de ville</option><option>Médiathèque Brest</option></select>
+        </div>
+        <div class="card">
+          <div class="card__body card__body--flush">
+            <table class="data-table">
+              <thead><tr><th>N° Facture</th><th>Projet</th><th>Objet</th><th>Montant HT</th><th>Émission</th><th>Échéance</th><th>Statut</th><th></th></tr></thead>
+              <tbody>
+                <tr onclick="openDrawer()"><td class="mono">FA-2025-041</td><td>Médiathèque Brest</td><td>DET sit. 4 (60%)</td><td class="mono">31 500 €</td><td class="mono text-sm">18/02/25</td><td class="mono text-sm">28/02/25</td><td><span class="badge badge--primary" style="font-size:11px">Émise</span></td><td><button class="btn btn--ghost btn--sm">⋯</button></td></tr>
+                <tr onclick="openDrawer()"><td class="mono">FA-2025-034</td><td>Grp. scolaire V. Hugo</td><td>PRO sit. 2 (60%)</td><td class="mono">17 100 €</td><td class="mono text-sm">10/02/25</td><td class="mono text-sm">15/02/25</td><td><span class="badge badge--accent" style="font-size:11px">Chorus</span></td><td><button class="btn btn--ghost btn--sm">⋯</button></td></tr>
+                <tr onclick="openDrawer()"><td class="mono">FA-2025-018</td><td>Grp. scolaire V. Hugo</td><td>PRO sit. 1 (30%)</td><td class="mono">17 100 €</td><td class="mono text-sm">15/01/25</td><td class="mono text-sm">30/01/25</td><td><span class="badge badge--success" style="font-size:11px">Encaissée</span></td><td><button class="btn btn--ghost btn--sm">⋯</button></td></tr>
+                <tr onclick="openDrawer()"><td class="mono">FA-2025-012</td><td>Rés. Les Oliviers</td><td>DCE sit. 1 (40%)</td><td class="mono">15 600 €</td><td class="mono text-sm">08/01/25</td><td class="mono text-sm">01/02/25</td><td><span class="badge badge--warning" style="font-size:11px">Retard 20j</span></td><td><button class="btn btn--ghost btn--sm">⋯</button></td></tr>
+                <tr onclick="openDrawer()"><td class="mono">FA-2024-156</td><td>Grp. scolaire V. Hugo</td><td>APD 100%</td><td class="mono">47 000 €</td><td class="mono text-sm">28/11/24</td><td class="mono text-sm">15/12/24</td><td><span class="badge badge--success" style="font-size:11px">Encaissée</span></td><td><button class="btn btn--ghost btn--sm">⋯</button></td></tr>
+                <tr onclick="openDrawer()"><td class="mono">FA-2024-098</td><td>Hôtel de ville</td><td>APD sit. 2 (80%)</td><td class="mono">18 200 €</td><td class="mono text-sm">20/11/24</td><td class="mono text-sm text-danger">07/01/25</td><td><span class="badge badge--danger" style="font-size:11px">Impayée 45j</span></td><td><button class="btn btn--ghost btn--sm">⋯</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: Devis -->
+      <div class="tab-panel" id="tab-devis">
+        <div style="display:flex;justify-content:space-between;margin-bottom:16px"><div style="display:flex;gap:8px"><span class="badge badge--success">3 acceptés</span><span class="badge badge--accent">2 en attente</span><span class="badge badge--danger">1 refusé</span></div><button class="btn btn--primary btn--sm" onclick="showToast('Nouveau devis créé','success')">+ Nouveau devis</button></div>
+        <div class="card mb-24">
+          <div class="card__body card__body--flush">
+            <table class="data-table">
+              <thead><tr><th>N° Devis</th><th>Projet</th><th>Client</th><th>Mt travaux</th><th>Taux</th><th>Honoraires HT</th><th>Statut</th></tr></thead>
+              <tbody>
+                <tr><td class="mono">DV-2025-008</td><td>Gymnase intercommunal</td><td>CC Pays de Loire</td><td class="mono">2,1 M€</td><td class="mono">8,5%</td><td class="mono" style="font-weight:600">178 500 €</td><td><span class="badge badge--accent" style="font-size:11px">En attente</span></td></tr>
+                <tr><td class="mono">DV-2025-007</td><td>Résidence sénior Quimper</td><td>Groupe Domitys</td><td class="mono">2,4 M€</td><td class="mono">7,7%</td><td class="mono" style="font-weight:600">184 800 €</td><td><span class="badge badge--accent" style="font-size:11px">En attente</span></td></tr>
+                <tr><td class="mono">DV-2025-003</td><td>EHPAD Les Magnolias</td><td>Groupe Korian</td><td class="mono">3,2 M€</td><td class="mono">8,6%</td><td class="mono" style="font-weight:600">275 200 €</td><td><span class="badge badge--success" style="font-size:11px">Accepté</span></td></tr>
+                <tr><td class="mono">DV-2024-042</td><td>Campus Numérique</td><td>Univ. de Nantes</td><td class="mono">5,8 M€</td><td class="mono">7,2%</td><td class="mono" style="font-weight:600">417 600 €</td><td><span class="badge badge--success" style="font-size:11px">Accepté</span></td></tr>
+                <tr><td class="mono">DV-2024-038</td><td>Crèche La Farandole</td><td>Ville de Lorient</td><td class="mono">1,8 M€</td><td class="mono">9,0%</td><td class="mono" style="font-weight:600">162 000 €</td><td><span class="badge badge--danger" style="font-size:11px">Refusé</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Phase breakdown -->
+        <div class="card">
+          <div class="card__header"><span class="card__title">Détail — DV-2025-008 Gymnase intercommunal</span><button class="btn btn--ghost btn--sm">Dupliquer</button></div>
+          <div class="card__body card__body--flush">
+            <table class="data-table">
+              <thead><tr><th>Phase</th><th>Ratio</th><th>Honoraires HT</th><th>Heures est.</th><th>Taux moy.</th></tr></thead>
+              <tbody>
+                <tr><td><strong>ESQ</strong></td><td class="mono">8%</td><td class="mono">14 280 €</td><td class="mono">160h</td><td class="mono">89 €/h</td></tr>
+                <tr><td><strong>APS</strong></td><td class="mono">12%</td><td class="mono">21 420 €</td><td class="mono">240h</td><td class="mono">89 €/h</td></tr>
+                <tr><td><strong>APD</strong></td><td class="mono">18%</td><td class="mono">32 130 €</td><td class="mono">360h</td><td class="mono">89 €/h</td></tr>
+                <tr><td><strong>PRO</strong></td><td class="mono">22%</td><td class="mono">39 270 €</td><td class="mono">440h</td><td class="mono">89 €/h</td></tr>
+                <tr><td><strong>DCE</strong></td><td class="mono">10%</td><td class="mono">17 850 €</td><td class="mono">200h</td><td class="mono">89 €/h</td></tr>
+                <tr><td><strong>DET</strong></td><td class="mono">24%</td><td class="mono">42 840 €</td><td class="mono">480h</td><td class="mono">89 €/h</td></tr>
+                <tr><td><strong>AOR</strong></td><td class="mono">6%</td><td class="mono">10 710 €</td><td class="mono">120h</td><td class="mono">89 €/h</td></tr>
+                <tr style="background:var(--color-bg);font-weight:600"><td>Total</td><td class="mono">100%</td><td class="mono">178 500 €</td><td class="mono">2 000h</td><td class="mono">89 €/h</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <!-- TAB: Rentabilité -->
+      <div class="tab-panel" id="tab-rentabilite">
+        <div class="card mb-24">
+          <div class="card__header"><span class="card__title">Rentabilité par projet (actifs)</span><div style="display:flex;gap:8px"><span style="display:flex;align-items:center;gap:4px;font-size:11px"><span style="width:10px;height:10px;border-radius:2px;background:var(--color-primary-light)"></span>Coût interne</span><span style="display:flex;align-items:center;gap:4px;font-size:11px"><span style="width:10px;height:10px;border-radius:2px;background:var(--color-success)"></span>Marge</span></div></div>
+          <div class="card__body card__body--flush">
+            <table class="data-table">
+              <thead><tr><th>Projet</th><th>Honoraires</th><th>Coût interne</th><th>Marge</th><th>Rentabilité</th><th>Ratio visuel</th></tr></thead>
+              <tbody>
+                <tr><td style="font-weight:500">Groupe scolaire V. Hugo</td><td class="mono">238 000 €</td><td class="mono">204 200 €</td><td class="mono text-success">+33 800 €</td><td class="mono text-success" style="font-weight:600">+14,2%</td><td><div class="stacked-bar" style="height:14px"><div class="stacked-bar__segment" style="width:86%;background:var(--color-primary-light)"></div><div class="stacked-bar__segment" style="width:14%;background:var(--color-success)"></div></div></td></tr>
+                <tr><td style="font-weight:500">Résidence Les Oliviers</td><td class="mono">156 000 €</td><td class="mono">145 400 €</td><td class="mono text-warning">+10 600 €</td><td class="mono text-warning" style="font-weight:600">+6,8%</td><td><div class="stacked-bar" style="height:14px"><div class="stacked-bar__segment" style="width:93%;background:var(--color-primary-light)"></div><div class="stacked-bar__segment" style="width:7%;background:var(--color-warning)"></div></div></td></tr>
+                <tr style="background:var(--color-danger-bg)"><td style="font-weight:500;color:var(--color-danger)">Hôtel de ville — Extension</td><td class="mono">192 000 €</td><td class="mono">201 800 €</td><td class="mono text-danger">-9 800 €</td><td class="mono text-danger" style="font-weight:600">-5,1%</td><td><div class="stacked-bar" style="height:14px"><div class="stacked-bar__segment" style="width:100%;background:var(--color-danger)"></div></div></td></tr>
+                <tr><td style="font-weight:500">Médiathèque de Brest</td><td class="mono">310 000 €</td><td class="mono">259 400 €</td><td class="mono text-success">+50 600 €</td><td class="mono text-success" style="font-weight:600">+16,3%</td><td><div class="stacked-bar" style="height:14px"><div class="stacked-bar__segment" style="width:84%;background:var(--color-primary-light)"></div><div class="stacked-bar__segment" style="width:16%;background:var(--color-success)"></div></div></td></tr>
+                <tr><td style="font-weight:500">EHPAD Les Magnolias</td><td class="mono">275 000 €</td><td class="mono">241 700 €</td><td class="mono text-success">+33 300 €</td><td class="mono text-success" style="font-weight:600">+12,1%</td><td><div class="stacked-bar" style="height:14px"><div class="stacked-bar__segment" style="width:88%;background:var(--color-primary-light)"></div><div class="stacked-bar__segment" style="width:12%;background:var(--color-success)"></div></div></td></tr>
+                <tr><td style="font-weight:500">Campus Numérique</td><td class="mono">420 000 €</td><td class="mono">376 300 €</td><td class="mono text-success">+43 700 €</td><td class="mono" style="font-weight:600">+10,4%</td><td><div class="stacked-bar" style="height:14px"><div class="stacked-bar__segment" style="width:90%;background:var(--color-primary-light)"></div><div class="stacked-bar__segment" style="width:10%;background:var(--color-success)"></div></div></td></tr>
+                <tr style="background:var(--color-bg);font-weight:600"><td>Moyenne pondérée</td><td></td><td></td><td></td><td class="mono text-success" style="font-size:15px">+13,4%</td><td><span class="text-sm text-muted">Cible : 12%</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card__header"><span class="card__title">Décomposition coût — Hôtel de ville</span><span class="badge badge--danger" style="font-size:11px">Déficitaire</span></div>
+            <div class="card__body">
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>Temps refacturable</span><span class="text-mono">1 620h × 85€ = <strong>137 700 €</strong></span></div><div class="progress"><div class="progress__bar" style="width:68%;background:var(--color-primary-light)"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--color-warning)">Temps non refacturable</span><span class="text-mono"><strong style="color:var(--color-warning)">480h × 85€ = 40 800 €</strong></span></div><div class="progress"><div class="progress__bar" style="width:20%;background:var(--color-warning)"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>Frais & débours</span><span class="text-mono"><strong>23 300 €</strong></span></div><div class="progress"><div class="progress__bar" style="width:12%;background:var(--color-muted)"></div></div></div>
+                <div style="border-top:1px solid var(--color-border);padding-top:8px;display:flex;justify-content:space-between;font-size:13px;font-weight:600"><span>Coût total</span><span class="text-mono text-danger">201 800 € <span style="font-weight:400;color:var(--color-text-muted)">vs 192 K€ honor.</span></span></div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card__header"><span class="card__title">Rentabilité par type d'ouvrage</span></div>
+            <div class="card__body">
+              <div style="display:flex;flex-direction:column;gap:14px">
+                <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="font-weight:500">Équipements publics</span><span class="text-mono text-success" style="font-weight:600">15,2%</span></div><div class="progress" style="height:8px"><div class="progress__bar" style="width:76%;background:var(--color-success)"></div></div><div class="text-sm text-muted" style="margin-top:2px">4 projets · 1 078 K€</div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="font-weight:500">Logements</span><span class="text-mono" style="font-weight:600">12,1%</span></div><div class="progress" style="height:8px"><div class="progress__bar" style="width:60%;background:var(--color-primary-light)"></div></div><div class="text-sm text-muted" style="margin-top:2px">2 projets · 536 K€</div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="font-weight:500">Santé / EHPAD</span><span class="text-mono" style="font-weight:600">11,5%</span></div><div class="progress" style="height:8px"><div class="progress__bar" style="width:57%;background:var(--color-primary-light)"></div></div><div class="text-sm text-muted" style="margin-top:2px">1 projet · 275 K€</div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="font-weight:500">Tertiaire</span><span class="text-mono text-warning" style="font-weight:600">8,3%</span></div><div class="progress" style="height:8px"><div class="progress__bar" style="width:41%;background:var(--color-warning)"></div></div><div class="text-sm text-muted" style="margin-top:2px">1 projet · 420 K€</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- TAB: Relances -->
+      <div class="tab-panel" id="tab-relances">
+        <div class="grid-2">
+          <div class="card" style="border-left:3px solid var(--color-danger)">
+            <div class="card__header"><span class="card__title" style="color:var(--color-danger)">FA-2024-098 — Ville de Rennes</span><span class="badge badge--danger" style="font-size:11px">45j retard</span></div>
+            <div class="card__body">
+              <div style="display:flex;justify-content:space-between;margin-bottom:16px"><div><div class="text-sm text-muted">Montant</div><div class="text-mono" style="font-size:16px;font-weight:600">18 200 €</div></div><div style="text-align:right"><div class="text-sm text-muted">Projet</div><div style="font-weight:500">Hôtel de ville — APD sit. 2</div></div></div>
+              <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Historique des relances</div>
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <div class="relance-step"><div class="relance-step__dot" style="background:var(--color-primary-bg);color:var(--color-primary)">📧</div><div><div style="font-size:13px"><strong>Relance n°1</strong> — Email auto</div><div class="text-sm text-muted">22/01/2025 · J+15</div></div></div>
+                <div style="margin-left:11px;width:2px;height:6px;background:var(--color-border)"></div>
+                <div class="relance-step"><div class="relance-step__dot" style="background:var(--color-warning-bg);color:var(--color-warning)">📧</div><div><div style="font-size:13px"><strong>Relance n°2</strong> — Email + courrier</div><div class="text-sm text-muted">06/02/2025 · J+30</div></div></div>
+                <div style="margin-left:11px;width:2px;height:6px;background:var(--color-border)"></div>
+                <div class="relance-step"><div class="relance-step__dot" style="background:var(--color-danger-bg);color:var(--color-danger)">📞</div><div><div style="font-size:13px"><strong>Relance n°3</strong> — Appel</div><div class="text-sm text-muted">17/02/2025 · J+41 — En attente retour</div></div></div>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:16px"><button class="btn btn--danger btn--sm" onclick="showToast('Relance n°4 envoyée','warning')">📧 Relance n°4</button><button class="btn btn--secondary btn--sm">📞 Appeler</button><button class="btn btn--ghost btn--sm" onclick="showToast('Paiement enregistré','success')">✓ Marquer payé</button></div>
+            </div>
+          </div>
+          <div class="card" style="border-left:3px solid var(--color-warning)">
+            <div class="card__header"><span class="card__title" style="color:var(--color-warning)">FA-2025-012 — SCI Les Oliviers</span><span class="badge badge--warning" style="font-size:11px">20j retard</span></div>
+            <div class="card__body">
+              <div style="display:flex;justify-content:space-between;margin-bottom:16px"><div><div class="text-sm text-muted">Montant</div><div class="text-mono" style="font-size:16px;font-weight:600">15 600 €</div></div><div style="text-align:right"><div class="text-sm text-muted">Projet</div><div style="font-weight:500">Rés. Oliviers — DCE sit. 1</div></div></div>
+              <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Historique</div>
+              <div class="relance-step"><div class="relance-step__dot" style="background:var(--color-primary-bg);color:var(--color-primary)">📧</div><div><div style="font-size:13px"><strong>Relance n°1</strong> — Email auto</div><div class="text-sm text-muted">16/02/2025 · J+15</div></div></div>
+              <div style="display:flex;gap:8px;margin-top:16px"><button class="btn btn--secondary btn--sm">📞 Appeler F. Bertrand</button><button class="btn btn--ghost btn--sm" onclick="showToast('Paiement enregistré','success')">✓ Marquer payé</button></div>
+            </div>
+          </div>
+          <div class="card" style="border-left:3px solid var(--color-accent)">
+            <div class="card__header"><span class="card__title">FA-2025-034 — Ville de Nantes</span><span class="badge badge--accent" style="font-size:11px">Chorus</span></div>
+            <div class="card__body">
+              <div style="display:flex;justify-content:space-between;margin-bottom:16px"><div><div class="text-sm text-muted">Montant</div><div class="text-mono" style="font-size:16px;font-weight:600">17 100 €</div></div><div style="text-align:right"><div class="text-sm text-muted">Projet</div><div style="font-weight:500">Grp. scolaire — PRO sit. 2</div></div></div>
+              <div class="relance-step"><div class="relance-step__dot" style="background:var(--color-accent-bg);color:#b8860b">🏛️</div><div><div style="font-size:13px"><strong>Déposée sur Chorus Pro</strong></div><div class="text-sm text-muted">10/02/25 · Statut : <strong style="color:#b8860b">Mise en paiement</strong></div></div></div>
+              <div class="text-sm text-muted" style="margin-top:12px">Paiement attendu sous 10-15 jours.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- DRAWER: Détail facture -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer__header"><h3 class="drawer__title">FA-2025-041</h3><button class="drawer__close" onclick="closeDrawer()">✕</button></div>
+  <div class="drawer__body">
+    <div style="display:flex;gap:8px;margin-bottom:16px"><span class="badge badge--primary">Émise</span><span class="badge badge--muted">Factur-X</span></div>
+    <div style="background:var(--color-bg);border-radius:var(--radius-lg);padding:20px;margin-bottom:20px;border:1px solid var(--color-border)">
+      <div style="display:flex;justify-content:space-between;margin-bottom:12px"><span class="text-sm text-muted">Montant HT</span><span class="text-mono" style="font-size:20px;font-weight:600">31 500,00 €</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span class="text-sm text-muted">TVA 20%</span><span class="text-mono">6 300,00 €</span></div>
+      <div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid var(--color-border)"><span style="font-weight:600">Montant TTC</span><span class="text-mono" style="font-weight:600">37 800,00 €</span></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+      <div><span class="text-sm text-muted">Projet</span><br><span style="font-weight:500">Médiathèque de Brest</span></div>
+      <div><span class="text-sm text-muted">Phase</span><br><span style="font-weight:500">DET — Sit. 4 (60%)</span></div>
+      <div><span class="text-sm text-muted">Client</span><br><span style="font-weight:500">Brest Métropole</span></div>
+      <div><span class="text-sm text-muted">Émission</span><br><span class="text-mono" style="font-size:12px">18/02/2025</span></div>
+    </div>
+    <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Lignes</div>
+    <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:20px">
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--color-bg);font-size:13px"><span>Honoraires DET 50→60%</span><span class="text-mono" style="font-weight:500">31 000 €</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--color-bg);font-size:13px"><span>Frais déplacement</span><span class="text-mono" style="font-weight:500">500 €</span></div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn--primary btn--sm">📄 PDF</button>
+      <button class="btn btn--secondary btn--sm" onclick="showToast('Facture envoyée','success')">✉️ Envoyer</button>
+      <button class="btn btn--secondary btn--sm" onclick="showToast('Chorus Pro déposée','info')">🏛️ Chorus</button>
+      <button class="btn btn--ghost btn--sm" onclick="showToast('Paiement enregistré','success')">✓ Paiement</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Nouvelle facture -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal__header"><h2 class="modal__title">Nouvelle facture</h2><button class="modal__close" onclick="closeModal()">✕</button></div>
+    <div class="modal__body">
+      <div class="form-group"><label>Projet</label><select class="form-select"><option value="">Sélectionner…</option><option>Groupe scolaire Victor Hugo</option><option>Résidence Les Oliviers</option><option>Médiathèque de Brest</option><option>EHPAD Les Magnolias</option></select></div>
+      <div class="form-row">
+        <div class="form-group"><label>Type</label><select class="form-select"><option>Situation (%)</option><option>Validation phase</option><option>Acompte</option><option>Solde</option></select></div>
+        <div class="form-group"><label>Phase</label><select class="form-select"><option>PRO</option><option>DCE</option><option>DET</option><option>AOR</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Avancement (%)</label><input type="text" class="form-input" placeholder="60" style="font-family:var(--font-mono)"></div>
+        <div class="form-group"><label>Montant HT (€)</label><input type="text" class="form-input" placeholder="Auto" style="font-family:var(--font-mono)"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Émission</label><input type="date" class="form-input" value="2025-02-21"></div>
+        <div class="form-group"><label>Échéance</label><input type="date" class="form-input" value="2025-03-07"></div>
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--secondary" onclick="closeModal()">Annuler</button>
+      <button class="btn btn--secondary" onclick="closeModal();showToast('Brouillon enregistré','info')">Brouillon</button>
+      <button class="btn btn--primary" onclick="closeModal();showToast('Facture FA-2025-048 créée','success')">Créer & numéroter</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+function toggleSidebar(){const s=document.getElementById('sidebar'),i=document.getElementById('toggleIcon');s.classList.toggle('sidebar--collapsed');i.textContent=s.classList.contains('sidebar--collapsed')?'▶':'◀'}
+document.querySelectorAll('.tabs__item').forEach(tab=>{tab.addEventListener('click',()=>{document.querySelectorAll('.tabs__item').forEach(t=>t.classList.remove('tabs__item--active'));document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('tab-panel--active'));tab.classList.add('tabs__item--active');document.getElementById('tab-'+tab.dataset.tab)?.classList.add('tab-panel--active')})})
+function openModal(){const o=document.getElementById('modalOverlay');o.style.display='flex';requestAnimationFrame(()=>o.classList.add('modal-overlay--visible'));document.body.style.overflow='hidden'}
+function closeModal(e){if(e&&e.target!==e.currentTarget)return;const o=document.getElementById('modalOverlay');o.classList.remove('modal-overlay--visible');setTimeout(()=>{o.style.display='none';document.body.style.overflow=''},250)}
+function openDrawer(){document.getElementById('drawerOverlay').classList.add('drawer-overlay--visible');document.getElementById('drawer').classList.add('drawer--open');document.body.style.overflow='hidden'}
+function closeDrawer(){document.getElementById('drawerOverlay').classList.remove('drawer-overlay--visible');document.getElementById('drawer').classList.remove('drawer--open');document.body.style.overflow=''}
+function showToast(msg,type='info'){const c=document.getElementById('toastContainer'),t=document.createElement('div');t.className='toast toast--'+type;const i={success:'✅',info:'ℹ️',warning:'⚠️'};t.innerHTML='<span>'+( i[type]||'ℹ️')+'</span><span>'+msg+'</span>';c.appendChild(t);setTimeout(()=>t.remove(),3000)}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeDrawer()}})
+</script>
+</body>
+</html>

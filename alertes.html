@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAA — Alertes & Workflows</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--color-primary:#1B4965;--color-primary-light:#5FA8D3;--color-primary-hover:#153a52;--color-primary-bg:#e8f1f8;--color-secondary:#3C4858;--color-accent:#E6A817;--color-accent-bg:#fdf5e0;--color-success:#2D6A4F;--color-success-bg:#e6f3ed;--color-danger:#C1292E;--color-danger-bg:#fbe8e8;--color-warning:#E76F51;--color-warning-bg:#fdf0ec;--color-bg:#F8F9FA;--color-surface:#FFFFFF;--color-border:#DEE2E6;--color-text:#212529;--color-text-muted:#6C757D;--color-muted:#ADB5BD;--font-sans:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;--font-mono:'JetBrains Mono',monospace;--radius-sm:4px;--radius-md:8px;--radius-lg:12px;--shadow-sm:0 1px 3px rgba(0,0,0,.06);--shadow-md:0 4px 12px rgba(0,0,0,.08);--shadow-lg:0 8px 32px rgba(0,0,0,.12);--transition:.2s ease}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);font-size:14px;line-height:1.5;color:var(--color-text);background:var(--color-bg)}
+.sidebar{display:none!important}.topbar{display:none!important}
+.main{display:flex;flex-direction:column;min-height:100vh}
+.page{flex:1;padding:24px;max-width:1440px;width:100%;margin:0 auto}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius-md);font-family:var(--font-sans);font-size:13px;font-weight:500;border:1px solid transparent;cursor:pointer;transition:all var(--transition);white-space:nowrap}
+.btn--primary{background:var(--color-primary);color:#fff}.btn--primary:hover{background:var(--color-primary-hover)}
+.btn--secondary{background:var(--color-surface);color:var(--color-text);border-color:var(--color-border)}.btn--secondary:hover{background:var(--color-bg)}
+.btn--ghost{background:transparent;color:var(--color-text-muted)}.btn--ghost:hover{background:var(--color-bg);color:var(--color-text)}
+.btn--sm{padding:5px 10px;font-size:12px}
+.btn--success{background:var(--color-success);color:#fff}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500}
+.badge--primary{background:var(--color-primary-bg);color:var(--color-primary)}
+.badge--success{background:var(--color-success-bg);color:var(--color-success)}
+.badge--danger{background:var(--color-danger-bg);color:var(--color-danger)}
+.badge--warning{background:var(--color-warning-bg);color:var(--color-warning)}
+.badge--muted{background:#EBEDEF;color:var(--color-text-muted)}
+.badge--accent{background:var(--color-accent-bg);color:#b8860b}
+.card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);overflow:hidden}
+.card__header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--color-border)}
+.card__title{font-size:14px;font-weight:600}
+.card__body{padding:16px 20px}.card__body--flush{padding:0}
+.text-muted{color:var(--color-text-muted)}.text-mono{font-family:var(--font-mono)}.text-sm{font-size:12px}
+.text-success{color:var(--color-success)}.text-danger{color:var(--color-danger)}.text-warning{color:var(--color-warning)}
+.mb-24{margin-bottom:24px}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--color-text-muted);margin-bottom:16px}
+.breadcrumb a{color:var(--color-text-muted)}.breadcrumb__current{color:var(--color-text);font-weight:500}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:24px}
+.page-header__left{display:flex;align-items:flex-start;gap:16px}
+.page-header__icon{width:48px;height:48px;background:var(--color-warning-bg);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.page-header__title{font-size:24px;font-weight:600;letter-spacing:-.02em}
+.page-header__meta{display:flex;align-items:center;gap:12px;margin-top:4px;flex-wrap:wrap}
+.page-header__actions{display:flex;gap:8px;flex-shrink:0}
+.tabs{display:flex;border-bottom:2px solid var(--color-border);gap:0;margin-bottom:20px;overflow-x:auto}
+.tabs__item{padding:10px 20px;font-size:13.5px;font-weight:500;color:var(--color-text-muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all var(--transition);white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font-sans)}
+.tabs__item:hover{color:var(--color-text)}.tabs__item--active{color:var(--color-primary);border-bottom-color:var(--color-primary)}
+.tab-panel{display:none;animation:fadeIn .3s ease}.tab-panel--active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;color:#fff;flex-shrink:0}
+/* Alert card */
+.alert-card{border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:16px;transition:all var(--transition);margin-bottom:10px}
+.alert-card:hover{box-shadow:var(--shadow-sm)}
+.alert-card--critical{border-left:4px solid var(--color-danger)}
+.alert-card--warning{border-left:4px solid var(--color-warning)}
+.alert-card--info{border-left:4px solid var(--color-primary-light)}
+.alert-card--resolved{border-left:4px solid var(--color-success);opacity:.6}
+.alert-card__header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.alert-card__title{font-weight:500;font-size:13px;display:flex;align-items:center;gap:6px}
+.alert-card__body{font-size:12px;color:var(--color-secondary);line-height:1.5;margin-bottom:8px}
+.alert-card__footer{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--color-text-muted);flex-wrap:wrap}
+/* Workflow card */
+.wf-card{border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:16px;transition:all var(--transition);margin-bottom:10px;cursor:pointer}
+.wf-card:hover{box-shadow:var(--shadow-sm);border-color:var(--color-primary-light)}
+.wf-card__header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.wf-card__title{font-weight:600;font-size:14px}
+.wf-card__flow{display:flex;align-items:center;gap:0;flex-wrap:wrap}
+.wf-node{padding:6px 12px;border-radius:var(--radius-md);font-size:11px;font-weight:500;white-space:nowrap}
+.wf-node--trigger{background:var(--color-accent-bg);color:#b8860b}
+.wf-node--condition{background:var(--color-primary-bg);color:var(--color-primary)}
+.wf-node--action{background:var(--color-success-bg);color:var(--color-success)}
+.wf-arrow{color:var(--color-muted);font-size:14px;margin:0 4px}
+/* Toggle */
+.toggle{display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+.toggle__track{width:36px;height:20px;border-radius:10px;background:var(--color-muted);position:relative;transition:background var(--transition)}
+.toggle__track--on{background:var(--color-success)}
+.toggle__thumb{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform var(--transition);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.toggle__track--on .toggle__thumb{transform:translateX(16px)}
+/* Toast */
+.toast-container{position:fixed;top:16px;right:16px;z-index:2000;display:flex;flex-direction:column;gap:8px}
+.toast{padding:12px 16px;border-radius:var(--radius-md);background:var(--color-surface);border:1px solid var(--color-border);box-shadow:var(--shadow-md);display:flex;align-items:center;gap:10px;font-size:13px;animation:slideIn .3s ease,fadeOut .3s ease 2.5s forwards;min-width:280px}
+.toast--success{border-left:3px solid var(--color-success)}.toast--info{border-left:3px solid var(--color-primary-light)}
+@keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes fadeOut{to{opacity:0;transform:translateX(40px)}}
+.form-select{padding:5px 10px;border:1px solid var(--color-border);border-radius:20px;font-family:var(--font-sans);font-size:12px;outline:none}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:1023px){.grid-2{grid-template-columns:1fr}}
+@media(max-width:767px){.page{padding:16px}}
+</style>
+</head>
+<body>
+<div class="main">
+<main class="page">
+  <nav class="breadcrumb"><a href="#">Accueil</a><span style="font-size:10px">›</span><span class="breadcrumb__current">Alertes & Automatisation</span></nav>
+  <div class="page-header">
+    <div class="page-header__left">
+      <div class="page-header__icon">🔔</div>
+      <div><h1 class="page-header__title">Alertes & Automatisation</h1><div class="page-header__meta"><span class="badge badge--danger">3 critiques</span><span class="badge badge--warning">5 avertissements</span><span class="badge badge--success">7 workflows actifs</span></div></div>
+    </div>
+    <div class="page-header__actions"><button class="btn btn--secondary">📋 Règles</button><button class="btn btn--primary" onclick="showToast('Nouvelle règle créée','success')">+ Nouvelle règle</button></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tabs__item tabs__item--active" data-tab="alertes">🔔 Alertes actives</button>
+    <button class="tabs__item" data-tab="regles">⚙️ Règles d'alerte</button>
+    <button class="tabs__item" data-tab="workflows">🔄 Workflows</button>
+    <button class="tabs__item" data-tab="historique">📋 Historique</button>
+  </div>
+  <!-- TAB: Alertes actives -->
+  <div class="tab-panel tab-panel--active" id="tab-alertes">
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap"><select class="form-select"><option>Toutes priorités</option><option>Critique</option><option>Avertissement</option><option>Info</option></select><select class="form-select"><option>Tous projets</option><option>Grp. scolaire</option><option>Hôtel de ville</option><option>Médiathèque</option></select></div>
+
+    <div class="alert-card alert-card--critical">
+      <div class="alert-card__header"><div class="alert-card__title">🔴 Risque cumulé — Hôtel de ville extension</div><span class="badge badge--danger" style="font-size:10px">Critique</span></div>
+      <div class="alert-card__body">3 risques simultanés détectés : <strong>dépassement budget +5,1%</strong> (phase DET), <strong>impayé 45 jours</strong> (FA-2024-098, 18 200€), <strong>2 réserves chantier non levées depuis 30 jours</strong>. Action immédiate requise.</div>
+      <div class="alert-card__footer"><span>📅 Déclenchée il y a 2h</span><span>👤 Assignée : A. Mercier</span><span>🔄 Escalade dans 5 jours</span><div style="margin-left:auto;display:flex;gap:4px"><button class="btn btn--success btn--sm" onclick="this.closest('.alert-card').style.opacity='.4';showToast('Alerte marquée traitée','success')">✅ Traiter</button><button class="btn btn--ghost btn--sm">👁️ Voir projet</button></div></div>
+    </div>
+
+    <div class="alert-card alert-card--critical">
+      <div class="alert-card__header"><div class="alert-card__title">🔴 Surcharge collaborateur — M. Lefort</div><span class="badge badge--danger" style="font-size:10px">Critique</span></div>
+      <div class="alert-card__body">Charge à <strong>119%</strong> en S8 et <strong>114%</strong> en S9. Seuil : 110%. Risque de retard sur Grp. scolaire (phase PRO) et Médiathèque (phase DET).</div>
+      <div class="alert-card__footer"><span>📅 Déclenchée hier</span><span>👤 A. Mercier, M. Lefort</span><div style="margin-left:auto;display:flex;gap:4px"><button class="btn btn--success btn--sm">✅ Traiter</button><button class="btn btn--ghost btn--sm">📅 Planning</button></div></div>
+    </div>
+
+    <div class="alert-card alert-card--critical">
+      <div class="alert-card__header"><div class="alert-card__title">🔴 Assurance décennale — Expiration dans 45 jours</div><span class="badge badge--danger" style="font-size:10px">Critique</span></div>
+      <div class="alert-card__body">Police n°DC-2023-4578 expire le <strong>08/04/2025</strong>. 6 projets actifs concernés. Renouvellement à engager immédiatement.</div>
+      <div class="alert-card__footer"><span>📅 Déclenchée il y a 3 jours</span><span>👤 A. Mercier, L. Martin</span><div style="margin-left:auto;display:flex;gap:4px"><button class="btn btn--success btn--sm">✅ Traiter</button></div></div>
+    </div>
+
+    <div class="alert-card alert-card--warning">
+      <div class="alert-card__header"><div class="alert-card__title">🟠 Dérive de charge — Grp. scolaire phase PRO</div><span class="badge badge--warning" style="font-size:10px">Avertissement</span></div>
+      <div class="alert-card__body">Temps passé : <strong>312h / 440h prévu (71%)</strong> alors que l'avancement estimé est de 65%. Projection : dépassement possible de ~8% en fin de phase.</div>
+      <div class="alert-card__footer"><span>📅 Déclenchée hier</span><span>👤 M. Lefort</span><div style="margin-left:auto"><button class="btn btn--ghost btn--sm">👁️ Détail</button></div></div>
+    </div>
+
+    <div class="alert-card alert-card--warning">
+      <div class="alert-card__header"><div class="alert-card__title">🟠 Temps non saisis — T. Durand (S7)</div><span class="badge badge--warning" style="font-size:10px">Avertissement</span></div>
+      <div class="alert-card__body">Seulement <strong>28h saisies</strong> sur 37h de capacité (76%). Seuil de rappel : 80%. Rappel automatique envoyé le 17/02.</div>
+      <div class="alert-card__footer"><span>📅 17/02/2025</span><span>👤 T. Durand</span><div style="margin-left:auto"><button class="btn btn--ghost btn--sm">Relancer</button></div></div>
+    </div>
+
+    <div class="alert-card alert-card--warning">
+      <div class="alert-card__header"><div class="alert-card__title">🟠 Rentabilité < 5% — Hôtel de ville</div><span class="badge badge--warning" style="font-size:10px">Avertissement</span></div>
+      <div class="alert-card__body">Taux de rentabilité prévisionnel : <strong>-5,1%</strong>. Seuil d'alerte : 5%. Règle personnalisée « Alerte rentabilité critique ».</div>
+      <div class="alert-card__footer"><span>📅 15/02/2025</span><span>👤 S. Caron, A. Mercier</span><span class="text-danger" style="font-weight:500">Escalade direction effectuée</span></div>
+    </div>
+  </div>
+
+  <!-- TAB: Règles d'alerte -->
+  <div class="tab-panel" id="tab-regles">
+    <div class="card mb-24">
+      <div class="card__header"><span class="card__title">Règles prédéfinies</span></div>
+      <div class="card__body">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--color-bg);border-radius:var(--radius-md)"><div style="flex:1"><div style="font-weight:500;font-size:13px">Dépassement budget phase > 110%</div><div class="text-sm text-muted">Alerte chef de projet + direction · Escalade 3 jours</div></div><div class="toggle" onclick="this.querySelector('.toggle__track').classList.toggle('toggle__track--on')"><div class="toggle__track toggle__track--on"><div class="toggle__thumb"></div></div></div></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--color-bg);border-radius:var(--radius-md)"><div style="flex:1"><div style="font-weight:500;font-size:13px">Temps non saisis < 80% capacité</div><div class="text-sm text-muted">Rappel collaborateur en fin de semaine</div></div><div class="toggle" onclick="this.querySelector('.toggle__track').classList.toggle('toggle__track--on')"><div class="toggle__track toggle__track--on"><div class="toggle__thumb"></div></div></div></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--color-bg);border-radius:var(--radius-md)"><div style="flex:1"><div style="font-weight:500;font-size:13px">Surcharge collaborateur > 110%</div><div class="text-sm text-muted">Alerte direction · Planning de charge</div></div><div class="toggle" onclick="this.querySelector('.toggle__track').classList.toggle('toggle__track--on')"><div class="toggle__track toggle__track--on"><div class="toggle__thumb"></div></div></div></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--color-bg);border-radius:var(--radius-md)"><div style="flex:1"><div style="font-weight:500;font-size:13px">Retard paiement > 15 jours</div><div class="text-sm text-muted">Email automatique + alerte administratif</div></div><div class="toggle" onclick="this.querySelector('.toggle__track').classList.toggle('toggle__track--on')"><div class="toggle__track toggle__track--on"><div class="toggle__thumb"></div></div></div></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--color-bg);border-radius:var(--radius-md)"><div style="flex:1"><div style="font-weight:500;font-size:13px">Assurance expirante (90/60/30 jours)</div><div class="text-sm text-muted">Alerte dirigeant + administratif</div></div><div class="toggle" onclick="this.querySelector('.toggle__track').classList.toggle('toggle__track--on')"><div class="toggle__track toggle__track--on"><div class="toggle__thumb"></div></div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card__header"><span class="card__title">Règles personnalisées</span><button class="btn btn--primary btn--sm" onclick="showToast('Nouvelle règle créée','success')">+ Créer une règle</button></div>
+      <div class="card__body">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--color-accent-bg);border:1px solid var(--color-accent);border-radius:var(--radius-md)"><div style="flex:1"><div style="font-weight:500;font-size:13px;color:#b8860b">Rentabilité prévisionnelle < 5%</div><div class="text-sm" style="color:#b8860b;opacity:.8">Si rentabilité projet < 5% → Alerter CDP + Direction · Escalade 7 jours</div></div><div style="display:flex;gap:8px;align-items:center"><span class="badge badge--accent" style="font-size:10px">Personnalisée</span><div class="toggle" onclick="this.querySelector('.toggle__track').classList.toggle('toggle__track--on')"><div class="toggle__track toggle__track--on"><div class="toggle__thumb"></div></div></div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Workflows -->
+  <div class="tab-panel" id="tab-workflows">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="wf-card">
+        <div class="wf-card__header"><div class="wf-card__title">Validation de phase automatique</div><div style="display:flex;gap:8px;align-items:center"><span class="badge badge--success" style="font-size:10px">Actif</span><div class="toggle" onclick="event.stopPropagation();this.querySelector('.toggle__track').classList.toggle('toggle__track--on')"><div class="toggle__track toggle__track--on"><div class="toggle__thumb"></div></div></div></div></div>
+        <div class="wf-card__flow"><span class="wf-node wf-node--trigger">Phase → "Terminée"</span><span class="wf-arrow">→</span><span class="wf-node wf-node--condition">Tâches clôturées ?</span><span class="wf-arrow">→</span><span class="wf-node wf-node--condition">Docs validés ?</span><span class="wf-arrow">→</span><span class="wf-node wf-node--condition">Heures saisies ?</span><span class="wf-arrow">→</span><span class="wf-node wf-node--action">Passer en "Validée"</span></div>
+        <div class="text-sm text-muted" style="margin-top:8px">Exécuté 12 fois · Dernière : 18/02 (phase APD — EHPAD Magnolias)</div>
+      </div>
+
+      <div class="wf-card">
+        <div class="wf-card__header"><div class="wf-card__title">Onboarding projet — Équipement public</div><div style="display:flex;gap:8px;align-items:center"><span class="badge badge--success" style="font-size:10px">Actif</span><div class="toggle" onclick="event.stopPropagation();this.querySelector('.toggle__track').classList.toggle('toggle__track--on')"><div class="toggle__track toggle__track--on"><div class="toggle__thumb"></div></div></div></div></div>
+        <div class="wf-card__flow"><span class="wf-node wf-node--trigger">Création projet "Équip. public"</span><span class="wf-arrow">→</span><span class="wf-node wf-node--action">Arborescence GED</span><span class="wf-arrow">→</span><span class="wf-node wf-node--action">Phases MOP + jalons</span><span class="wf-arrow">→</span><span class="wf-node wf-node--action">Tâches ESQ</span><span class="wf-arrow">→</span><span class="wf-node wf-node--action">Portail MOA</span></div>
+        <div class="text-sm text-muted" style="margin-top:8px">Exécuté 4 fois · Template : Équipement public</div>
+      </div>
+
+      <div class="wf-card">
+        <div class="wf-card__header"><div class="wf-card__title">Passage de phase — Notifications & tâches</div><div style="display:flex;gap:8px;align-items:center"><span class="badge badge--success" style="font-size:10px">Actif</span><div class="toggle" onclick="event.stopPropagation();this.querySelector('.toggle__track').classList.toggle('toggle__track--on')"><div class="toggle__track toggle__track--on"><div class="toggle__thumb"></div></div></div></div></div>
+        <div class="wf-card__flow"><span class="wf-node wf-node--trigger">Phase validée</span><span class="wf-arrow">→</span><span class="wf-node wf-node--action">Ouvrir phase suivante</span><span class="wf-arrow">→</span><span class="wf-node wf-node--action">Générer tâches modèle</span><span class="wf-arrow">→</span><span class="wf-node wf-node--action">Notifier équipe + MOA</span></div>
+        <div class="text-sm text-muted" style="margin-top:8px">Exécuté 8 fois · Global (tous projets)</div>
+      </div>
+
+      <div class="wf-card">
+        <div class="wf-card__header"><div class="wf-card__title">Diffusion CR chantier validé</div><div style="display:flex;gap:8px;align-items:center"><span class="badge badge--success" style="font-size:10px">Actif</span><div class="toggle" onclick="event.stopPropagation();this.querySelector('.toggle__track').classList.toggle('toggle__track--on')"><div class="toggle__track toggle__track--on"><div class="toggle__thumb"></div></div></div></div></div>
+        <div class="wf-card__flow"><span class="wf-node wf-node--trigger">CR statut → "Validé"</span><span class="wf-arrow">→</span><span class="wf-node wf-node--action">PDF auto</span><span class="wf-arrow">→</span><span class="wf-node wf-node--action">Email diffusion</span><span class="wf-arrow">→</span><span class="wf-node wf-node--action">Partage portail externe</span></div>
+        <div class="text-sm text-muted" style="margin-top:8px">Exécuté 17 fois · Projets en phase DET</div>
+      </div>
+
+      <div class="wf-card">
+        <div class="wf-card__header"><div class="wf-card__title">Relances paiement automatiques</div><div style="display:flex;gap:8px;align-items:center"><span class="badge badge--success" style="font-size:10px">Actif</span><div class="toggle" onclick="event.stopPropagation();this.querySelector('.toggle__track').classList.toggle('toggle__track--on')"><div class="toggle__track toggle__track--on"><div class="toggle__thumb"></div></div></div></div></div>
+        <div class="wf-card__flow"><span class="wf-node wf-node--trigger">Facture impayée J+15</span><span class="wf-arrow">→</span><span class="wf-node wf-node--action">Email relance 1</span><span class="wf-arrow">→</span><span class="wf-node wf-node--trigger">J+30</span><span class="wf-arrow">→</span><span class="wf-node wf-node--action">Email + courrier</span><span class="wf-arrow">→</span><span class="wf-node wf-node--trigger">J+45</span><span class="wf-arrow">→</span><span class="wf-node wf-node--action">Alerte direction</span></div>
+        <div class="text-sm text-muted" style="margin-top:8px">Exécuté 23 fois · Global</div>
+      </div>
+
+      <div class="wf-card" style="border:1px dashed var(--color-muted)">
+        <div class="wf-card__header"><div class="wf-card__title" style="color:var(--color-muted)">Capitalisation REX post-projet</div><div style="display:flex;gap:8px;align-items:center"><span class="badge badge--muted" style="font-size:10px">Inactif</span><div class="toggle" onclick="event.stopPropagation();this.querySelector('.toggle__track').classList.toggle('toggle__track--on')"><div class="toggle__track"><div class="toggle__thumb"></div></div></div></div></div>
+        <div class="wf-card__flow"><span class="wf-node" style="background:var(--color-bg);color:var(--color-muted)">Projet → "Archivé"</span><span class="wf-arrow">→</span><span class="wf-node" style="background:var(--color-bg);color:var(--color-muted)">Créer fiche REX</span><span class="wf-arrow">→</span><span class="wf-node" style="background:var(--color-bg);color:var(--color-muted)">Notifier CDP</span></div>
+        <div class="text-sm text-muted" style="margin-top:8px">Jamais exécuté · Désactivé le 10/01/2025</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Historique -->
+  <div class="tab-panel" id="tab-historique">
+    <div class="card">
+      <div class="card__header"><span class="card__title">Historique des 30 derniers jours</span><div style="display:flex;gap:8px"><select class="form-select"><option>Tous types</option><option>Alertes</option><option>Workflows</option></select><button class="btn btn--secondary btn--sm">📥 Exporter</button></div></div>
+      <div class="card__body">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:var(--radius-sm)"><span style="font-size:14px">🔴</span><div style="flex:1"><span class="text-sm"><strong>Alerte critique</strong> — Risque cumulé Hôtel de ville</span></div><span class="text-mono text-sm text-muted">22/02 10:15</span><span class="badge badge--danger" style="font-size:9px">Active</span></div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:var(--radius-sm)"><span style="font-size:14px">🔄</span><div style="flex:1"><span class="text-sm"><strong>Workflow</strong> — CR-017 diffusé automatiquement (5 destinataires)</span></div><span class="text-mono text-sm text-muted">20/02 16:45</span><span class="badge badge--success" style="font-size:9px">Exécuté</span></div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:var(--radius-sm)"><span style="font-size:14px">🟠</span><div style="flex:1"><span class="text-sm"><strong>Alerte</strong> — Temps non saisis T. Durand S7</span></div><span class="text-mono text-sm text-muted">17/02 18:00</span><span class="badge badge--warning" style="font-size:9px">En cours</span></div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:var(--radius-sm)"><span style="font-size:14px">🔄</span><div style="flex:1"><span class="text-sm"><strong>Workflow</strong> — Phase APD validée → Phase PRO ouverte (EHPAD)</span></div><span class="text-mono text-sm text-muted">18/02 09:30</span><span class="badge badge--success" style="font-size:9px">Exécuté</span></div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:var(--radius-sm)"><span style="font-size:14px">🟢</span><div style="flex:1"><span class="text-sm"><strong>Alerte traitée</strong> — Retard paiement SCI Oliviers → Relance effectuée</span></div><span class="text-mono text-sm text-muted">16/02 14:20</span><span class="badge badge--success" style="font-size:9px">Traitée</span></div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:var(--radius-sm)"><span style="font-size:14px">🔄</span><div style="flex:1"><span class="text-sm"><strong>Workflow</strong> — Relance paiement auto J+15 (FA-2025-012)</span></div><span class="text-mono text-sm text-muted">16/02 08:00</span><span class="badge badge--success" style="font-size:9px">Exécuté</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+<script>
+document.querySelectorAll('.tabs__item').forEach(tab=>{tab.addEventListener('click',()=>{document.querySelectorAll('.tabs__item').forEach(t=>t.classList.remove('tabs__item--active'));document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('tab-panel--active'));tab.classList.add('tabs__item--active');document.getElementById('tab-'+tab.dataset.tab)?.classList.add('tab-panel--active')})})
+function showToast(msg,type='info'){const c=document.getElementById('toastContainer'),t=document.createElement('div');t.className='toast toast--'+type;t.innerHTML='<span>'+(type==='success'?'✅':'ℹ️')+'</span><span>'+msg+'</span>';c.appendChild(t);setTimeout(()=>t.remove(),3000)}
+</script>
+</body>
+</html>

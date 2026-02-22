@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAA — Tableau de bord</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+.sidebar,.topbar{display:none!important;}
+/* ============================================================
+   Tokens
+   ============================================================ */
+:root {
+  --color-primary:#1B4965;--color-primary-light:#5FA8D3;--color-primary-hover:#153a52;
+  --color-primary-bg:#e8f1f8;--color-secondary:#3C4858;--color-accent:#E6A817;
+  --color-accent-bg:#fdf5e0;--color-success:#2D6A4F;--color-success-bg:#e6f3ed;
+  --color-danger:#C1292E;--color-danger-bg:#fbe8e8;--color-warning:#E76F51;
+  --color-warning-bg:#fdf0ec;--color-bg:#F8F9FA;--color-surface:#FFFFFF;
+  --color-border:#DEE2E6;--color-text:#212529;--color-text-muted:#6C757D;
+  --color-muted:#ADB5BD;
+  --font-sans:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --radius-sm:4px;--radius-md:8px;--radius-lg:12px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.06);--shadow-md:0 4px 12px rgba(0,0,0,.08);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.12);--transition:.2s ease;
+  --sidebar-width:260px;--sidebar-collapsed:64px;--header-height:56px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);font-size:14px;line-height:1.5;color:var(--color-text);background:var(--color-bg);overflow-x:hidden}
+a{color:var(--color-primary);text-decoration:none}a:hover{color:var(--color-primary-light)}
+
+/* ============================================================
+   Layout
+   ============================================================ */
+.layout{display:flex;min-height:100vh}
+
+/* Sidebar */
+.sidebar{width:var(--sidebar-width);background:var(--color-primary);color:#fff;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:width .25s ease;overflow:hidden}
+.sidebar.sidebar--collapsed{width:var(--sidebar-collapsed)}
+.sidebar__logo{height:var(--header-height);display:flex;align-items:center;padding:0 16px;border-bottom:1px solid rgba(255,255,255,.1);gap:12px;flex-shrink:0}
+.sidebar__logo-icon{width:32px;height:32px;background:var(--color-accent);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:var(--color-primary);flex-shrink:0}
+.sidebar__logo-text{font-size:18px;font-weight:700;letter-spacing:-.02em;white-space:nowrap;opacity:1;transition:opacity var(--transition)}
+.sidebar--collapsed .sidebar__logo-text{opacity:0}
+.sidebar__nav{flex:1;padding:8px;overflow-y:auto}
+.sidebar__section-title{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.45);padding:16px 12px 6px;white-space:nowrap}
+.sidebar--collapsed .sidebar__section-title{opacity:0;height:0;padding:0}
+.sidebar__item{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:var(--radius-md);color:rgba(255,255,255,.7);cursor:pointer;transition:all var(--transition);white-space:nowrap;font-size:13.5px}
+.sidebar__item:hover{background:rgba(255,255,255,.1);color:#fff}
+.sidebar__item--active{background:rgba(255,255,255,.15);color:#fff;font-weight:500}
+.sidebar__item-icon{width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px}
+.sidebar__item-label{opacity:1;transition:opacity var(--transition)}
+.sidebar--collapsed .sidebar__item-label{opacity:0}
+.sidebar__badge{margin-left:auto;background:var(--color-danger);color:#fff;font-size:11px;font-weight:600;padding:1px 7px;border-radius:10px}
+.sidebar--collapsed .sidebar__badge{display:none}
+.sidebar__toggle{padding:12px;border-top:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.5);transition:color var(--transition);flex-shrink:0}
+.sidebar__toggle:hover{color:#fff}
+
+/* Main */
+.main{flex:1;margin-left:var(--sidebar-width);transition:margin-left .25s ease;display:flex;flex-direction:column;min-height:100vh}
+.sidebar--collapsed ~ .main{margin-left:var(--sidebar-collapsed)}
+
+/* Topbar */
+.topbar{height:var(--header-height);background:var(--color-surface);border-bottom:1px solid var(--color-border);display:flex;align-items:center;padding:0 24px;gap:16px;position:sticky;top:0;z-index:50}
+.topbar__search{flex:1;max-width:480px;position:relative}
+.topbar__search input{width:100%;padding:8px 12px 8px 36px;border:1px solid var(--color-border);border-radius:var(--radius-md);font-family:var(--font-sans);font-size:13px;background:var(--color-bg);transition:all var(--transition);outline:none}
+.topbar__search input:focus{border-color:var(--color-primary-light);box-shadow:0 0 0 3px rgba(95,168,211,.15);background:var(--color-surface)}
+.topbar__search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--color-text-muted);font-size:14px}
+.topbar__actions{display:flex;align-items:center;gap:8px;margin-left:auto}
+.topbar__btn{width:36px;height:36px;border-radius:var(--radius-md);border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--color-text-muted);transition:all var(--transition);position:relative;font-size:18px}
+.topbar__btn:hover{background:var(--color-bg);color:var(--color-text)}
+.topbar__btn .notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;background:var(--color-danger);border-radius:50%;border:2px solid var(--color-surface)}
+.topbar__avatar{width:34px;height:34px;border-radius:50%;background:var(--color-accent);color:var(--color-primary);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+
+/* Page */
+.page{flex:1;padding:24px;max-width:1360px;width:100%;margin:0 auto}
+
+/* ============================================================
+   Buttons / Badges / Common
+   ============================================================ */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius-md);font-family:var(--font-sans);font-size:13px;font-weight:500;border:1px solid transparent;cursor:pointer;transition:all var(--transition);white-space:nowrap}
+.btn--primary{background:var(--color-primary);color:#fff;border-color:var(--color-primary)}.btn--primary:hover{background:var(--color-primary-hover)}
+.btn--secondary{background:var(--color-surface);color:var(--color-text);border-color:var(--color-border)}.btn--secondary:hover{background:var(--color-bg)}
+.btn--ghost{background:transparent;color:var(--color-text-muted)}.btn--ghost:hover{background:var(--color-bg);color:var(--color-text)}
+.btn--sm{padding:5px 10px;font-size:12px}
+
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;white-space:nowrap}
+.badge--primary{background:var(--color-primary-bg);color:var(--color-primary)}
+.badge--success{background:var(--color-success-bg);color:var(--color-success)}
+.badge--danger{background:var(--color-danger-bg);color:var(--color-danger)}
+.badge--warning{background:var(--color-warning-bg);color:var(--color-warning)}
+.badge--muted{background:#EBEDEF;color:var(--color-text-muted)}
+.badge--accent{background:var(--color-accent-bg);color:#b8860b}
+
+.card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);overflow:hidden;transition:box-shadow var(--transition)}
+.card:hover{box-shadow:var(--shadow-sm)}
+.card__header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--color-border)}
+.card__title{font-size:14px;font-weight:600;color:var(--color-text)}
+.card__body{padding:16px 20px}
+.card__body--flush{padding:0}
+
+.health-dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0}
+.health-dot--ok{background:var(--color-success)}.health-dot--warning{background:var(--color-warning)}.health-dot--danger{background:var(--color-danger)}.health-dot--muted{background:var(--color-muted)}
+
+.text-muted{color:var(--color-text-muted)}.text-mono{font-family:var(--font-mono)}.text-sm{font-size:12px}
+.text-success{color:var(--color-success)}.text-danger{color:var(--color-danger)}.text-warning{color:var(--color-warning)}
+.mt-4{margin-top:4px}.mt-8{margin-top:8px}.mt-16{margin-top:16px}.mb-16{margin-bottom:16px}.mb-24{margin-bottom:24px}
+
+/* ============================================================
+   Welcome header
+   ============================================================ */
+.welcome{margin-bottom:24px}
+.welcome__title{font-size:26px;font-weight:700;color:var(--color-text);letter-spacing:-.02em}
+.welcome__sub{font-size:14px;color:var(--color-text-muted);margin-top:2px}
+
+/* ============================================================
+   KPI Strip
+   ============================================================ */
+.kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:24px}
+.kpi{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:16px 20px;transition:all var(--transition);position:relative;overflow:hidden}
+.kpi:hover{box-shadow:var(--shadow-sm);transform:translateY(-1px)}
+.kpi__accent{position:absolute;top:0;left:0;right:0;height:3px}
+.kpi__label{font-size:12px;color:var(--color-text-muted);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.kpi__value{font-family:var(--font-mono);font-size:24px;font-weight:500;color:var(--color-text);letter-spacing:-.02em}
+.kpi__sub{font-size:12px;color:var(--color-text-muted);margin-top:4px;display:flex;align-items:center;gap:4px}
+.kpi__trend{font-weight:600;font-size:12px}
+.kpi__trend--up{color:var(--color-success)}.kpi__trend--down{color:var(--color-danger)}
+
+/* ============================================================
+   Dashboard Grid
+   ============================================================ */
+.dash-grid{display:grid;gap:20px}
+.dash-grid--main{grid-template-columns:1fr 1fr;margin-bottom:20px}
+.dash-grid--triple{grid-template-columns:1fr 1fr 1fr;margin-bottom:20px}
+.dash-grid--sidebar{grid-template-columns:2fr 1fr;margin-bottom:20px}
+
+/* ============================================================
+   Mini Charts (CSS-only bar charts)
+   ============================================================ */
+.bar-chart{display:flex;align-items:flex-end;gap:4px;height:100px;padding-top:8px}
+.bar-chart__col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.bar-chart__bar{width:100%;border-radius:3px 3px 0 0;transition:height .5s ease;min-height:2px;position:relative}
+.bar-chart__bar:hover{opacity:.85}
+.bar-chart__label{font-size:10px;color:var(--color-text-muted);font-weight:500}
+.bar-chart__val{font-family:var(--font-mono);font-size:10px;color:var(--color-text-muted);position:absolute;top:-16px;left:50%;transform:translateX(-50%);white-space:nowrap}
+
+/* Sparkline (simple CSS) */
+.sparkline{display:flex;align-items:flex-end;gap:2px;height:32px}
+.sparkline__bar{flex:1;background:var(--color-primary-light);border-radius:2px 2px 0 0;transition:height .4s ease}
+
+/* Donut (CSS conic-gradient) */
+.donut-chart{width:120px;height:120px;border-radius:50%;position:relative;margin:0 auto}
+.donut-chart__center{position:absolute;inset:25px;background:var(--color-surface);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.donut-chart__value{font-family:var(--font-mono);font-size:20px;font-weight:600;color:var(--color-text)}
+.donut-chart__label{font-size:10px;color:var(--color-text-muted)}
+
+/* ============================================================
+   Project Health Table
+   ============================================================ */
+.health-table{width:100%;border-collapse:collapse}
+.health-table th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--color-text-muted);font-weight:600;padding:8px 12px;border-bottom:2px solid var(--color-border);background:var(--color-bg)}
+.health-table td{padding:10px 12px;border-bottom:1px solid var(--color-border);font-size:13px;vertical-align:middle}
+.health-table tr:hover td{background:rgba(248,249,250,.5)}
+.health-table .mono{font-family:var(--font-mono);font-size:12px}
+
+/* Progress bar (inline) */
+.progress{height:6px;background:var(--color-bg);border-radius:3px;overflow:hidden}
+.progress__bar{height:100%;border-radius:3px;transition:width .5s ease}
+
+/* ============================================================
+   Alert List
+   ============================================================ */
+.alert-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--color-bg)}
+.alert-item:last-child{border-bottom:none}
+.alert-item__icon{width:28px;height:28px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.alert-item__content{flex:1}
+.alert-item__text{font-size:13px;line-height:1.45}
+.alert-item__time{font-size:11px;color:var(--color-text-muted);margin-top:1px}
+
+/* ============================================================
+   Pipeline
+   ============================================================ */
+.pipeline-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--color-bg)}
+.pipeline-item:last-child{border-bottom:none}
+.pipeline-item__stage{width:8px;height:40px;border-radius:4px;flex-shrink:0}
+.pipeline-item__info{flex:1;min-width:0}
+.pipeline-item__name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pipeline-item__detail{font-size:11px;color:var(--color-text-muted)}
+.pipeline-item__amount{font-family:var(--font-mono);font-size:13px;font-weight:500;flex-shrink:0}
+
+/* ============================================================
+   Activity feed (compact)
+   ============================================================ */
+.feed-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--color-bg);font-size:13px}
+.feed-item:last-child{border-bottom:none}
+.feed-item__dot{width:6px;height:6px;border-radius:50%;margin-top:7px;flex-shrink:0}
+.feed-item__time{font-size:11px;color:var(--color-text-muted);flex-shrink:0;min-width:44px}
+
+/* ============================================================
+   Workload mini heatmap
+   ============================================================ */
+.workload-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--color-bg)}
+.workload-row:last-child{border-bottom:none}
+.workload-row__name{font-size:12px;font-weight:500;width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+.workload-row__bars{display:flex;gap:3px;flex:1}
+.workload-bar{height:22px;border-radius:3px;flex:1;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:10px;font-weight:500;color:#fff;transition:all var(--transition);cursor:default}
+.workload-bar--ok{background:var(--color-primary-light)}
+.workload-bar--high{background:var(--color-warning)}
+.workload-bar--over{background:var(--color-danger)}
+.workload-bar--low{background:var(--color-muted)}
+.workload-bar--empty{background:var(--color-bg);color:var(--color-text-muted)}
+
+/* ============================================================
+   Toast
+   ============================================================ */
+.toast-container{position:fixed;top:16px;right:16px;z-index:2000;display:flex;flex-direction:column;gap:8px}
+.toast{padding:12px 16px;border-radius:var(--radius-md);background:var(--color-surface);border:1px solid var(--color-border);box-shadow:var(--shadow-md);display:flex;align-items:center;gap:10px;font-size:13px;animation:slideIn .3s ease,fadeOut .3s ease 2.5s forwards;min-width:280px}
+.toast--success{border-left:3px solid var(--color-success)}
+.toast--info{border-left:3px solid var(--color-primary-light)}
+@keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes fadeOut{to{opacity:0;transform:translateX(40px)}}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media(max-width:1279px){
+  .kpi-strip{grid-template-columns:repeat(3,1fr)}
+  .dash-grid--triple{grid-template-columns:1fr 1fr}
+  .dash-grid--sidebar{grid-template-columns:1fr}
+}
+@media(max-width:1023px){
+  .sidebar{width:var(--sidebar-collapsed)}
+  .sidebar .sidebar__logo-text,.sidebar .sidebar__item-label,.sidebar .sidebar__badge,.sidebar .sidebar__section-title{opacity:0}
+  .main{margin-left:var(--sidebar-collapsed)}
+  .kpi-strip{grid-template-columns:repeat(2,1fr)}
+  .dash-grid--main{grid-template-columns:1fr}
+}
+@media(max-width:767px){
+  .sidebar{display:none}.main{margin-left:0}
+  .kpi-strip{grid-template-columns:1fr 1fr}
+  .dash-grid--main,.dash-grid--triple,.dash-grid--sidebar{grid-template-columns:1fr}
+  .page{padding:16px}
+}
+</style>
+
+<style>
+/* Embedded mode overrides */
+.sidebar { display: none !important; }
+.topbar { display: none !important; }
+.main { margin-left: 0 !important; }
+body { background: var(--color-bg); }
+</style>
+</head>
+<body>
+
+<div class="layout" id="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__logo"><div class="sidebar__logo-icon">G</div><span class="sidebar__logo-text">GAA</span></div>
+    <nav class="sidebar__nav">
+      <div class="sidebar__section-title">Cœur métier</div>
+      <div class="sidebar__item sidebar__item--active"><span class="sidebar__item-icon">📊</span><span class="sidebar__item-label">Tableau de bord</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">📁</span><span class="sidebar__item-label">Projets</span><span class="sidebar__badge">12</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">⏱️</span><span class="sidebar__item-label">Temps</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">💰</span><span class="sidebar__item-label">Finances</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">👥</span><span class="sidebar__item-label">Contacts</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">📅</span><span class="sidebar__item-label">Planning</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">🏗️</span><span class="sidebar__item-label">Chantier</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">📄</span><span class="sidebar__item-label">Documents</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">✅</span><span class="sidebar__item-label">Tâches</span><span class="sidebar__badge">5</span></div>
+      <div class="sidebar__section-title">Outils</div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">📈</span><span class="sidebar__item-label">Reporting</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">🔔</span><span class="sidebar__item-label">Alertes</span><span class="sidebar__badge">3</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">⚙️</span><span class="sidebar__item-label">Paramètres</span></div>
+    </nav>
+    <div class="sidebar__toggle" ><span id="toggleIcon">◀</span></div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__search"><span class="topbar__search-icon">🔍</span><input type="text" placeholder="Rechercher un projet, contact, document…" /></div>
+      <div class="topbar__actions">
+        <button class="topbar__btn" title="Notifications" onclick="showToast('3 nouvelles notifications','info')">🔔<span class="notif-dot"></span></button>
+        <button class="topbar__btn" title="Aide">❓</button>
+        <div class="topbar__avatar" title="Antoine Moreau">AM</div>
+      </div>
+    </header>
+
+    <main class="page">
+
+      <!-- Welcome -->
+      <div class="welcome">
+        <h1 class="welcome__title">Bonjour Antoine 👋</h1>
+        <p class="welcome__sub">Vendredi 21 février 2025 — Voici la synthèse de votre agence.</p>
+      </div>
+
+      <!-- KPI Strip -->
+      <div class="kpi-strip">
+        <div class="kpi">
+          <div class="kpi__accent" style="background:var(--color-primary)"></div>
+          <div class="kpi__label">📁 Projets actifs</div>
+          <div class="kpi__value">12</div>
+          <div class="kpi__sub"><span class="kpi__trend kpi__trend--up">+2</span> ce trimestre</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi__accent" style="background:var(--color-success)"></div>
+          <div class="kpi__label">💰 CA réalisé 2025</div>
+          <div class="kpi__value">487 K€</div>
+          <div class="kpi__sub"><span class="kpi__trend kpi__trend--up">↗ +18%</span> vs N-1</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi__accent" style="background:var(--color-accent)"></div>
+          <div class="kpi__label">📊 Rentabilité moyenne</div>
+          <div class="kpi__value" style="color:var(--color-success)">13,4%</div>
+          <div class="kpi__sub">Cible : 12%</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi__accent" style="background:var(--color-warning)"></div>
+          <div class="kpi__label">🧾 Factures en retard</div>
+          <div class="kpi__value" style="color:var(--color-danger)">3</div>
+          <div class="kpi__sub">Montant : 42 600 €</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi__accent" style="background:var(--color-primary-light)"></div>
+          <div class="kpi__label">👥 Taux d'occupation</div>
+          <div class="kpi__value">91%</div>
+          <div class="kpi__sub">8 collaborateurs</div>
+        </div>
+      </div>
+
+      <!-- Row 1: CA mensuel + Rentabilité donut -->
+      <div class="dash-grid dash-grid--sidebar mb-24">
+
+        <!-- CA Mensuel (bar chart) -->
+        <div class="card">
+          <div class="card__header">
+            <span class="card__title">Chiffre d'affaires mensuel 2025</span>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <span class="badge badge--primary" style="font-size:11px;">Facturé</span>
+              <span class="badge badge--muted" style="font-size:11px;">Prévisionnel</span>
+            </div>
+          </div>
+          <div class="card__body">
+            <div class="bar-chart" style="height:140px;align-items:flex-end;">
+              <div class="bar-chart__col">
+                <div class="bar-chart__bar" style="height:85%;background:var(--color-primary);position:relative"><span class="bar-chart__val">78K</span></div>
+                <span class="bar-chart__label">Jan</span>
+              </div>
+              <div class="bar-chart__col">
+                <div class="bar-chart__bar" style="height:100%;background:var(--color-primary);position:relative"><span class="bar-chart__val">92K</span></div>
+                <span class="bar-chart__label">Fév</span>
+              </div>
+              <div class="bar-chart__col">
+                <div class="bar-chart__bar" style="height:70%;background:var(--color-primary);position:relative"><span class="bar-chart__val">64K</span></div>
+                <span class="bar-chart__label">Mar</span>
+              </div>
+              <div class="bar-chart__col">
+                <div class="bar-chart__bar" style="height:55%;background:var(--color-primary);position:relative"><span class="bar-chart__val">51K</span></div>
+                <span class="bar-chart__label">Avr</span>
+              </div>
+              <div class="bar-chart__col">
+                <div class="bar-chart__bar" style="height:65%;background:var(--color-primary);position:relative"><span class="bar-chart__val">60K</span></div>
+                <span class="bar-chart__label">Mai</span>
+              </div>
+              <div class="bar-chart__col">
+                <div class="bar-chart__bar" style="height:75%;background:var(--color-primary);position:relative"><span class="bar-chart__val">69K</span></div>
+                <span class="bar-chart__label">Jun</span>
+              </div>
+              <div class="bar-chart__col">
+                <div class="bar-chart__bar" style="height:40%;background:var(--color-muted);position:relative;border:1px dashed var(--color-border);"><span class="bar-chart__val">38K</span></div>
+                <span class="bar-chart__label">Jul</span>
+              </div>
+              <div class="bar-chart__col">
+                <div class="bar-chart__bar" style="height:20%;background:var(--color-muted);position:relative;border:1px dashed var(--color-border);"><span class="bar-chart__val">18K</span></div>
+                <span class="bar-chart__label">Aoû</span>
+              </div>
+              <div class="bar-chart__col">
+                <div class="bar-chart__bar" style="height:60%;background:var(--color-muted);position:relative;border:1px dashed var(--color-border);"><span class="bar-chart__val">55K</span></div>
+                <span class="bar-chart__label">Sep</span>
+              </div>
+              <div class="bar-chart__col">
+                <div class="bar-chart__bar" style="height:70%;background:var(--color-muted);position:relative;border:1px dashed var(--color-border);"><span class="bar-chart__val">65K</span></div>
+                <span class="bar-chart__label">Oct</span>
+              </div>
+              <div class="bar-chart__col">
+                <div class="bar-chart__bar" style="height:65%;background:var(--color-muted);position:relative;border:1px dashed var(--color-border);"><span class="bar-chart__val">60K</span></div>
+                <span class="bar-chart__label">Nov</span>
+              </div>
+              <div class="bar-chart__col">
+                <div class="bar-chart__bar" style="height:50%;background:var(--color-muted);position:relative;border:1px dashed var(--color-border);"><span class="bar-chart__val">45K</span></div>
+                <span class="bar-chart__label">Déc</span>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid var(--color-border)">
+              <div><span class="text-sm text-muted">CA facturé YTD</span><br><span class="text-mono" style="font-size:16px;font-weight:600;">487 200 €</span></div>
+              <div style="text-align:right"><span class="text-sm text-muted">Prévisionnel annuel</span><br><span class="text-mono" style="font-size:16px;font-weight:600;color:var(--color-text-muted)">695 000 €</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rentabilité par type -->
+        <div class="card">
+          <div class="card__header">
+            <span class="card__title">Rentabilité par type</span>
+          </div>
+          <div class="card__body" style="display:flex;flex-direction:column;align-items:center;gap:16px;">
+            <div class="donut-chart" style="background:conic-gradient(var(--color-success) 0deg 162deg, var(--color-primary-light) 162deg 252deg, var(--color-warning) 252deg 306deg, var(--color-muted) 306deg 360deg);">
+              <div class="donut-chart__center">
+                <span class="donut-chart__value">13,4%</span>
+                <span class="donut-chart__label">Moy. globale</span>
+              </div>
+            </div>
+            <div style="width:100%;display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;align-items:center;gap:8px;justify-content:space-between;">
+                <span style="display:flex;align-items:center;gap:6px;font-size:12px"><span style="width:10px;height:10px;border-radius:50%;background:var(--color-success);flex-shrink:0"></span>Équipements publics</span>
+                <span class="text-mono text-sm" style="font-weight:600;color:var(--color-success)">15,2%</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;justify-content:space-between;">
+                <span style="display:flex;align-items:center;gap:6px;font-size:12px"><span style="width:10px;height:10px;border-radius:50%;background:var(--color-primary-light);flex-shrink:0"></span>Logements</span>
+                <span class="text-mono text-sm" style="font-weight:600;">12,1%</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;justify-content:space-between;">
+                <span style="display:flex;align-items:center;gap:6px;font-size:12px"><span style="width:10px;height:10px;border-radius:50%;background:var(--color-warning);flex-shrink:0"></span>Tertiaire</span>
+                <span class="text-mono text-sm" style="font-weight:600;color:var(--color-warning)">8,3%</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;justify-content:space-between;">
+                <span style="display:flex;align-items:center;gap:6px;font-size:12px"><span style="width:10px;height:10px;border-radius:50%;background:var(--color-muted);flex-shrink:0"></span>Réhabilitation</span>
+                <span class="text-mono text-sm" style="font-weight:600;">11,5%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2: Santé projets -->
+      <div class="card mb-24">
+        <div class="card__header">
+          <span class="card__title">Santé des projets actifs</span>
+          <div style="display:flex;gap:8px;">
+            <span class="badge badge--success" style="font-size:11px">7 OK</span>
+            <span class="badge badge--warning" style="font-size:11px">3 Attention</span>
+            <span class="badge badge--danger" style="font-size:11px">2 Critique</span>
+          </div>
+        </div>
+        <div class="card__body card__body--flush">
+          <table class="health-table">
+            <thead>
+              <tr>
+                <th>Projet</th>
+                <th>Phase</th>
+                <th>Avancement</th>
+                <th>Budget</th>
+                <th>Délai</th>
+                <th>Santé</th>
+                <th>Rentabilité</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Groupe scolaire Victor Hugo</strong><br><span class="text-sm text-muted">Nantes · Public</span></td>
+                <td><span class="badge badge--accent" style="font-size:11px">PRO</span></td>
+                <td><div class="progress" style="width:80px"><div class="progress__bar" style="width:62%;background:var(--color-primary-light)"></div></div><span class="text-sm text-mono">62%</span></td>
+                <td class="mono text-sm">238 K€</td>
+                <td class="text-sm">Rendu 06/03</td>
+                <td><span class="health-dot health-dot--ok"></span></td>
+                <td class="mono text-sm text-success">+14,2%</td>
+              </tr>
+              <tr>
+                <td><strong>Résidence Les Oliviers</strong><br><span class="text-sm text-muted">Bordeaux · Privé</span></td>
+                <td><span class="badge badge--accent" style="font-size:11px">DCE</span></td>
+                <td><div class="progress" style="width:80px"><div class="progress__bar" style="width:85%;background:var(--color-warning)"></div></div><span class="text-sm text-mono">85%</span></td>
+                <td class="mono text-sm">156 K€</td>
+                <td class="text-sm">Rendu 28/02</td>
+                <td><span class="health-dot health-dot--warning"></span></td>
+                <td class="mono text-sm text-warning">+6,8%</td>
+              </tr>
+              <tr>
+                <td><strong>Hôtel de ville — Extension</strong><br><span class="text-sm text-muted">Rennes · Public</span></td>
+                <td><span class="badge badge--accent" style="font-size:11px">APD</span></td>
+                <td><div class="progress" style="width:80px"><div class="progress__bar" style="width:100%;background:var(--color-danger)"></div></div><span class="text-sm text-mono">100%</span></td>
+                <td class="mono text-sm">192 K€</td>
+                <td class="text-sm text-danger">Retard +8j</td>
+                <td><span class="health-dot health-dot--danger"></span></td>
+                <td class="mono text-sm text-danger">-5,1%</td>
+              </tr>
+              <tr>
+                <td><strong>Médiathèque de Brest</strong><br><span class="text-sm text-muted">Brest · Public</span></td>
+                <td><span class="badge badge--accent" style="font-size:11px">DET</span></td>
+                <td><div class="progress" style="width:80px"><div class="progress__bar" style="width:35%;background:var(--color-primary-light)"></div></div><span class="text-sm text-mono">35%</span></td>
+                <td class="mono text-sm">310 K€</td>
+                <td class="text-sm">Conforme</td>
+                <td><span class="health-dot health-dot--ok"></span></td>
+                <td class="mono text-sm text-success">+16,3%</td>
+              </tr>
+              <tr>
+                <td><strong>EHPAD Les Magnolias</strong><br><span class="text-sm text-muted">Angers · Privé</span></td>
+                <td><span class="badge badge--accent" style="font-size:11px">PRO</span></td>
+                <td><div class="progress" style="width:80px"><div class="progress__bar" style="width:40%;background:var(--color-primary-light)"></div></div><span class="text-sm text-mono">40%</span></td>
+                <td class="mono text-sm">275 K€</td>
+                <td class="text-sm">Conforme</td>
+                <td><span class="health-dot health-dot--ok"></span></td>
+                <td class="mono text-sm text-success">+12,1%</td>
+              </tr>
+              <tr>
+                <td><strong>Campus Numérique</strong><br><span class="text-sm text-muted">Nantes · Public</span></td>
+                <td><span class="badge badge--accent" style="font-size:11px">APS</span></td>
+                <td><div class="progress" style="width:80px"><div class="progress__bar" style="width:75%;background:var(--color-warning)"></div></div><span class="text-sm text-mono">75%</span></td>
+                <td class="mono text-sm">420 K€</td>
+                <td class="text-sm text-warning">+3j</td>
+                <td><span class="health-dot health-dot--warning"></span></td>
+                <td class="mono text-sm">+10,4%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Row 3: Charge + Alertes + Pipeline -->
+      <div class="dash-grid dash-grid--triple">
+
+        <!-- Charge de l'équipe -->
+        <div class="card">
+          <div class="card__header">
+            <span class="card__title">Charge équipe (4 sem.)</span>
+            <button class="btn btn--ghost btn--sm">Planning →</button>
+          </div>
+          <div class="card__body" style="padding:12px 16px">
+            <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px;">
+              <span class="text-sm text-muted">S8</span>
+              <span class="text-sm text-muted">S9</span>
+              <span class="text-sm text-muted">S10</span>
+              <span class="text-sm text-muted">S11</span>
+            </div>
+            <div class="workload-row">
+              <span class="workload-row__name">M. Lefort</span>
+              <div class="workload-row__bars">
+                <div class="workload-bar workload-bar--ok">95%</div>
+                <div class="workload-bar workload-bar--high">110%</div>
+                <div class="workload-bar workload-bar--ok">90%</div>
+                <div class="workload-bar workload-bar--ok">85%</div>
+              </div>
+            </div>
+            <div class="workload-row">
+              <span class="workload-row__name">T. Durand</span>
+              <div class="workload-row__bars">
+                <div class="workload-bar workload-bar--ok">88%</div>
+                <div class="workload-bar workload-bar--ok">92%</div>
+                <div class="workload-bar workload-bar--over">125%</div>
+                <div class="workload-bar workload-bar--high">115%</div>
+              </div>
+            </div>
+            <div class="workload-row">
+              <span class="workload-row__name">S. Caron</span>
+              <div class="workload-row__bars">
+                <div class="workload-bar workload-bar--ok">100%</div>
+                <div class="workload-bar workload-bar--ok">95%</div>
+                <div class="workload-bar workload-bar--ok">88%</div>
+                <div class="workload-bar workload-bar--low">60%</div>
+              </div>
+            </div>
+            <div class="workload-row">
+              <span class="workload-row__name">J. Bernard</span>
+              <div class="workload-row__bars">
+                <div class="workload-bar workload-bar--ok">85%</div>
+                <div class="workload-bar workload-bar--ok">90%</div>
+                <div class="workload-bar workload-bar--ok">95%</div>
+                <div class="workload-bar workload-bar--ok">88%</div>
+              </div>
+            </div>
+            <div class="workload-row">
+              <span class="workload-row__name">L. Petit</span>
+              <div class="workload-row__bars">
+                <div class="workload-bar workload-bar--high">112%</div>
+                <div class="workload-bar workload-bar--over">130%</div>
+                <div class="workload-bar workload-bar--high">108%</div>
+                <div class="workload-bar workload-bar--ok">95%</div>
+              </div>
+            </div>
+            <div class="workload-row">
+              <span class="workload-row__name">A. Rousseau</span>
+              <div class="workload-row__bars">
+                <div class="workload-bar workload-bar--low">45%</div>
+                <div class="workload-bar workload-bar--low">50%</div>
+                <div class="workload-bar workload-bar--ok">80%</div>
+                <div class="workload-bar workload-bar--ok">90%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alertes -->
+        <div class="card">
+          <div class="card__header">
+            <span class="card__title">Alertes récentes</span>
+            <span class="badge badge--danger" style="font-size:11px">6</span>
+          </div>
+          <div class="card__body" style="padding:12px 16px">
+            <div class="alert-item">
+              <div class="alert-item__icon" style="background:var(--color-danger-bg);color:var(--color-danger)">💸</div>
+              <div class="alert-item__content">
+                <div class="alert-item__text"><strong>Hôtel de ville</strong> — Rentabilité négative (-5,1%). Dépassement de 30h en phase APD.</div>
+                <div class="alert-item__time">Il y a 2h</div>
+              </div>
+            </div>
+            <div class="alert-item">
+              <div class="alert-item__icon" style="background:var(--color-warning-bg);color:var(--color-warning)">⏰</div>
+              <div class="alert-item__content">
+                <div class="alert-item__text"><strong>Résidence Oliviers</strong> — Échéance DCE dans 7 jours, avancement à 85%.</div>
+                <div class="alert-item__time">Il y a 4h</div>
+              </div>
+            </div>
+            <div class="alert-item">
+              <div class="alert-item__icon" style="background:var(--color-danger-bg);color:var(--color-danger)">🧾</div>
+              <div class="alert-item__content">
+                <div class="alert-item__text"><strong>FA-2024-098</strong> — Facture impayée depuis 45 jours (Ville de Rennes, 18 200 €).</div>
+                <div class="alert-item__time">Hier</div>
+              </div>
+            </div>
+            <div class="alert-item">
+              <div class="alert-item__icon" style="background:var(--color-warning-bg);color:var(--color-warning)">👤</div>
+              <div class="alert-item__content">
+                <div class="alert-item__text"><strong>L. Petit</strong> — Surcharge à 130% en S9. Réaffectation suggérée.</div>
+                <div class="alert-item__time">Hier</div>
+              </div>
+            </div>
+            <div class="alert-item">
+              <div class="alert-item__icon" style="background:var(--color-accent-bg);color:#b8860b">🛡️</div>
+              <div class="alert-item__content">
+                <div class="alert-item__text"><strong>Assurance décennale</strong> — Renouvellement dans 45 jours (échéance 06/04).</div>
+                <div class="alert-item__time">Il y a 2 jours</div>
+              </div>
+            </div>
+            <div class="alert-item">
+              <div class="alert-item__icon" style="background:var(--color-primary-bg);color:var(--color-primary)">⏱️</div>
+              <div class="alert-item__content">
+                <div class="alert-item__text"><strong>3 collaborateurs</strong> n'ont pas complété leur saisie de temps S7.</div>
+                <div class="alert-item__time">Il y a 3 jours</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pipeline commercial -->
+        <div class="card">
+          <div class="card__header">
+            <span class="card__title">Pipeline commercial</span>
+            <button class="btn btn--ghost btn--sm">CRM →</button>
+          </div>
+          <div class="card__body" style="padding:12px 16px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--color-border)">
+              <span class="text-sm text-muted">Valeur totale pipeline</span>
+              <span class="text-mono" style="font-weight:600">1,2 M€</span>
+            </div>
+            <div class="pipeline-item">
+              <div class="pipeline-item__stage" style="background:var(--color-success)"></div>
+              <div class="pipeline-item__info">
+                <div class="pipeline-item__name">École Montreuil</div>
+                <div class="pipeline-item__detail">Concours — Jury 15/03 · 70%</div>
+              </div>
+              <span class="pipeline-item__amount">320 K€</span>
+            </div>
+            <div class="pipeline-item">
+              <div class="pipeline-item__stage" style="background:var(--color-primary-light)"></div>
+              <div class="pipeline-item__info">
+                <div class="pipeline-item__name">Pôle santé Vannes</div>
+                <div class="pipeline-item__detail">Candidature déposée · 40%</div>
+              </div>
+              <span class="pipeline-item__amount">480 K€</span>
+            </div>
+            <div class="pipeline-item">
+              <div class="pipeline-item__stage" style="background:var(--color-accent)"></div>
+              <div class="pipeline-item__info">
+                <div class="pipeline-item__name">Résidence sénior Quimper</div>
+                <div class="pipeline-item__detail">Devis envoyé · 55%</div>
+              </div>
+              <span class="pipeline-item__amount">185 K€</span>
+            </div>
+            <div class="pipeline-item">
+              <div class="pipeline-item__stage" style="background:var(--color-muted)"></div>
+              <div class="pipeline-item__info">
+                <div class="pipeline-item__name">Bureaux La Défense</div>
+                <div class="pipeline-item__detail">Prospect qualifié · 20%</div>
+              </div>
+              <span class="pipeline-item__amount">210 K€</span>
+            </div>
+
+            <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--color-border)">
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+                <span class="text-muted">CA pondéré</span>
+                <span class="text-mono" style="font-weight:600">438 K€</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:12px">
+                <span class="text-muted">Concours en cours</span>
+                <span class="text-mono" style="font-weight:600">2</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 4: Factures + Activité récente -->
+      <div class="dash-grid dash-grid--main">
+
+        <!-- Factures en attente -->
+        <div class="card">
+          <div class="card__header">
+            <span class="card__title">Factures en attente</span>
+            <button class="btn btn--ghost btn--sm">Finances →</button>
+          </div>
+          <div class="card__body card__body--flush">
+            <table class="health-table">
+              <thead>
+                <tr><th>Facture</th><th>Client</th><th>Montant</th><th>Échéance</th><th>Retard</th><th>Statut</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="mono text-sm">FA-2024-098</td>
+                  <td>Ville de Rennes</td>
+                  <td class="mono">18 200 €</td>
+                  <td class="mono text-sm">07/01/2025</td>
+                  <td class="mono text-sm text-danger">45 j</td>
+                  <td><span class="badge badge--danger" style="font-size:11px">Relancé ×3</span></td>
+                </tr>
+                <tr>
+                  <td class="mono text-sm">FA-2025-012</td>
+                  <td>SCI Les Oliviers</td>
+                  <td class="mono">15 600 €</td>
+                  <td class="mono text-sm">01/02/2025</td>
+                  <td class="mono text-sm text-warning">20 j</td>
+                  <td><span class="badge badge--warning" style="font-size:11px">Relancé ×1</span></td>
+                </tr>
+                <tr>
+                  <td class="mono text-sm">FA-2025-034</td>
+                  <td>Ville de Nantes</td>
+                  <td class="mono">17 100 €</td>
+                  <td class="mono text-sm">15/02/2025</td>
+                  <td class="mono text-sm text-warning">6 j</td>
+                  <td><span class="badge badge--accent" style="font-size:11px">Chorus déposée</span></td>
+                </tr>
+                <tr>
+                  <td class="mono text-sm">FA-2025-041</td>
+                  <td>Région Bretagne</td>
+                  <td class="mono">31 500 €</td>
+                  <td class="mono text-sm">28/02/2025</td>
+                  <td class="mono text-sm text-muted">—</td>
+                  <td><span class="badge badge--primary" style="font-size:11px">À échéance</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Activité récente -->
+        <div class="card">
+          <div class="card__header">
+            <span class="card__title">Activité récente</span>
+          </div>
+          <div class="card__body" style="padding:12px 16px">
+            <div class="feed-item">
+              <div class="feed-item__dot" style="background:var(--color-success)"></div>
+              <span class="feed-item__time">14h32</span>
+              <span><strong>M. Lefort</strong> a validé la notice PRO du Groupe scolaire</span>
+            </div>
+            <div class="feed-item">
+              <div class="feed-item__dot" style="background:var(--color-primary-light)"></div>
+              <span class="feed-item__time">11h15</span>
+              <span><strong>T. Durand</strong> a déposé Plans PRO R+1 — Ind. C</span>
+            </div>
+            <div class="feed-item">
+              <div class="feed-item__dot" style="background:var(--color-accent)"></div>
+              <span class="feed-item__time">10h00</span>
+              <span>Réunion MOA n°12 — Groupe scolaire (CR généré)</span>
+            </div>
+            <div class="feed-item">
+              <div class="feed-item__dot" style="background:var(--color-warning)"></div>
+              <span class="feed-item__time">Hier</span>
+              <span><strong>BET Structura</strong> a déposé la maquette BIM structure</span>
+            </div>
+            <div class="feed-item">
+              <div class="feed-item__dot" style="background:var(--color-success)"></div>
+              <span class="feed-item__time">Hier</span>
+              <span>Paiement reçu <strong>FA-2025-018</strong> — 17 100 €</span>
+            </div>
+            <div class="feed-item">
+              <div class="feed-item__dot" style="background:var(--color-danger)"></div>
+              <span class="feed-item__time">Lun</span>
+              <span>Relance n°3 envoyée — <strong>FA-2024-098</strong> Ville de Rennes</span>
+            </div>
+            <div class="feed-item">
+              <div class="feed-item__dot" style="background:var(--color-primary-light)"></div>
+              <span class="feed-item__time">Lun</span>
+              <span><strong>S. Caron</strong> a terminé "Plans PRO RDC"</span>
+            </div>
+            <div class="feed-item">
+              <div class="feed-item__dot" style="background:var(--color-success)"></div>
+              <span class="feed-item__time">Ven</span>
+              <span>Phase APD validée — <strong>EHPAD Les Magnolias</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 5: Échéances à venir -->
+      <div class="card">
+        <div class="card__header">
+          <span class="card__title">Prochaines échéances (30 jours)</span>
+        </div>
+        <div class="card__body" style="padding:12px 20px;">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:var(--radius-md);border:1px solid var(--color-border);">
+              <div style="width:4px;height:36px;border-radius:2px;background:var(--color-danger);flex-shrink:0"></div>
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:500">Rendu DCE — Rés. Oliviers</div>
+                <div class="text-sm text-muted text-mono">28/02 · dans 7 jours</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:var(--radius-md);border:1px solid var(--color-border);">
+              <div style="width:4px;height:36px;border-radius:2px;background:var(--color-warning);flex-shrink:0"></div>
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:500">Rendu PRO — Grp. scolaire</div>
+                <div class="text-sm text-muted text-mono">06/03 · dans 12 jours</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:var(--radius-md);border:1px solid var(--color-border);">
+              <div style="width:4px;height:36px;border-radius:2px;background:var(--color-accent);flex-shrink:0"></div>
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:500">Jury concours — École Montreuil</div>
+                <div class="text-sm text-muted text-mono">15/03 · dans 22 jours</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:var(--radius-md);border:1px solid var(--color-border);">
+              <div style="width:4px;height:36px;border-radius:2px;background:var(--color-primary-light);flex-shrink:0"></div>
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:500">Démarrage DCE — Grp. scolaire</div>
+                <div class="text-sm text-muted text-mono">20/03 · dans 26 jours</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+function toggleSidebar(){
+  const s=document.getElementById('sidebar'),i=document.getElementById('toggleIcon');
+  s.classList.toggle('sidebar--collapsed');
+  i.textContent=s.classList.contains('sidebar--collapsed')?'▶':'◀';
+}
+function showToast(msg,type='info'){
+  const c=document.getElementById('toastContainer'),t=document.createElement('div');
+  t.className=`toast toast--${type}`;
+  const icons={success:'✅',error:'❌',info:'ℹ️'};
+  t.innerHTML=`<span>${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+  c.appendChild(t);setTimeout(()=>t.remove(),3000);
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,2436 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAA — Groupe scolaire Victor Hugo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+.sidebar,.topbar{display:none!important;}
+/* ============================================================
+   CSS Custom Properties (Design Tokens)
+   ============================================================ */
+:root {
+  --color-primary: #1B4965;
+  --color-primary-light: #5FA8D3;
+  --color-primary-hover: #153a52;
+  --color-primary-bg: #e8f1f8;
+  --color-secondary: #3C4858;
+  --color-accent: #E6A817;
+  --color-accent-bg: #fdf5e0;
+  --color-success: #2D6A4F;
+  --color-success-bg: #e6f3ed;
+  --color-danger: #C1292E;
+  --color-danger-bg: #fbe8e8;
+  --color-warning: #E76F51;
+  --color-warning-bg: #fdf0ec;
+  --color-bg: #F8F9FA;
+  --color-surface: #FFFFFF;
+  --color-border: #DEE2E6;
+  --color-text: #212529;
+  --color-text-muted: #6C757D;
+  --color-muted: #ADB5BD;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+  --transition: 0.2s ease;
+
+  --sidebar-width: 260px;
+  --sidebar-collapsed: 64px;
+  --header-height: 56px;
+}
+
+/* ============================================================
+   Reset & Base
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-bg);
+  overflow-x: hidden;
+}
+
+a { color: var(--color-primary); text-decoration: none; }
+a:hover { color: var(--color-primary-light); }
+
+/* ============================================================
+   Layout
+   ============================================================ */
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ============================================================
+   Sidebar
+   ============================================================ */
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--color-primary);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 100;
+  transition: width 0.25s ease;
+  overflow: hidden;
+}
+
+.sidebar.sidebar--collapsed {
+  width: var(--sidebar-collapsed);
+}
+
+.sidebar__logo {
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.sidebar__logo-icon {
+  width: 32px;
+  height: 32px;
+  background: var(--color-accent);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.sidebar__logo-text {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  opacity: 1;
+  transition: opacity var(--transition);
+}
+
+.sidebar--collapsed .sidebar__logo-text { opacity: 0; }
+
+.sidebar__nav {
+  flex: 1;
+  padding: 8px;
+  overflow-y: auto;
+}
+
+.sidebar__section-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.45);
+  padding: 16px 12px 6px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sidebar--collapsed .sidebar__section-title { opacity: 0; height: 0; padding: 0; }
+
+.sidebar__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  border-radius: var(--radius-md);
+  color: rgba(255,255,255,0.7);
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+  position: relative;
+  font-size: 13.5px;
+}
+
+.sidebar__item:hover {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+.sidebar__item--active {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  font-weight: 500;
+}
+
+.sidebar__item-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.sidebar__item-label {
+  opacity: 1;
+  transition: opacity var(--transition);
+}
+
+.sidebar--collapsed .sidebar__item-label { opacity: 0; }
+
+.sidebar__badge {
+  margin-left: auto;
+  background: var(--color-danger);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 10px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.sidebar--collapsed .sidebar__badge { display: none; }
+
+.sidebar__toggle {
+  padding: 12px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: rgba(255,255,255,0.5);
+  transition: color var(--transition);
+  flex-shrink: 0;
+}
+
+.sidebar__toggle:hover { color: #fff; }
+
+/* ============================================================
+   Main Content
+   ============================================================ */
+.main {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  transition: margin-left 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.sidebar--collapsed ~ .main,
+.layout--collapsed .main {
+  margin-left: var(--sidebar-collapsed);
+}
+
+/* Top Header Bar */
+.topbar {
+  height: var(--header-height);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.topbar__search {
+  flex: 1;
+  max-width: 480px;
+  position: relative;
+}
+
+.topbar__search input {
+  width: 100%;
+  padding: 8px 12px 8px 36px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  background: var(--color-bg);
+  transition: all var(--transition);
+  outline: none;
+}
+
+.topbar__search input:focus {
+  border-color: var(--color-primary-light);
+  box-shadow: 0 0 0 3px rgba(95,168,211,0.15);
+  background: var(--color-surface);
+}
+
+.topbar__search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+.topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.topbar__btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  transition: all var(--transition);
+  position: relative;
+  font-size: 18px;
+}
+
+.topbar__btn:hover { background: var(--color-bg); color: var(--color-text); }
+
+.topbar__btn .notif-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  background: var(--color-danger);
+  border-radius: 50%;
+  border: 2px solid var(--color-surface);
+}
+
+.topbar__avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--color-primary-light);
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* ============================================================
+   Page Content
+   ============================================================ */
+.page {
+  flex: 1;
+  padding: 24px;
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-bottom: 16px;
+}
+
+.breadcrumb a {
+  color: var(--color-text-muted);
+  transition: color var(--transition);
+}
+
+.breadcrumb a:hover { color: var(--color-primary); }
+
+.breadcrumb__sep { font-size: 10px; }
+
+.breadcrumb__current { color: var(--color-text); font-weight: 500; }
+
+/* Page Header */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.page-header__left {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.page-header__icon {
+  width: 48px;
+  height: 48px;
+  background: var(--color-primary-bg);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.page-header__title {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.page-header__meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.page-header__actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.badge--public { background: var(--color-primary-bg); color: var(--color-primary); }
+.badge--phase { background: var(--color-accent-bg); color: #b8860b; }
+.badge--success { background: var(--color-success-bg); color: var(--color-success); }
+.badge--danger { background: var(--color-danger-bg); color: var(--color-danger); }
+.badge--warning { background: var(--color-warning-bg); color: var(--color-warning); }
+.badge--muted { background: #EBEDEF; color: var(--color-text-muted); }
+
+/* Health dot */
+.health-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.health-dot--ok { background: var(--color-success); }
+.health-dot--warning { background: var(--color-warning); }
+.health-dot--danger { background: var(--color-danger); }
+.health-dot--muted { background: var(--color-muted); }
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+
+.btn--primary {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+
+.btn--primary:hover { background: var(--color-primary-hover); }
+
+.btn--secondary {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+.btn--secondary:hover { background: var(--color-bg); }
+
+.btn--ghost {
+  background: transparent;
+  color: var(--color-text-muted);
+}
+
+.btn--ghost:hover { background: var(--color-bg); color: var(--color-text); }
+
+.btn--sm { padding: 5px 10px; font-size: 12px; }
+.btn--icon { padding: 8px; }
+
+/* ============================================================
+   Tabs
+   ============================================================ */
+.tabs {
+  display: flex;
+  border-bottom: 2px solid var(--color-border);
+  gap: 0;
+  margin-bottom: 24px;
+  overflow-x: auto;
+}
+
+.tabs__item {
+  padding: 10px 20px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all var(--transition);
+  white-space: nowrap;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  font-family: var(--font-sans);
+}
+
+.tabs__item:hover { color: var(--color-text); }
+
+.tabs__item--active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+.tabs__item .tabs__count {
+  background: var(--color-bg);
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 6px;
+  color: var(--color-text-muted);
+}
+
+/* ============================================================
+   Tab Content Panels
+   ============================================================ */
+.tab-panel { display: none; animation: fadeIn 0.3s ease; }
+.tab-panel--active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   Cards
+   ============================================================ */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: box-shadow var(--transition);
+}
+
+.card:hover { box-shadow: var(--shadow-sm); }
+
+.card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.card__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.card__body { padding: 20px; }
+.card__body--flush { padding: 0; }
+
+/* ============================================================
+   Grid System
+   ============================================================ */
+.grid { display: grid; gap: 24px; }
+.grid--2 { grid-template-columns: 1fr 1fr; }
+.grid--3 { grid-template-columns: 1fr 1fr 1fr; }
+.grid--4 { grid-template-columns: repeat(4, 1fr); }
+.grid--sidebar { grid-template-columns: 1fr 360px; }
+
+/* ============================================================
+   KPI Cards
+   ============================================================ */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.kpi {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  transition: all var(--transition);
+}
+
+.kpi:hover { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+
+.kpi__label {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.kpi__value {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+}
+
+.kpi__sub {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.kpi__trend--up { color: var(--color-success); }
+.kpi__trend--down { color: var(--color-danger); }
+
+/* ============================================================
+   Info List (field-value pairs)
+   ============================================================ */
+.info-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+.info-item {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.info-item:nth-child(odd) { padding-right: 16px; }
+.info-item:nth-child(even) { padding-left: 16px; border-left: 1px solid var(--color-bg); }
+
+.info-item__label {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.info-item__value {
+  font-size: 14px;
+  color: var(--color-text);
+  font-weight: 450;
+}
+
+.info-item__value--mono {
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+/* ============================================================
+   Phases Timeline (Synthèse tab)
+   ============================================================ */
+.phases-timeline {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 16px;
+}
+
+.phase-block {
+  flex: 1;
+  padding: 10px 8px;
+  text-align: center;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+  position: relative;
+}
+
+.phase-block__name {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.phase-block__pct {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.phase-block--done {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.phase-block--active {
+  background: var(--color-primary-bg);
+  color: var(--color-primary);
+  box-shadow: inset 0 -3px 0 var(--color-primary);
+}
+
+.phase-block--upcoming {
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+}
+
+.phase-block:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+
+/* ============================================================
+   Progress Bar
+   ============================================================ */
+.progress {
+  height: 6px;
+  background: var(--color-bg);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress__bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.progress__bar--primary { background: var(--color-primary); }
+.progress__bar--success { background: var(--color-success); }
+.progress__bar--warning { background: var(--color-warning); }
+.progress__bar--danger { background: var(--color-danger); }
+
+/* ============================================================
+   Team / Avatar Chips
+   ============================================================ */
+.team-list { display: flex; flex-direction: column; gap: 8px; }
+
+.team-member {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  transition: background var(--transition);
+}
+
+.team-member:hover { background: var(--color-bg); }
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 12px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.team-member__info { flex: 1; }
+.team-member__name { font-size: 13px; font-weight: 500; }
+.team-member__role { font-size: 12px; color: var(--color-text-muted); }
+
+/* ============================================================
+   Table
+   ============================================================ */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th {
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  padding: 10px 16px;
+  border-bottom: 2px solid var(--color-border);
+  background: var(--color-bg);
+  position: sticky;
+  top: 0;
+}
+
+.data-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+.data-table tr:hover td { background: rgba(248,249,250,0.5); }
+
+.data-table .mono {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+
+/* ============================================================
+   Document List
+   ============================================================ */
+.doc-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--color-border);
+  transition: background var(--transition);
+  cursor: pointer;
+}
+
+.doc-item:last-child { border-bottom: none; }
+.doc-item:hover { background: var(--color-bg); }
+
+.doc-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.doc-icon--pdf { background: #fee2e2; color: #dc2626; }
+.doc-icon--dwg { background: #dbeafe; color: #2563eb; }
+.doc-icon--ifc { background: #f3e8ff; color: #7c3aed; }
+.doc-icon--doc { background: #e0f2fe; color: #0284c7; }
+
+.doc-info { flex: 1; min-width: 0; }
+.doc-info__name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.doc-info__meta { font-size: 12px; color: var(--color-text-muted); }
+
+/* ============================================================
+   Activity Feed
+   ============================================================ */
+.activity-feed { display: flex; flex-direction: column; }
+
+.activity-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-bg);
+}
+
+.activity-item__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.activity-item__content { flex: 1; }
+
+.activity-item__text {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.activity-item__time {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+/* ============================================================
+   Modal
+   ============================================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.modal-overlay--visible {
+  display: flex;
+  opacity: 1;
+}
+
+.modal {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 90%;
+  max-width: 560px;
+  max-height: 85vh;
+  overflow-y: auto;
+  transform: scale(0.95);
+  transition: transform 0.25s ease;
+}
+
+.modal-overlay--visible .modal { transform: scale(1); }
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.modal__title { font-size: 17px; font-weight: 600; }
+
+.modal__close {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+}
+
+.modal__close:hover { background: var(--color-bg); color: var(--color-text); }
+
+.modal__body { padding: 24px; }
+
+.modal__footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* ============================================================
+   Form Fields
+   ============================================================ */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-secondary);
+  margin-bottom: 6px;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  transition: all var(--transition);
+  outline: none;
+  background: var(--color-surface);
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  border-color: var(--color-primary-light);
+  box-shadow: 0 0 0 3px rgba(95,168,211,0.15);
+}
+
+.form-textarea { resize: vertical; min-height: 80px; }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+/* ============================================================
+   Drawer
+   ============================================================ */
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 900;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.drawer-overlay--visible { display: block; opacity: 1; }
+
+.drawer {
+  position: fixed;
+  right: -480px;
+  top: 0;
+  bottom: 0;
+  width: 480px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-lg);
+  z-index: 910;
+  transition: right 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer--open { right: 0; }
+
+.drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.drawer__title { font-size: 16px; font-weight: 600; }
+
+.drawer__body { flex: 1; overflow-y: auto; padding: 20px; }
+
+/* ============================================================
+   Toast
+   ============================================================ */
+.toast-container {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toast {
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.5s forwards;
+  min-width: 280px;
+}
+
+.toast--success { border-left: 3px solid var(--color-success); }
+.toast--error { border-left: 3px solid var(--color-danger); }
+.toast--info { border-left: 3px solid var(--color-primary-light); }
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeOut {
+  to { opacity: 0; transform: translateX(40px); }
+}
+
+/* ============================================================
+   Gantt (Simple CSS Gantt for phases)
+   ============================================================ */
+.gantt {
+  position: relative;
+  padding: 8px 0;
+}
+
+.gantt__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+}
+
+.gantt__label {
+  width: 60px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: right;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.gantt__track {
+  flex: 1;
+  height: 24px;
+  background: var(--color-bg);
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.gantt__bar {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ============================================================
+   Utility classes
+   ============================================================ */
+.text-muted { color: var(--color-text-muted); }
+.text-mono { font-family: var(--font-mono); }
+.text-sm { font-size: 12px; }
+.text-success { color: var(--color-success); }
+.text-danger { color: var(--color-danger); }
+.text-warning { color: var(--color-warning); }
+.mt-8 { margin-top: 8px; }
+.mt-16 { margin-top: 16px; }
+.mt-24 { margin-top: 24px; }
+.mb-16 { margin-bottom: 16px; }
+.mb-24 { margin-bottom: 24px; }
+.gap-16 { gap: 16px; }
+.flex { display: flex; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+.flex-center { display: flex; align-items: center; }
+.gap-8 { gap: 8px; }
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 1279px) {
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .grid--sidebar { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 1023px) {
+  .sidebar { width: var(--sidebar-collapsed); }
+  .sidebar .sidebar__logo-text,
+  .sidebar .sidebar__item-label,
+  .sidebar .sidebar__badge,
+  .sidebar .sidebar__section-title { opacity: 0; }
+  .main { margin-left: var(--sidebar-collapsed); }
+}
+
+@media (max-width: 767px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; }
+  .kpi-row { grid-template-columns: 1fr; }
+  .grid--2 { grid-template-columns: 1fr; }
+  .info-list { grid-template-columns: 1fr; }
+  .info-item:nth-child(even) { padding-left: 0; border-left: none; }
+  .page { padding: 16px; }
+}
+</style>
+
+<style>
+/* Embedded mode overrides */
+.sidebar { display: none !important; }
+.topbar { display: none !important; }
+.main { margin-left: 0 !important; }
+body { background: var(--color-bg); }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     LAYOUT
+     ============================================================ -->
+<div class="layout" id="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__logo">
+      <div class="sidebar__logo-icon">G</div>
+      <span class="sidebar__logo-text">GAA</span>
+    </div>
+
+    <nav class="sidebar__nav">
+      <div class="sidebar__section-title">Cœur métier</div>
+      <div class="sidebar__item" onclick="showToast('Navigation vers le tableau de bord', 'info')">
+        <span class="sidebar__item-icon">📊</span>
+        <span class="sidebar__item-label">Tableau de bord</span>
+      </div>
+      <div class="sidebar__item sidebar__item--active">
+        <span class="sidebar__item-icon">📁</span>
+        <span class="sidebar__item-label">Projets</span>
+        <span class="sidebar__badge">12</span>
+      </div>
+      <div class="sidebar__item">
+        <span class="sidebar__item-icon">⏱️</span>
+        <span class="sidebar__item-label">Temps</span>
+      </div>
+      <div class="sidebar__item">
+        <span class="sidebar__item-icon">💰</span>
+        <span class="sidebar__item-label">Finances</span>
+      </div>
+      <div class="sidebar__item">
+        <span class="sidebar__item-icon">👥</span>
+        <span class="sidebar__item-label">Contacts</span>
+      </div>
+      <div class="sidebar__item">
+        <span class="sidebar__item-icon">📅</span>
+        <span class="sidebar__item-label">Planning</span>
+      </div>
+      <div class="sidebar__item">
+        <span class="sidebar__item-icon">🏗️</span>
+        <span class="sidebar__item-label">Chantier</span>
+      </div>
+      <div class="sidebar__item">
+        <span class="sidebar__item-icon">📄</span>
+        <span class="sidebar__item-label">Documents</span>
+      </div>
+      <div class="sidebar__item">
+        <span class="sidebar__item-icon">✅</span>
+        <span class="sidebar__item-label">Tâches</span>
+        <span class="sidebar__badge">5</span>
+      </div>
+
+      <div class="sidebar__section-title">Outils</div>
+      <div class="sidebar__item">
+        <span class="sidebar__item-icon">📈</span>
+        <span class="sidebar__item-label">Reporting</span>
+      </div>
+      <div class="sidebar__item">
+        <span class="sidebar__item-icon">🔔</span>
+        <span class="sidebar__item-label">Alertes</span>
+        <span class="sidebar__badge">3</span>
+      </div>
+      <div class="sidebar__item">
+        <span class="sidebar__item-icon">⚙️</span>
+        <span class="sidebar__item-label">Paramètres</span>
+      </div>
+    </nav>
+
+    <div class="sidebar__toggle"  title="Réduire le menu">
+      <span id="toggleIcon">◀</span>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main">
+
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="topbar__search">
+        <span class="topbar__search-icon">🔍</span>
+        <input type="text" placeholder="Rechercher un projet, contact, document…" />
+      </div>
+      <div class="topbar__actions">
+        <button class="topbar__btn" title="Notifications" onclick="showToast('3 nouvelles notifications', 'info')">
+          🔔<span class="notif-dot"></span>
+        </button>
+        <button class="topbar__btn" title="Aide">❓</button>
+        <div class="topbar__avatar" title="Marie Lefort">ML</div>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="page">
+
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb">
+        <a href="#">Projets</a>
+        <span class="breadcrumb__sep">›</span>
+        <span class="breadcrumb__current">Groupe scolaire Victor Hugo — Réhabilitation</span>
+      </nav>
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <div class="page-header__left">
+          <div class="page-header__icon">🏫</div>
+          <div>
+            <h1 class="page-header__title">Groupe scolaire Victor Hugo — Réhabilitation</h1>
+            <div class="page-header__meta">
+              <span class="badge badge--public">Marché public</span>
+              <span class="badge badge--phase">📐 Phase PRO en cours</span>
+              <span class="badge badge--success"><span class="health-dot health-dot--ok"></span>&nbsp;Santé OK</span>
+              <span class="text-sm text-muted">Réf. 2024-037</span>
+            </div>
+          </div>
+        </div>
+        <div class="page-header__actions">
+          <button class="btn btn--secondary" onclick="openModal()">✏️ Modifier</button>
+          <button class="btn btn--primary" onclick="showToast('Rapport exporté en PDF', 'success')">📥 Exporter</button>
+        </div>
+      </div>
+
+      <!-- KPI Row -->
+      <div class="kpi-row">
+        <div class="kpi">
+          <div class="kpi__label">💰 Honoraires totaux</div>
+          <div class="kpi__value">238 000 €</div>
+          <div class="kpi__sub">Budget contractuel</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi__label">⏱️ Temps passé</div>
+          <div class="kpi__value">1 240 h</div>
+          <div class="kpi__sub kpi__trend--up">↗ 68% du budget heures</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi__label">📊 Rentabilité prévisionnelle</div>
+          <div class="kpi__value" style="color: var(--color-success)">14,2%</div>
+          <div class="kpi__sub">Cible : 12%</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi__label">📅 Prochaine échéance</div>
+          <div class="kpi__value" style="font-size: 18px;">Rendu PRO</div>
+          <div class="kpi__sub kpi__trend--down">⚠️ Dans 12 jours</div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs" id="mainTabs">
+        <button class="tabs__item tabs__item--active" data-tab="synthese">Synthèse</button>
+        <button class="tabs__item" data-tab="phases">Phases & Missions</button>
+        <button class="tabs__item" data-tab="finances">Finances</button>
+        <button class="tabs__item" data-tab="documents">Documents<span class="tabs__count">47</span></button>
+        <button class="tabs__item" data-tab="taches">Tâches<span class="tabs__count">18</span></button>
+        <button class="tabs__item" data-tab="equipe">Équipe</button>
+        <button class="tabs__item" data-tab="activite">Activité</button>
+      </div>
+
+      <!-- ====================================================
+           TAB: Synthèse
+           ==================================================== -->
+      <div class="tab-panel tab-panel--active" id="tab-synthese">
+        <!-- Phases Timeline -->
+        <div class="card mb-24">
+          <div class="card__header">
+            <span class="card__title">Avancement des phases</span>
+            <button class="btn btn--ghost btn--sm">Voir le détail</button>
+          </div>
+          <div class="card__body">
+            <div class="phases-timeline">
+              <div class="phase-block phase-block--done">
+                <div class="phase-block__name">ESQ</div>
+                <div class="phase-block__pct">100%</div>
+              </div>
+              <div class="phase-block phase-block--done">
+                <div class="phase-block__name">APS</div>
+                <div class="phase-block__pct">100%</div>
+              </div>
+              <div class="phase-block phase-block--done">
+                <div class="phase-block__name">APD</div>
+                <div class="phase-block__pct">100%</div>
+              </div>
+              <div class="phase-block phase-block--active">
+                <div class="phase-block__name">PRO</div>
+                <div class="phase-block__pct">62%</div>
+              </div>
+              <div class="phase-block phase-block--upcoming">
+                <div class="phase-block__name">DCE</div>
+                <div class="phase-block__pct">—</div>
+              </div>
+              <div class="phase-block phase-block--upcoming">
+                <div class="phase-block__name">ACT</div>
+                <div class="phase-block__pct">—</div>
+              </div>
+              <div class="phase-block phase-block--upcoming">
+                <div class="phase-block__name">DET</div>
+                <div class="phase-block__pct">—</div>
+              </div>
+              <div class="phase-block phase-block--upcoming">
+                <div class="phase-block__name">AOR</div>
+                <div class="phase-block__pct">—</div>
+              </div>
+            </div>
+            <div class="flex-between text-sm text-muted">
+              <span>Avancement global</span>
+              <span class="text-mono">47%</span>
+            </div>
+            <div class="progress mt-8">
+              <div class="progress__bar progress__bar--primary" style="width: 47%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Two columns -->
+        <div class="grid grid--sidebar">
+          <div>
+            <!-- Project Info Card -->
+            <div class="card mb-24">
+              <div class="card__header">
+                <span class="card__title">Informations du projet</span>
+              </div>
+              <div class="card__body">
+                <div class="info-list">
+                  <div class="info-item">
+                    <span class="info-item__label">Maître d'ouvrage</span>
+                    <span class="info-item__value">Ville de Nantes</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-item__label">Type d'ouvrage</span>
+                    <span class="info-item__value">Équipement scolaire</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-item__label">Adresse</span>
+                    <span class="info-item__value">12 rue Victor Hugo, 44000 Nantes</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-item__label">Surface</span>
+                    <span class="info-item__value info-item__value--mono">3 200 m²</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-item__label">Montant travaux estimé</span>
+                    <span class="info-item__value info-item__value--mono">2 800 000 €</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-item__label">Missions</span>
+                    <span class="info-item__value">Base + OPC</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-item__label">Démarrage</span>
+                    <span class="info-item__value info-item__value--mono">15/03/2024</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-item__label">Livraison prévisionnelle</span>
+                    <span class="info-item__value info-item__value--mono">01/09/2026</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Gantt simplifié -->
+            <div class="card">
+              <div class="card__header">
+                <span class="card__title">Planning des phases</span>
+                <button class="btn btn--ghost btn--sm">Plein écran</button>
+              </div>
+              <div class="card__body">
+                <div class="gantt">
+                  <div class="gantt__row">
+                    <span class="gantt__label">ESQ</span>
+                    <div class="gantt__track">
+                      <div class="gantt__bar" style="left:0%;width:10%;background:var(--color-success)">ESQ</div>
+                    </div>
+                  </div>
+                  <div class="gantt__row">
+                    <span class="gantt__label">APS</span>
+                    <div class="gantt__track">
+                      <div class="gantt__bar" style="left:10%;width:12%;background:var(--color-success)">APS</div>
+                    </div>
+                  </div>
+                  <div class="gantt__row">
+                    <span class="gantt__label">APD</span>
+                    <div class="gantt__track">
+                      <div class="gantt__bar" style="left:22%;width:15%;background:var(--color-success)">APD</div>
+                    </div>
+                  </div>
+                  <div class="gantt__row">
+                    <span class="gantt__label">PRO</span>
+                    <div class="gantt__track">
+                      <div class="gantt__bar" style="left:37%;width:18%;background:var(--color-primary-light)">PRO ●</div>
+                    </div>
+                  </div>
+                  <div class="gantt__row">
+                    <span class="gantt__label">DCE</span>
+                    <div class="gantt__track">
+                      <div class="gantt__bar" style="left:55%;width:10%;background:var(--color-muted)">DCE</div>
+                    </div>
+                  </div>
+                  <div class="gantt__row">
+                    <span class="gantt__label">ACT</span>
+                    <div class="gantt__track">
+                      <div class="gantt__bar" style="left:65%;width:5%;background:var(--color-muted)">ACT</div>
+                    </div>
+                  </div>
+                  <div class="gantt__row">
+                    <span class="gantt__label">DET</span>
+                    <div class="gantt__track">
+                      <div class="gantt__bar" style="left:70%;width:22%;background:var(--color-muted)">DET</div>
+                    </div>
+                  </div>
+                  <div class="gantt__row">
+                    <span class="gantt__label">AOR</span>
+                    <div class="gantt__track">
+                      <div class="gantt__bar" style="left:92%;width:8%;background:var(--color-muted)">AOR</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Sidebar -->
+          <div>
+            <!-- Team Card -->
+            <div class="card mb-24">
+              <div class="card__header">
+                <span class="card__title">Équipe projet</span>
+                <button class="btn btn--ghost btn--sm" onclick="openDrawer()">Gérer</button>
+              </div>
+              <div class="card__body" style="padding: 8px 8px;">
+                <div class="team-list">
+                  <div class="team-member">
+                    <div class="avatar" style="background:#1B4965">ML</div>
+                    <div class="team-member__info">
+                      <div class="team-member__name">Marie Lefort</div>
+                      <div class="team-member__role">Chef de projet</div>
+                    </div>
+                  </div>
+                  <div class="team-member">
+                    <div class="avatar" style="background:#2D6A4F">TD</div>
+                    <div class="team-member__info">
+                      <div class="team-member__name">Thomas Durand</div>
+                      <div class="team-member__role">Architecte</div>
+                    </div>
+                  </div>
+                  <div class="team-member">
+                    <div class="avatar" style="background:#E76F51">SC</div>
+                    <div class="team-member__info">
+                      <div class="team-member__name">Sophie Caron</div>
+                      <div class="team-member__role">Dessinatrice</div>
+                    </div>
+                  </div>
+                  <div class="team-member">
+                    <div class="avatar" style="background:#5FA8D3">JB</div>
+                    <div class="team-member__info">
+                      <div class="team-member__name">Julien Bernard</div>
+                      <div class="team-member__role">Projeteur BIM</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Derniers documents -->
+            <div class="card mb-24">
+              <div class="card__header">
+                <span class="card__title">Derniers documents</span>
+                <button class="btn btn--ghost btn--sm">Voir tout</button>
+              </div>
+              <div class="card__body card__body--flush">
+                <div class="doc-item" onclick="openDrawer()">
+                  <div class="doc-icon doc-icon--pdf">PDF</div>
+                  <div class="doc-info">
+                    <div class="doc-info__name">Notice descriptive PRO — Ind. B</div>
+                    <div class="doc-info__meta">Modifié il y a 2h · Marie Lefort</div>
+                  </div>
+                  <span class="badge badge--success">Validé</span>
+                </div>
+                <div class="doc-item">
+                  <div class="doc-icon doc-icon--dwg">DWG</div>
+                  <div class="doc-info">
+                    <div class="doc-info__name">Plans PRO R+1 — Ind. C</div>
+                    <div class="doc-info__meta">Modifié hier · Thomas Durand</div>
+                  </div>
+                  <span class="badge badge--phase">En revue</span>
+                </div>
+                <div class="doc-item">
+                  <div class="doc-icon doc-icon--ifc">IFC</div>
+                  <div class="doc-info">
+                    <div class="doc-info__name">Maquette BIM structure</div>
+                    <div class="doc-info__meta">Déposé il y a 3 jours · BET Structura</div>
+                  </div>
+                  <span class="badge badge--muted">Brouillon</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Jalons à venir -->
+            <div class="card">
+              <div class="card__header">
+                <span class="card__title">Jalons à venir</span>
+              </div>
+              <div class="card__body" style="padding: 12px 20px;">
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:4px;height:32px;border-radius:2px;background:var(--color-warning);flex-shrink:0;"></div>
+                    <div>
+                      <div style="font-size:13px;font-weight:500;">Rendu PRO</div>
+                      <div class="text-sm text-muted text-mono">06/03/2025 · dans 12 jours</div>
+                    </div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:4px;height:32px;border-radius:2px;background:var(--color-primary-light);flex-shrink:0;"></div>
+                    <div>
+                      <div style="font-size:13px;font-weight:500;">Démarrage DCE</div>
+                      <div class="text-sm text-muted text-mono">20/03/2025 · dans 26 jours</div>
+                    </div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:4px;height:32px;border-radius:2px;background:var(--color-muted);flex-shrink:0;"></div>
+                    <div>
+                      <div style="font-size:13px;font-weight:500;">Dépôt permis de construire</div>
+                      <div class="text-sm text-muted text-mono">15/04/2025 · dans 52 jours</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================
+           TAB: Phases & Missions
+           ==================================================== -->
+      <div class="tab-panel" id="tab-phases">
+        <div class="card">
+          <div class="card__header">
+            <span class="card__title">Détail des phases</span>
+            <button class="btn btn--secondary btn--sm" onclick="showToast('Phase ajoutée', 'success')">+ Ajouter une phase</button>
+          </div>
+          <div class="card__body card__body--flush">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Phase</th>
+                  <th>Statut</th>
+                  <th>Dates prév.</th>
+                  <th>Dates réelles</th>
+                  <th>Écart</th>
+                  <th>Budget h</th>
+                  <th>Réel h</th>
+                  <th>Conso.</th>
+                  <th>Honoraires</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>ESQ</strong> — Esquisse</td>
+                  <td><span class="badge badge--success">Validée</span></td>
+                  <td class="mono">Mar–Avr 2024</td>
+                  <td class="mono">15/03–12/04</td>
+                  <td class="mono text-success">-3 j</td>
+                  <td class="mono">120</td>
+                  <td class="mono">108</td>
+                  <td><div class="progress" style="width:80px"><div class="progress__bar progress__bar--success" style="width:90%"></div></div></td>
+                  <td class="mono">19 000 €</td>
+                </tr>
+                <tr>
+                  <td><strong>APS</strong> — Avant-Projet Sommaire</td>
+                  <td><span class="badge badge--success">Validée</span></td>
+                  <td class="mono">Mai–Juil 2024</td>
+                  <td class="mono">01/05–18/07</td>
+                  <td class="mono text-warning">+5 j</td>
+                  <td class="mono">200</td>
+                  <td class="mono">215</td>
+                  <td><div class="progress" style="width:80px"><div class="progress__bar progress__bar--warning" style="width:107%"></div></div></td>
+                  <td class="mono">33 000 €</td>
+                </tr>
+                <tr>
+                  <td><strong>APD</strong> — Avant-Projet Définitif</td>
+                  <td><span class="badge badge--success">Validée</span></td>
+                  <td class="mono">Sep–Nov 2024</td>
+                  <td class="mono">02/09–25/11</td>
+                  <td class="mono text-success">0 j</td>
+                  <td class="mono">320</td>
+                  <td class="mono">310</td>
+                  <td><div class="progress" style="width:80px"><div class="progress__bar progress__bar--success" style="width:97%"></div></div></td>
+                  <td class="mono">47 000 €</td>
+                </tr>
+                <tr style="background:var(--color-primary-bg);">
+                  <td><strong>PRO</strong> — Études de projet</td>
+                  <td><span class="badge badge--phase">En cours</span></td>
+                  <td class="mono">Déc 2024–Mar 2025</td>
+                  <td class="mono">02/12–…</td>
+                  <td class="mono">—</td>
+                  <td class="mono">400</td>
+                  <td class="mono">287</td>
+                  <td><div class="progress" style="width:80px"><div class="progress__bar progress__bar--primary" style="width:72%"></div></div></td>
+                  <td class="mono">57 000 €</td>
+                </tr>
+                <tr>
+                  <td><strong>DCE</strong> — Consultation entreprises</td>
+                  <td><span class="badge badge--muted">À venir</span></td>
+                  <td class="mono">Mar–Mai 2025</td>
+                  <td class="mono">—</td>
+                  <td class="mono">—</td>
+                  <td class="mono">240</td>
+                  <td class="mono">0</td>
+                  <td><div class="progress" style="width:80px"><div class="progress__bar progress__bar--primary" style="width:0%"></div></div></td>
+                  <td class="mono">31 000 €</td>
+                </tr>
+                <tr>
+                  <td><strong>DET</strong> — Direction exécution</td>
+                  <td><span class="badge badge--muted">À venir</span></td>
+                  <td class="mono">Oct 2025–Juin 2026</td>
+                  <td class="mono">—</td>
+                  <td class="mono">—</td>
+                  <td class="mono">480</td>
+                  <td class="mono">0</td>
+                  <td><div class="progress" style="width:80px"><div class="progress__bar progress__bar--primary" style="width:0%"></div></div></td>
+                  <td class="mono">38 000 €</td>
+                </tr>
+                <tr>
+                  <td><strong>AOR</strong> — Réception</td>
+                  <td><span class="badge badge--muted">À venir</span></td>
+                  <td class="mono">Juil–Sep 2026</td>
+                  <td class="mono">—</td>
+                  <td class="mono">—</td>
+                  <td class="mono">80</td>
+                  <td class="mono">0</td>
+                  <td><div class="progress" style="width:80px"><div class="progress__bar progress__bar--primary" style="width:0%"></div></div></td>
+                  <td class="mono">13 000 €</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================
+           TAB: Finances
+           ==================================================== -->
+      <div class="tab-panel" id="tab-finances">
+        <div class="kpi-row mb-24">
+          <div class="kpi">
+            <div class="kpi__label">Honoraires contractuels</div>
+            <div class="kpi__value">238 000 €</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi__label">Facturé à ce jour</div>
+            <div class="kpi__value">142 800 €</div>
+            <div class="kpi__sub">60% du contrat</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi__label">Encaissé</div>
+            <div class="kpi__value" style="color:var(--color-success)">118 200 €</div>
+            <div class="kpi__sub">Reste à encaisser : 24 600 €</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi__label">Coût interne (temps)</div>
+            <div class="kpi__value">99 200 €</div>
+            <div class="kpi__sub">1 240h × 80 €/h moy.</div>
+          </div>
+        </div>
+
+        <div class="grid grid--2">
+          <div class="card">
+            <div class="card__header">
+              <span class="card__title">Plan de facturation</span>
+              <button class="btn btn--secondary btn--sm" onclick="showToast('Nouvelle facture créée', 'success')">+ Facture</button>
+            </div>
+            <div class="card__body card__body--flush">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Facture</th>
+                    <th>Phase</th>
+                    <th>Montant</th>
+                    <th>Statut</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="mono">FA-2024-089</td>
+                    <td>ESQ 100%</td>
+                    <td class="mono">19 000 €</td>
+                    <td><span class="badge badge--success">Encaissée</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">FA-2024-112</td>
+                    <td>APS 100%</td>
+                    <td class="mono">33 000 €</td>
+                    <td><span class="badge badge--success">Encaissée</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">FA-2024-156</td>
+                    <td>APD 100%</td>
+                    <td class="mono">47 000 €</td>
+                    <td><span class="badge badge--success">Encaissée</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">FA-2025-018</td>
+                    <td>PRO sit. 1 (30%)</td>
+                    <td class="mono">17 100 €</td>
+                    <td><span class="badge badge--success">Encaissée</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">FA-2025-034</td>
+                    <td>PRO sit. 2 (60%)</td>
+                    <td class="mono">17 100 €</td>
+                    <td><span class="badge badge--warning">En attente</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">—</td>
+                    <td>PRO sit. 3 (100%)</td>
+                    <td class="mono">22 800 €</td>
+                    <td><span class="badge badge--muted">Planifiée</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card__header">
+              <span class="card__title">Rentabilité par phase</span>
+            </div>
+            <div class="card__body">
+              <div style="display:flex;flex-direction:column;gap:16px;">
+                <div>
+                  <div class="flex-between text-sm mb-16" style="margin-bottom:4px">
+                    <span><strong>ESQ</strong></span>
+                    <span class="text-mono text-success">+22%</span>
+                  </div>
+                  <div class="progress"><div class="progress__bar progress__bar--success" style="width:100%"></div></div>
+                </div>
+                <div>
+                  <div class="flex-between text-sm" style="margin-bottom:4px">
+                    <span><strong>APS</strong></span>
+                    <span class="text-mono text-warning">+4%</span>
+                  </div>
+                  <div class="progress"><div class="progress__bar progress__bar--warning" style="width:100%"></div></div>
+                </div>
+                <div>
+                  <div class="flex-between text-sm" style="margin-bottom:4px">
+                    <span><strong>APD</strong></span>
+                    <span class="text-mono text-success">+18%</span>
+                  </div>
+                  <div class="progress"><div class="progress__bar progress__bar--success" style="width:100%"></div></div>
+                </div>
+                <div>
+                  <div class="flex-between text-sm" style="margin-bottom:4px">
+                    <span><strong>PRO</strong> (en cours)</span>
+                    <span class="text-mono text-success">+14% prév.</span>
+                  </div>
+                  <div class="progress"><div class="progress__bar progress__bar--primary" style="width:62%"></div></div>
+                </div>
+                <div>
+                  <div class="flex-between text-sm" style="margin-bottom:4px">
+                    <span><strong>DCE</strong></span>
+                    <span class="text-mono text-muted">—</span>
+                  </div>
+                  <div class="progress"><div class="progress__bar progress__bar--primary" style="width:0%"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================
+           TAB: Documents
+           ==================================================== -->
+      <div class="tab-panel" id="tab-documents">
+        <div class="card">
+          <div class="card__header">
+            <span class="card__title">GED Projet</span>
+            <div style="display:flex;gap:8px;">
+              <input type="text" class="form-input" placeholder="Rechercher un document…" style="width:240px;padding:6px 10px;font-size:12px;">
+              <button class="btn btn--primary btn--sm" onclick="showToast('Zone de dépôt ouverte', 'info')">📤 Déposer</button>
+            </div>
+          </div>
+          <div class="card__body card__body--flush">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Document</th>
+                  <th>Phase</th>
+                  <th>Indice</th>
+                  <th>Auteur</th>
+                  <th>Date</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr onclick="openDrawer()" style="cursor:pointer">
+                  <td><span style="display:flex;align-items:center;gap:8px"><span class="doc-icon doc-icon--pdf" style="width:28px;height:28px;font-size:10px">PDF</span> Notice descriptive PRO</span></td>
+                  <td>PRO</td>
+                  <td class="mono">B</td>
+                  <td>Marie Lefort</td>
+                  <td class="mono">20/02/2025</td>
+                  <td><span class="badge badge--success">Validé</span></td>
+                </tr>
+                <tr style="cursor:pointer">
+                  <td><span style="display:flex;align-items:center;gap:8px"><span class="doc-icon doc-icon--dwg" style="width:28px;height:28px;font-size:10px">DWG</span> Plans PRO R+1</span></td>
+                  <td>PRO</td>
+                  <td class="mono">C</td>
+                  <td>Thomas Durand</td>
+                  <td class="mono">19/02/2025</td>
+                  <td><span class="badge badge--phase">En revue</span></td>
+                </tr>
+                <tr style="cursor:pointer">
+                  <td><span style="display:flex;align-items:center;gap:8px"><span class="doc-icon doc-icon--dwg" style="width:28px;height:28px;font-size:10px">DWG</span> Plans PRO RDC</span></td>
+                  <td>PRO</td>
+                  <td class="mono">B</td>
+                  <td>Sophie Caron</td>
+                  <td class="mono">18/02/2025</td>
+                  <td><span class="badge badge--success">Validé</span></td>
+                </tr>
+                <tr style="cursor:pointer">
+                  <td><span style="display:flex;align-items:center;gap:8px"><span class="doc-icon doc-icon--ifc" style="width:28px;height:28px;font-size:10px">IFC</span> Maquette BIM structure</span></td>
+                  <td>PRO</td>
+                  <td class="mono">A</td>
+                  <td>BET Structura</td>
+                  <td class="mono">17/02/2025</td>
+                  <td><span class="badge badge--muted">Brouillon</span></td>
+                </tr>
+                <tr style="cursor:pointer">
+                  <td><span style="display:flex;align-items:center;gap:8px"><span class="doc-icon doc-icon--doc" style="width:28px;height:28px;font-size:10px">DOC</span> CCTP Lot 1 — Gros œuvre</span></td>
+                  <td>PRO</td>
+                  <td class="mono">A</td>
+                  <td>Marie Lefort</td>
+                  <td class="mono">15/02/2025</td>
+                  <td><span class="badge badge--danger">À corriger</span></td>
+                </tr>
+                <tr style="cursor:pointer">
+                  <td><span style="display:flex;align-items:center;gap:8px"><span class="doc-icon doc-icon--pdf" style="width:28px;height:28px;font-size:10px">PDF</span> CR réunion MOA n°12</span></td>
+                  <td>PRO</td>
+                  <td class="mono">—</td>
+                  <td>Marie Lefort</td>
+                  <td class="mono">14/02/2025</td>
+                  <td><span class="badge badge--success">Diffusé</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================
+           TAB: Tâches
+           ==================================================== -->
+      <div class="tab-panel" id="tab-taches">
+        <div class="flex-between mb-24">
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn--secondary btn--sm" style="font-weight:600;border-color:var(--color-primary);color:var(--color-primary)">Kanban</button>
+            <button class="btn btn--ghost btn--sm">Liste</button>
+            <button class="btn btn--ghost btn--sm">Calendrier</button>
+          </div>
+          <button class="btn btn--primary btn--sm" onclick="showToast('Nouvelle tâche créée', 'success')">+ Nouvelle tâche</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
+          <!-- À faire -->
+          <div>
+            <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--color-text-muted);margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--color-muted);"></span>
+              À faire <span style="background:var(--color-bg);padding:1px 7px;border-radius:10px;font-size:11px;">4</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div class="card" style="cursor:pointer;"><div class="card__body" style="padding:12px 16px;">
+                <div style="font-size:13px;font-weight:500;margin-bottom:6px;">Quantitatif estimatif lots archi</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <span class="badge badge--warning" style="font-size:11px;">Priorité haute</span>
+                  <div class="avatar" style="width:24px;height:24px;font-size:10px;background:#E76F51">SC</div>
+                </div>
+                <div class="text-sm text-muted mt-8">Échéance : 28/02</div>
+              </div></div>
+              <div class="card" style="cursor:pointer;"><div class="card__body" style="padding:12px 16px;">
+                <div style="font-size:13px;font-weight:500;margin-bottom:6px;">Plans coupes transversales</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <span class="badge badge--muted" style="font-size:11px;">Normal</span>
+                  <div class="avatar" style="width:24px;height:24px;font-size:10px;background:#2D6A4F">TD</div>
+                </div>
+                <div class="text-sm text-muted mt-8">Échéance : 03/03</div>
+              </div></div>
+              <div class="card" style="cursor:pointer;"><div class="card__body" style="padding:12px 16px;">
+                <div style="font-size:13px;font-weight:500;margin-bottom:6px;">Détails menuiseries ext.</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <span class="badge badge--muted" style="font-size:11px;">Normal</span>
+                  <div class="avatar" style="width:24px;height:24px;font-size:10px;background:#5FA8D3">JB</div>
+                </div>
+                <div class="text-sm text-muted mt-8">Échéance : 05/03</div>
+              </div></div>
+            </div>
+          </div>
+
+          <!-- En cours -->
+          <div>
+            <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--color-primary);margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--color-primary-light);"></span>
+              En cours <span style="background:var(--color-primary-bg);padding:1px 7px;border-radius:10px;font-size:11px;">3</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div class="card" style="cursor:pointer;border-left:3px solid var(--color-primary-light);"><div class="card__body" style="padding:12px 16px;">
+                <div style="font-size:13px;font-weight:500;margin-bottom:6px;">CCTP Lot 2 — Charpente</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <span class="badge badge--warning" style="font-size:11px;">Priorité haute</span>
+                  <div class="avatar" style="width:24px;height:24px;font-size:10px;background:#1B4965">ML</div>
+                </div>
+                <div class="text-sm text-muted mt-8">Échéance : 25/02</div>
+              </div></div>
+              <div class="card" style="cursor:pointer;border-left:3px solid var(--color-primary-light);"><div class="card__body" style="padding:12px 16px;">
+                <div style="font-size:13px;font-weight:500;margin-bottom:6px;">Plans façades — mise à jour</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <span class="badge badge--muted" style="font-size:11px;">Normal</span>
+                  <div class="avatar" style="width:24px;height:24px;font-size:10px;background:#2D6A4F">TD</div>
+                </div>
+                <div class="text-sm text-muted mt-8">Échéance : 01/03</div>
+              </div></div>
+              <div class="card" style="cursor:pointer;border-left:3px solid var(--color-primary-light);"><div class="card__body" style="padding:12px 16px;">
+                <div style="font-size:13px;font-weight:500;margin-bottom:6px;">Intégration maquette fluides</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <span class="badge badge--muted" style="font-size:11px;">Normal</span>
+                  <div class="avatar" style="width:24px;height:24px;font-size:10px;background:#5FA8D3">JB</div>
+                </div>
+                <div class="text-sm text-muted mt-8">Échéance : 04/03</div>
+              </div></div>
+            </div>
+          </div>
+
+          <!-- En revue -->
+          <div>
+            <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#b8860b;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--color-accent);"></span>
+              En revue <span style="background:var(--color-accent-bg);padding:1px 7px;border-radius:10px;font-size:11px;">2</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div class="card" style="cursor:pointer;border-left:3px solid var(--color-accent);"><div class="card__body" style="padding:12px 16px;">
+                <div style="font-size:13px;font-weight:500;margin-bottom:6px;">Plans PRO R+1</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <span class="badge badge--muted" style="font-size:11px;">Normal</span>
+                  <div class="avatar" style="width:24px;height:24px;font-size:10px;background:#2D6A4F">TD</div>
+                </div>
+                <div class="text-sm text-muted mt-8">Soumis le 19/02</div>
+              </div></div>
+              <div class="card" style="cursor:pointer;border-left:3px solid var(--color-accent);"><div class="card__body" style="padding:12px 16px;">
+                <div style="font-size:13px;font-weight:500;margin-bottom:6px;">CCTP Lot 1 — Gros œuvre</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <span class="badge badge--danger" style="font-size:11px;">Corrections demandées</span>
+                  <div class="avatar" style="width:24px;height:24px;font-size:10px;background:#1B4965">ML</div>
+                </div>
+                <div class="text-sm text-muted mt-8">Retourné le 18/02</div>
+              </div></div>
+            </div>
+          </div>
+
+          <!-- Terminé -->
+          <div>
+            <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--color-success);margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--color-success);"></span>
+              Terminé <span style="background:var(--color-success-bg);padding:1px 7px;border-radius:10px;font-size:11px;">9</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div class="card" style="cursor:pointer;opacity:0.75;"><div class="card__body" style="padding:12px 16px;">
+                <div style="font-size:13px;font-weight:500;margin-bottom:6px;text-decoration:line-through;">Notice descriptive PRO</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <span class="badge badge--success" style="font-size:11px;">Validé</span>
+                  <div class="avatar" style="width:24px;height:24px;font-size:10px;background:#1B4965">ML</div>
+                </div>
+                <div class="text-sm text-muted mt-8">Terminé le 20/02</div>
+              </div></div>
+              <div class="card" style="cursor:pointer;opacity:0.75;"><div class="card__body" style="padding:12px 16px;">
+                <div style="font-size:13px;font-weight:500;margin-bottom:6px;text-decoration:line-through;">Plans PRO RDC</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <span class="badge badge--success" style="font-size:11px;">Validé</span>
+                  <div class="avatar" style="width:24px;height:24px;font-size:10px;background:#E76F51">SC</div>
+                </div>
+                <div class="text-sm text-muted mt-8">Terminé le 18/02</div>
+              </div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================
+           TAB: Équipe
+           ==================================================== -->
+      <div class="tab-panel" id="tab-equipe">
+        <div class="grid grid--2">
+          <div class="card">
+            <div class="card__header">
+              <span class="card__title">Équipe interne</span>
+              <button class="btn btn--secondary btn--sm">+ Ajouter</button>
+            </div>
+            <div class="card__body card__body--flush">
+              <table class="data-table">
+                <thead>
+                  <tr><th>Collaborateur</th><th>Rôle</th><th>Phases</th><th>Heures</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><span style="display:flex;align-items:center;gap:8px"><div class="avatar" style="width:28px;height:28px;font-size:10px;background:#1B4965">ML</div> Marie Lefort</span></td>
+                    <td>Chef de projet</td>
+                    <td>Toutes</td>
+                    <td class="mono">420 h</td>
+                  </tr>
+                  <tr>
+                    <td><span style="display:flex;align-items:center;gap:8px"><div class="avatar" style="width:28px;height:28px;font-size:10px;background:#2D6A4F">TD</div> Thomas Durand</span></td>
+                    <td>Architecte</td>
+                    <td>APS → PRO</td>
+                    <td class="mono">380 h</td>
+                  </tr>
+                  <tr>
+                    <td><span style="display:flex;align-items:center;gap:8px"><div class="avatar" style="width:28px;height:28px;font-size:10px;background:#E76F51">SC</div> Sophie Caron</span></td>
+                    <td>Dessinatrice</td>
+                    <td>APD → PRO</td>
+                    <td class="mono">290 h</td>
+                  </tr>
+                  <tr>
+                    <td><span style="display:flex;align-items:center;gap:8px"><div class="avatar" style="width:28px;height:28px;font-size:10px;background:#5FA8D3">JB</div> Julien Bernard</span></td>
+                    <td>Projeteur BIM</td>
+                    <td>PRO → DET</td>
+                    <td class="mono">150 h</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card__header">
+              <span class="card__title">Intervenants externes</span>
+              <button class="btn btn--secondary btn--sm">+ Ajouter</button>
+            </div>
+            <div class="card__body card__body--flush">
+              <table class="data-table">
+                <thead>
+                  <tr><th>Organisme</th><th>Spécialité</th><th>Contact</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>BET Structura</strong></td>
+                    <td>Structure béton</td>
+                    <td>Pierre Martin</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Thermex Ingénierie</strong></td>
+                    <td>Fluides CVC</td>
+                    <td>Anne Dupont</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Acoustibel</strong></td>
+                    <td>Acoustique</td>
+                    <td>Marc Lefèvre</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Economes Associés</strong></td>
+                    <td>Économie</td>
+                    <td>Claire Rousseau</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================
+           TAB: Activité
+           ==================================================== -->
+      <div class="tab-panel" id="tab-activite">
+        <div class="card">
+          <div class="card__header">
+            <span class="card__title">Fil d'activité</span>
+            <select class="form-select" style="width:180px;padding:5px 8px;font-size:12px;">
+              <option>Toutes les activités</option>
+              <option>Documents</option>
+              <option>Tâches</option>
+              <option>Finances</option>
+              <option>Phases</option>
+            </select>
+          </div>
+          <div class="card__body">
+            <div class="activity-feed">
+              <div class="activity-item">
+                <div class="activity-item__dot" style="background:var(--color-success)"></div>
+                <div class="activity-item__content">
+                  <div class="activity-item__text"><strong>Marie Lefort</strong> a validé le document <strong>Notice descriptive PRO — Ind. B</strong></div>
+                  <div class="activity-item__time">Il y a 2 heures</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-item__dot" style="background:var(--color-primary-light)"></div>
+                <div class="activity-item__content">
+                  <div class="activity-item__text"><strong>Thomas Durand</strong> a déposé une nouvelle version de <strong>Plans PRO R+1 — Ind. C</strong></div>
+                  <div class="activity-item__time">Hier à 17h42</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-item__dot" style="background:var(--color-accent)"></div>
+                <div class="activity-item__content">
+                  <div class="activity-item__text"><strong>BET Structura</strong> a déposé la <strong>Maquette BIM structure</strong> sur le portail</div>
+                  <div class="activity-item__time">Il y a 3 jours</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-item__dot" style="background:var(--color-danger)"></div>
+                <div class="activity-item__content">
+                  <div class="activity-item__text"><strong>Marie Lefort</strong> a demandé des corrections sur <strong>CCTP Lot 1 — Gros œuvre</strong></div>
+                  <div class="activity-item__time">Il y a 4 jours</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-item__dot" style="background:var(--color-success)"></div>
+                <div class="activity-item__content">
+                  <div class="activity-item__text"><strong>Sophie Caron</strong> a terminé la tâche <strong>Plans PRO RDC</strong></div>
+                  <div class="activity-item__time">Il y a 4 jours</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-item__dot" style="background:var(--color-primary-light)"></div>
+                <div class="activity-item__content">
+                  <div class="activity-item__text">Facture <strong>FA-2025-034</strong> émise — PRO situation 2 — <strong>17 100 €</strong></div>
+                  <div class="activity-item__time">Il y a 5 jours</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-item__dot" style="background:var(--color-success)"></div>
+                <div class="activity-item__content">
+                  <div class="activity-item__text">Paiement reçu pour <strong>FA-2025-018</strong> — PRO situation 1 — <strong>17 100 €</strong></div>
+                  <div class="activity-item__time">Il y a 1 semaine</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Modifier le projet
+     ============================================================ -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal__header">
+      <h2 class="modal__title">Modifier le projet</h2>
+      <button class="modal__close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal__body">
+      <div class="form-group">
+        <label>Nom du projet</label>
+        <input type="text" class="form-input" value="Groupe scolaire Victor Hugo — Réhabilitation">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Type de marché</label>
+          <select class="form-select">
+            <option selected>Marché public</option>
+            <option>Marché privé</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Type d'ouvrage</label>
+          <select class="form-select">
+            <option>Logement</option>
+            <option selected>Équipement scolaire</option>
+            <option>Tertiaire</option>
+            <option>Santé</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Maître d'ouvrage</label>
+        <input type="text" class="form-input" value="Ville de Nantes">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Surface (m²)</label>
+          <input type="text" class="form-input" value="3 200" style="font-family:var(--font-mono)">
+        </div>
+        <div class="form-group">
+          <label>Montant travaux estimé (€)</label>
+          <input type="text" class="form-input" value="2 800 000" style="font-family:var(--font-mono)">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Adresse</label>
+        <input type="text" class="form-input" value="12 rue Victor Hugo, 44000 Nantes">
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea class="form-textarea">Réhabilitation et extension d'un groupe scolaire de 12 classes avec restauration scolaire et accueil périscolaire. Bâtiment existant R+2 en maçonnerie, extension neuve en structure bois.</textarea>
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--secondary" onclick="closeModal()">Annuler</button>
+      <button class="btn btn--primary" onclick="closeModal(); showToast('Projet mis à jour avec succès', 'success')">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     DRAWER: Détail document
+     ============================================================ -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer__header">
+    <h3 class="drawer__title">Notice descriptive PRO</h3>
+    <button class="modal__close" onclick="closeDrawer()">&times;</button>
+  </div>
+  <div class="drawer__body">
+    <div style="display:flex;gap:8px;margin-bottom:20px;">
+      <span class="badge badge--success">Validé</span>
+      <span class="badge badge--public">Phase PRO</span>
+      <span class="badge badge--muted">Indice B</span>
+    </div>
+
+    <div style="background:var(--color-bg);border-radius:var(--radius-lg);height:200px;display:flex;align-items:center;justify-content:center;color:var(--color-text-muted);margin-bottom:20px;border:1px solid var(--color-border);">
+      📄 Prévisualisation du document
+    </div>
+
+    <div class="info-list" style="grid-template-columns:1fr;">
+      <div class="info-item" style="padding-left:0;border-left:none;">
+        <span class="info-item__label">Auteur</span>
+        <span class="info-item__value">Marie Lefort</span>
+      </div>
+      <div class="info-item" style="padding-left:0;border-left:none;">
+        <span class="info-item__label">Dernière modification</span>
+        <span class="info-item__value info-item__value--mono">20/02/2025 à 14h32</span>
+      </div>
+      <div class="info-item" style="padding-left:0;border-left:none;">
+        <span class="info-item__label">Taille</span>
+        <span class="info-item__value info-item__value--mono">2,4 Mo</span>
+      </div>
+      <div class="info-item" style="padding-left:0;border-left:none;">
+        <span class="info-item__label">Lot</span>
+        <span class="info-item__value">Tous lots</span>
+      </div>
+    </div>
+
+    <h4 style="font-size:14px;font-weight:600;margin:20px 0 12px;">Historique des versions</h4>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:var(--radius-md);background:var(--color-success-bg);">
+        <span class="text-mono text-sm" style="font-weight:600;color:var(--color-success);">B</span>
+        <div style="flex:1;">
+          <div style="font-size:13px;">Version validée</div>
+          <div class="text-sm text-muted">20/02/2025 — Marie Lefort</div>
+        </div>
+        <span class="badge badge--success" style="font-size:11px;">Actuel</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:var(--radius-md);">
+        <span class="text-mono text-sm" style="font-weight:600;color:var(--color-text-muted);">A</span>
+        <div style="flex:1;">
+          <div style="font-size:13px;">Version initiale</div>
+          <div class="text-sm text-muted">12/02/2025 — Marie Lefort</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;display:flex;gap:8px;">
+      <button class="btn btn--primary btn--sm">📥 Télécharger</button>
+      <button class="btn btn--secondary btn--sm">🔗 Partager</button>
+      <button class="btn btn--secondary btn--sm">📝 Annoter</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     TOAST CONTAINER
+     ============================================================ -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+// ---- Sidebar Toggle ----
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const icon = document.getElementById('toggleIcon');
+  sidebar.classList.toggle('sidebar--collapsed');
+  icon.textContent = sidebar.classList.contains('sidebar--collapsed') ? '▶' : '◀';
+}
+
+// ---- Tabs ----
+document.querySelectorAll('.tabs__item').forEach(tab => {
+  tab.addEventListener('click', () => {
+    // Remove active from all tabs
+    document.querySelectorAll('.tabs__item').forEach(t => t.classList.remove('tabs__item--active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('tab-panel--active'));
+    
+    tab.classList.add('tabs__item--active');
+    const panel = document.getElementById('tab-' + tab.dataset.tab);
+    if (panel) panel.classList.add('tab-panel--active');
+  });
+});
+
+// ---- Modal ----
+function openModal() {
+  const overlay = document.getElementById('modalOverlay');
+  overlay.style.display = 'flex';
+  requestAnimationFrame(() => overlay.classList.add('modal-overlay--visible'));
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(e) {
+  if (e && e.target !== e.currentTarget) return;
+  const overlay = document.getElementById('modalOverlay');
+  overlay.classList.remove('modal-overlay--visible');
+  setTimeout(() => {
+    overlay.style.display = 'none';
+    document.body.style.overflow = '';
+  }, 250);
+}
+
+// ---- Drawer ----
+function openDrawer() {
+  document.getElementById('drawerOverlay').classList.add('drawer-overlay--visible');
+  document.getElementById('drawer').classList.add('drawer--open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDrawer() {
+  document.getElementById('drawerOverlay').classList.remove('drawer-overlay--visible');
+  document.getElementById('drawer').classList.remove('drawer--open');
+  document.body.style.overflow = '';
+}
+
+// ---- Toast ----
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast toast--${type}`;
+  
+  const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+  toast.innerHTML = `<span>${icons[type] || 'ℹ️'}</span><span>${message}</span>`;
+  
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+// ---- Keyboard: Escape closes modal/drawer ----
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeModal();
+    closeDrawer();
+  }
+});
+</script>
+
+</body>
+</html>

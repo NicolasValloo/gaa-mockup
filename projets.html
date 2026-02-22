@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAA — Portefeuille projets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+.sidebar,.topbar{display:none!important;}
+:root{--color-primary:#1B4965;--color-primary-light:#5FA8D3;--color-primary-hover:#153a52;--color-primary-bg:#e8f1f8;--color-secondary:#3C4858;--color-accent:#E6A817;--color-accent-bg:#fdf5e0;--color-success:#2D6A4F;--color-success-bg:#e6f3ed;--color-danger:#C1292E;--color-danger-bg:#fbe8e8;--color-warning:#E76F51;--color-warning-bg:#fdf0ec;--color-bg:#F8F9FA;--color-surface:#FFFFFF;--color-border:#DEE2E6;--color-text:#212529;--color-text-muted:#6C757D;--color-muted:#ADB5BD;--font-sans:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;--font-mono:'JetBrains Mono',monospace;--radius-sm:4px;--radius-md:8px;--radius-lg:12px;--shadow-sm:0 1px 3px rgba(0,0,0,.06);--shadow-md:0 4px 12px rgba(0,0,0,.08);--shadow-lg:0 8px 32px rgba(0,0,0,.12);--transition:.2s ease;--sidebar-width:260px;--sidebar-collapsed:64px;--header-height:56px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);font-size:14px;line-height:1.5;color:var(--color-text);background:var(--color-bg);overflow-x:hidden}
+a{color:var(--color-primary);text-decoration:none}a:hover{color:var(--color-primary-light)}
+
+.layout{display:flex;min-height:100vh}
+
+/* Sidebar */
+.sidebar{width:var(--sidebar-width);background:var(--color-primary);color:#fff;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:width .25s ease;overflow:hidden}
+.sidebar.sidebar--collapsed{width:var(--sidebar-collapsed)}
+.sidebar__logo{height:var(--header-height);display:flex;align-items:center;padding:0 16px;border-bottom:1px solid rgba(255,255,255,.1);gap:12px;flex-shrink:0}
+.sidebar__logo-icon{width:32px;height:32px;background:var(--color-accent);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:var(--color-primary);flex-shrink:0}
+.sidebar__logo-text{font-size:18px;font-weight:700;letter-spacing:-.02em;white-space:nowrap;transition:opacity var(--transition)}
+.sidebar--collapsed .sidebar__logo-text{opacity:0}
+.sidebar__nav{flex:1;padding:8px;overflow-y:auto}
+.sidebar__section-title{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.45);padding:16px 12px 6px;white-space:nowrap}
+.sidebar--collapsed .sidebar__section-title{opacity:0;height:0;padding:0}
+.sidebar__item{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:var(--radius-md);color:rgba(255,255,255,.7);cursor:pointer;transition:all var(--transition);white-space:nowrap;font-size:13.5px}
+.sidebar__item:hover{background:rgba(255,255,255,.1);color:#fff}
+.sidebar__item--active{background:rgba(255,255,255,.15);color:#fff;font-weight:500}
+.sidebar__item-icon{width:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px}
+.sidebar__item-label{transition:opacity var(--transition)}
+.sidebar--collapsed .sidebar__item-label{opacity:0}
+.sidebar__badge{margin-left:auto;background:var(--color-danger);color:#fff;font-size:11px;font-weight:600;padding:1px 7px;border-radius:10px}
+.sidebar--collapsed .sidebar__badge{display:none}
+.sidebar__toggle{padding:12px;border-top:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.5);flex-shrink:0}
+.sidebar__toggle:hover{color:#fff}
+
+.main{flex:1;margin-left:var(--sidebar-width);transition:margin-left .25s ease;display:flex;flex-direction:column;min-height:100vh}
+.sidebar--collapsed ~ .main{margin-left:var(--sidebar-collapsed)}
+
+.topbar{height:var(--header-height);background:var(--color-surface);border-bottom:1px solid var(--color-border);display:flex;align-items:center;padding:0 24px;gap:16px;position:sticky;top:0;z-index:50}
+.topbar__search{flex:1;max-width:480px;position:relative}
+.topbar__search input{width:100%;padding:8px 12px 8px 36px;border:1px solid var(--color-border);border-radius:var(--radius-md);font-family:var(--font-sans);font-size:13px;background:var(--color-bg);outline:none;transition:all var(--transition)}
+.topbar__search input:focus{border-color:var(--color-primary-light);box-shadow:0 0 0 3px rgba(95,168,211,.15);background:var(--color-surface)}
+.topbar__search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--color-text-muted);font-size:14px}
+.topbar__actions{display:flex;align-items:center;gap:8px;margin-left:auto}
+.topbar__btn{width:36px;height:36px;border-radius:var(--radius-md);border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--color-text-muted);font-size:18px;transition:all var(--transition);position:relative}
+.topbar__btn:hover{background:var(--color-bg);color:var(--color-text)}
+.topbar__btn .notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;background:var(--color-danger);border-radius:50%;border:2px solid var(--color-surface)}
+.topbar__avatar{width:34px;height:34px;border-radius:50%;background:var(--color-accent);color:var(--color-primary);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+
+.page{flex:1;padding:24px;max-width:1360px;width:100%;margin:0 auto}
+
+/* Common */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius-md);font-family:var(--font-sans);font-size:13px;font-weight:500;border:1px solid transparent;cursor:pointer;transition:all var(--transition);white-space:nowrap}
+.btn--primary{background:var(--color-primary);color:#fff;border-color:var(--color-primary)}.btn--primary:hover{background:var(--color-primary-hover)}
+.btn--secondary{background:var(--color-surface);color:var(--color-text);border-color:var(--color-border)}.btn--secondary:hover{background:var(--color-bg)}
+.btn--ghost{background:transparent;color:var(--color-text-muted)}.btn--ghost:hover{background:var(--color-bg);color:var(--color-text)}
+.btn--sm{padding:5px 10px;font-size:12px}
+.btn--active{background:var(--color-primary-bg);border-color:var(--color-primary);color:var(--color-primary)}
+
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;white-space:nowrap}
+.badge--primary{background:var(--color-primary-bg);color:var(--color-primary)}
+.badge--success{background:var(--color-success-bg);color:var(--color-success)}
+.badge--danger{background:var(--color-danger-bg);color:var(--color-danger)}
+.badge--warning{background:var(--color-warning-bg);color:var(--color-warning)}
+.badge--muted{background:#EBEDEF;color:var(--color-text-muted)}
+.badge--accent{background:var(--color-accent-bg);color:#b8860b}
+
+.card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);overflow:hidden;transition:box-shadow var(--transition)}
+.card:hover{box-shadow:var(--shadow-sm)}
+.card__header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--color-border)}
+.card__title{font-size:14px;font-weight:600}
+.card__body{padding:16px 20px}
+.card__body--flush{padding:0}
+
+.health-dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0}
+.health-dot--ok{background:var(--color-success)}.health-dot--warning{background:var(--color-warning)}.health-dot--danger{background:var(--color-danger)}.health-dot--muted{background:var(--color-muted)}
+
+.text-muted{color:var(--color-text-muted)}.text-mono{font-family:var(--font-mono)}.text-sm{font-size:12px}
+.text-success{color:var(--color-success)}.text-danger{color:var(--color-danger)}.text-warning{color:var(--color-warning)}
+.mb-16{margin-bottom:16px}.mb-24{margin-bottom:24px}
+
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--color-text-muted);margin-bottom:16px}
+.breadcrumb a{color:var(--color-text-muted)}.breadcrumb a:hover{color:var(--color-primary)}
+.breadcrumb__current{color:var(--color-text);font-weight:500}
+
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:24px}
+.page-header__left{display:flex;align-items:flex-start;gap:16px}
+.page-header__icon{width:48px;height:48px;background:var(--color-primary-bg);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.page-header__title{font-size:24px;font-weight:600;letter-spacing:-.02em;line-height:1.3}
+.page-header__meta{display:flex;align-items:center;gap:12px;margin-top:4px;flex-wrap:wrap}
+.page-header__actions{display:flex;gap:8px;flex-shrink:0}
+
+/* KPIs */
+.kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:24px}
+.kpi{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:14px 18px;transition:all var(--transition);position:relative;overflow:hidden}
+.kpi:hover{box-shadow:var(--shadow-sm);transform:translateY(-1px)}
+.kpi__accent{position:absolute;top:0;left:0;right:0;height:3px}
+.kpi__label{font-size:12px;color:var(--color-text-muted);margin-bottom:4px}
+.kpi__value{font-family:var(--font-mono);font-size:22px;font-weight:500;letter-spacing:-.02em}
+.kpi__sub{font-size:12px;color:var(--color-text-muted);margin-top:2px}
+
+/* Toolbar */
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.toolbar__search{position:relative;flex:1;min-width:200px;max-width:340px}
+.toolbar__search input{width:100%;padding:7px 10px 7px 32px;border:1px solid var(--color-border);border-radius:var(--radius-md);font-family:var(--font-sans);font-size:13px;outline:none;transition:all var(--transition)}
+.toolbar__search input:focus{border-color:var(--color-primary-light);box-shadow:0 0 0 3px rgba(95,168,211,.15)}
+.toolbar__search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--color-text-muted);font-size:13px}
+.toolbar__sep{width:1px;height:24px;background:var(--color-border)}
+.toolbar__right{margin-left:auto;display:flex;gap:6px;align-items:center}
+
+.filter-chip{display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--color-border);background:var(--color-surface);cursor:pointer;transition:all var(--transition);color:var(--color-text-muted)}
+.filter-chip:hover{border-color:var(--color-primary-light);color:var(--color-text)}
+.filter-chip--active{background:var(--color-primary-bg);border-color:var(--color-primary);color:var(--color-primary)}
+
+/* View switch */
+.view-switch{display:flex;border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden}
+.view-switch__btn{padding:6px 12px;font-size:12px;font-weight:500;background:var(--color-surface);border:none;cursor:pointer;color:var(--color-text-muted);font-family:var(--font-sans);transition:all var(--transition);display:flex;align-items:center;gap:4px}
+.view-switch__btn:not(:last-child){border-right:1px solid var(--color-border)}
+.view-switch__btn:hover{background:var(--color-bg);color:var(--color-text)}
+.view-switch__btn--active{background:var(--color-primary);color:#fff}
+
+/* Tab panels */
+.view-panel{display:none;animation:fadeIn .3s ease}
+.view-panel--active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* Data table */
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--color-text-muted);font-weight:600;padding:8px 14px;border-bottom:2px solid var(--color-border);background:var(--color-bg);position:sticky;top:0;z-index:5;cursor:pointer;user-select:none}
+.data-table th:hover{color:var(--color-text)}
+.data-table th .sort-icon{margin-left:4px;font-size:10px;opacity:.4}
+.data-table th.sorted .sort-icon{opacity:1;color:var(--color-primary)}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--color-border);font-size:13px;vertical-align:middle}
+.data-table tr{cursor:pointer;transition:background var(--transition)}
+.data-table tr:hover td{background:rgba(248,249,250,.5)}
+.data-table .mono{font-family:var(--font-mono);font-size:12px}
+
+.progress{height:6px;background:var(--color-bg);border-radius:3px;overflow:hidden;min-width:60px}
+.progress__bar{height:100%;border-radius:3px;transition:width .5s ease}
+
+/* Project name cell */
+.project-cell{display:flex;align-items:center;gap:10px}
+.project-cell__color{width:4px;height:36px;border-radius:2px;flex-shrink:0}
+.project-cell__name{font-size:13px;font-weight:500}
+.project-cell__sub{font-size:11px;color:var(--color-text-muted)}
+
+/* Avatar stack */
+.avatar-stack{display:flex}
+.avatar-stack .avatar{width:26px;height:26px;font-size:9px;border:2px solid var(--color-surface);margin-left:-6px}
+.avatar-stack .avatar:first-child{margin-left:0}
+.avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;color:#fff;flex-shrink:0}
+
+/* ============================================================
+   Cards Grid View
+   ============================================================ */
+.projects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.project-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);overflow:hidden;cursor:pointer;transition:all var(--transition)}
+.project-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.project-card__accent{height:4px}
+.project-card__body{padding:16px 20px}
+.project-card__header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.project-card__title{font-size:15px;font-weight:600;line-height:1.3}
+.project-card__client{font-size:12px;color:var(--color-text-muted);margin-bottom:12px}
+.project-card__stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.project-card__stat-label{font-size:11px;color:var(--color-text-muted)}
+.project-card__stat-value{font-size:13px;font-weight:500}
+.project-card__stat-value--mono{font-family:var(--font-mono);font-size:12px}
+.project-card__progress{margin-bottom:12px}
+.project-card__progress-label{display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px}
+.project-card__footer{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid var(--color-border);background:var(--color-bg)}
+
+/* ============================================================
+   Gantt multi-projets
+   ============================================================ */
+.gantt-view{overflow-x:auto}
+.gantt-table{width:100%;border-collapse:collapse;min-width:1000px}
+.gantt-table th{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--color-text-muted);font-weight:600;padding:6px 4px;border-bottom:2px solid var(--color-border);text-align:center;background:var(--color-bg);position:sticky;top:0;z-index:5}
+.gantt-table th:first-child{text-align:left;padding-left:14px;min-width:220px}
+.gantt-table td{padding:6px 4px;border-bottom:1px solid var(--color-border);vertical-align:middle;height:36px}
+.gantt-table td:first-child{padding-left:14px}
+.gantt-table tr:hover td{background:rgba(248,249,250,.5)}
+
+.gantt-cell{position:relative;height:24px}
+.gantt-bar{position:absolute;top:2px;bottom:2px;border-radius:4px;display:flex;align-items:center;padding:0 6px;font-size:9px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:all var(--transition);cursor:pointer}
+.gantt-bar:hover{opacity:.85;transform:scaleY(1.15)}
+
+.gantt-month{min-width:80px}
+.gantt-today{position:absolute;top:0;bottom:0;width:2px;background:var(--color-danger);z-index:4;pointer-events:none}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:none;align-items:center;justify-content:center;opacity:0;transition:opacity .25s ease}
+.modal-overlay--visible{display:flex;opacity:1}
+.modal{background:var(--color-surface);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);width:90%;max-width:640px;max-height:85vh;overflow-y:auto;transform:scale(.95);transition:transform .25s ease}
+.modal-overlay--visible .modal{transform:scale(1)}
+.modal__header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--color-border)}
+.modal__title{font-size:17px;font-weight:600}
+.modal__close{width:32px;height:32px;border-radius:var(--radius-md);border:none;background:transparent;cursor:pointer;font-size:18px;color:var(--color-text-muted);display:flex;align-items:center;justify-content:center}
+.modal__close:hover{background:var(--color-bg);color:var(--color-text)}
+.modal__body{padding:24px}
+.modal__footer{padding:16px 24px;border-top:1px solid var(--color-border);display:flex;justify-content:flex-end;gap:8px}
+
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:500;color:var(--color-secondary);margin-bottom:6px}
+.form-input,.form-select,.form-textarea{width:100%;padding:9px 12px;border:1px solid var(--color-border);border-radius:var(--radius-md);font-family:var(--font-sans);font-size:14px;outline:none;transition:all var(--transition);background:var(--color-surface)}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--color-primary-light);box-shadow:0 0 0 3px rgba(95,168,211,.15)}
+.form-textarea{resize:vertical;min-height:60px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-row--3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+
+/* Toast */
+.toast-container{position:fixed;top:16px;right:16px;z-index:2000;display:flex;flex-direction:column;gap:8px}
+.toast{padding:12px 16px;border-radius:var(--radius-md);background:var(--color-surface);border:1px solid var(--color-border);box-shadow:var(--shadow-md);display:flex;align-items:center;gap:10px;font-size:13px;animation:slideIn .3s ease,fadeOut .3s ease 2.5s forwards;min-width:280px}
+.toast--success{border-left:3px solid var(--color-success)}.toast--info{border-left:3px solid var(--color-primary-light)}
+@keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes fadeOut{to{opacity:0;transform:translateX(40px)}}
+
+/* Responsive */
+@media(max-width:1279px){.kpi-strip{grid-template-columns:repeat(3,1fr)}.projects-grid{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}}
+@media(max-width:1023px){.sidebar{width:var(--sidebar-collapsed)}.sidebar .sidebar__logo-text,.sidebar .sidebar__item-label,.sidebar .sidebar__badge,.sidebar .sidebar__section-title{opacity:0}.main{margin-left:var(--sidebar-collapsed)}.kpi-strip{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:767px){.sidebar{display:none}.main{margin-left:0}.kpi-strip{grid-template-columns:1fr 1fr}.projects-grid{grid-template-columns:1fr}.page{padding:16px}.form-row,.form-row--3{grid-template-columns:1fr}}
+</style>
+
+<style>
+/* Embedded mode overrides */
+.sidebar { display: none !important; }
+.topbar { display: none !important; }
+.main { margin-left: 0 !important; }
+body { background: var(--color-bg); }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__logo"><div class="sidebar__logo-icon">G</div><span class="sidebar__logo-text">GAA</span></div>
+    <nav class="sidebar__nav">
+      <div class="sidebar__section-title">Cœur métier</div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">📊</span><span class="sidebar__item-label">Tableau de bord</span></div>
+      <div class="sidebar__item sidebar__item--active"><span class="sidebar__item-icon">📁</span><span class="sidebar__item-label">Projets</span><span class="sidebar__badge">12</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">⏱️</span><span class="sidebar__item-label">Temps</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">💰</span><span class="sidebar__item-label">Finances</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">👥</span><span class="sidebar__item-label">Contacts</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">📅</span><span class="sidebar__item-label">Planning</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">🏗️</span><span class="sidebar__item-label">Chantier</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">📄</span><span class="sidebar__item-label">Documents</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">✅</span><span class="sidebar__item-label">Tâches</span><span class="sidebar__badge">5</span></div>
+      <div class="sidebar__section-title">Outils</div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">📈</span><span class="sidebar__item-label">Reporting</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">🔔</span><span class="sidebar__item-label">Alertes</span><span class="sidebar__badge">3</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">⚙️</span><span class="sidebar__item-label">Paramètres</span></div>
+    </nav>
+    <div class="sidebar__toggle" ><span id="toggleIcon">◀</span></div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__search"><span class="topbar__search-icon">🔍</span><input type="text" placeholder="Rechercher un projet, contact, document…"/></div>
+      <div class="topbar__actions">
+        <button class="topbar__btn">🔔<span class="notif-dot"></span></button>
+        <button class="topbar__btn">❓</button>
+        <div class="topbar__avatar">AM</div>
+      </div>
+    </header>
+
+    <main class="page">
+      <nav class="breadcrumb">
+        <a href="#">Accueil</a><span style="font-size:10px">›</span>
+        <span class="breadcrumb__current">Portefeuille projets</span>
+      </nav>
+
+      <div class="page-header">
+        <div class="page-header__left">
+          <div class="page-header__icon">📁</div>
+          <div>
+            <h1 class="page-header__title">Portefeuille projets</h1>
+            <div class="page-header__meta">
+              <span class="badge badge--primary">12 actifs</span>
+              <span class="badge badge--muted">4 archivés</span>
+            </div>
+          </div>
+        </div>
+        <div class="page-header__actions">
+          <button class="btn btn--secondary">📥 Exporter</button>
+          <button class="btn btn--primary" onclick="openModal()">+ Nouveau projet</button>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpi-strip">
+        <div class="kpi"><div class="kpi__accent" style="background:var(--color-primary)"></div><div class="kpi__label">Projets actifs</div><div class="kpi__value">12</div><div class="kpi__sub">3 en conception · 2 en chantier</div></div>
+        <div class="kpi"><div class="kpi__accent" style="background:var(--color-success)"></div><div class="kpi__label">Honoraires cumulés</div><div class="kpi__value">2,87 M€</div><div class="kpi__sub">Projets en cours</div></div>
+        <div class="kpi"><div class="kpi__accent" style="background:var(--color-accent)"></div><div class="kpi__label">Rentabilité moyenne</div><div class="kpi__value" style="color:var(--color-success)">13,4%</div><div class="kpi__sub">Cible : 12%</div></div>
+        <div class="kpi"><div class="kpi__accent" style="background:var(--color-success)"></div><div class="kpi__label">Santé OK</div><div class="kpi__value" style="color:var(--color-success)">7</div><div class="kpi__sub"><span style="color:var(--color-warning)">3 attention</span> · <span style="color:var(--color-danger)">2 critique</span></div></div>
+        <div class="kpi"><div class="kpi__accent" style="background:var(--color-primary-light)"></div><div class="kpi__label">Surface totale</div><div class="kpi__value">28 400 m²</div><div class="kpi__sub">En production</div></div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="toolbar__search">
+          <span class="toolbar__search-icon">🔍</span>
+          <input type="text" placeholder="Filtrer les projets…" id="searchInput" oninput="filterProjects()">
+        </div>
+        <button class="filter-chip filter-chip--active" onclick="this.classList.toggle('filter-chip--active')">Tous</button>
+        <button class="filter-chip" onclick="this.classList.toggle('filter-chip--active')">🏛️ Public</button>
+        <button class="filter-chip" onclick="this.classList.toggle('filter-chip--active')">🏢 Privé</button>
+        <button class="filter-chip" onclick="this.classList.toggle('filter-chip--active')">🟢 OK</button>
+        <button class="filter-chip" onclick="this.classList.toggle('filter-chip--active')">🟠 Attention</button>
+        <button class="filter-chip" onclick="this.classList.toggle('filter-chip--active')">🔴 Critique</button>
+        <div class="toolbar__right">
+          <div class="view-switch">
+            <button class="view-switch__btn view-switch__btn--active" data-view="table" onclick="switchView('table')">☰ Liste</button>
+            <button class="view-switch__btn" data-view="cards" onclick="switchView('cards')">▦ Cartes</button>
+            <button class="view-switch__btn" data-view="gantt" onclick="switchView('gantt')">▬ Gantt</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== VIEW: Table ========== -->
+      <div class="view-panel view-panel--active" id="view-table">
+        <div class="card">
+          <div class="card__body card__body--flush">
+            <table class="data-table" id="projectsTable">
+              <thead>
+                <tr>
+                  <th class="sorted">Projet <span class="sort-icon">▼</span></th>
+                  <th>Type</th>
+                  <th>Phase</th>
+                  <th>Avancement</th>
+                  <th>Honoraires</th>
+                  <th>Rentabilité</th>
+                  <th>Chef de projet</th>
+                  <th>Santé</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr onclick="showToast('Ouverture fiche projet…','info')">
+                  <td><div class="project-cell"><div class="project-cell__color" style="background:#1B4965"></div><div><div class="project-cell__name">Groupe scolaire Victor Hugo</div><div class="project-cell__sub">Nantes · 3 200 m²</div></div></div></td>
+                  <td><span class="badge badge--primary" style="font-size:11px">Public</span></td>
+                  <td><span class="badge badge--accent" style="font-size:11px">PRO</span></td>
+                  <td><div style="display:flex;align-items:center;gap:8px"><div class="progress" style="width:70px"><div class="progress__bar" style="width:62%;background:var(--color-primary-light)"></div></div><span class="mono text-sm">62%</span></div></td>
+                  <td class="mono">238 K€</td>
+                  <td class="mono text-success">+14,2%</td>
+                  <td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="width:24px;height:24px;font-size:9px;background:#1B4965">ML</div><span class="text-sm">M. Lefort</span></div></td>
+                  <td><span class="health-dot health-dot--ok"></span></td>
+                </tr>
+                <tr onclick="showToast('Ouverture fiche projet…','info')">
+                  <td><div class="project-cell"><div class="project-cell__color" style="background:#2D6A4F"></div><div><div class="project-cell__name">Résidence Les Oliviers</div><div class="project-cell__sub">Bordeaux · 4 800 m²</div></div></div></td>
+                  <td><span class="badge badge--muted" style="font-size:11px">Privé</span></td>
+                  <td><span class="badge badge--accent" style="font-size:11px">DCE</span></td>
+                  <td><div style="display:flex;align-items:center;gap:8px"><div class="progress" style="width:70px"><div class="progress__bar" style="width:85%;background:var(--color-warning)"></div></div><span class="mono text-sm">85%</span></div></td>
+                  <td class="mono">156 K€</td>
+                  <td class="mono text-warning">+6,8%</td>
+                  <td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="width:24px;height:24px;font-size:9px;background:#2D6A4F">TD</div><span class="text-sm">T. Durand</span></div></td>
+                  <td><span class="health-dot health-dot--warning"></span></td>
+                </tr>
+                <tr onclick="showToast('Ouverture fiche projet…','info')">
+                  <td><div class="project-cell"><div class="project-cell__color" style="background:#E76F51"></div><div><div class="project-cell__name">Hôtel de ville — Extension</div><div class="project-cell__sub">Rennes · 1 200 m²</div></div></div></td>
+                  <td><span class="badge badge--primary" style="font-size:11px">Public</span></td>
+                  <td><span class="badge badge--accent" style="font-size:11px">APD</span></td>
+                  <td><div style="display:flex;align-items:center;gap:8px"><div class="progress" style="width:70px"><div class="progress__bar" style="width:100%;background:var(--color-danger)"></div></div><span class="mono text-sm">100%</span></div></td>
+                  <td class="mono">192 K€</td>
+                  <td class="mono text-danger">-5,1%</td>
+                  <td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="width:24px;height:24px;font-size:9px;background:#1B4965">ML</div><span class="text-sm">M. Lefort</span></div></td>
+                  <td><span class="health-dot health-dot--danger"></span></td>
+                </tr>
+                <tr onclick="showToast('Ouverture fiche projet…','info')">
+                  <td><div class="project-cell"><div class="project-cell__color" style="background:#5FA8D3"></div><div><div class="project-cell__name">Médiathèque de Brest</div><div class="project-cell__sub">Brest · 2 800 m²</div></div></div></td>
+                  <td><span class="badge badge--primary" style="font-size:11px">Public</span></td>
+                  <td><span class="badge badge--accent" style="font-size:11px">DET</span></td>
+                  <td><div style="display:flex;align-items:center;gap:8px"><div class="progress" style="width:70px"><div class="progress__bar" style="width:35%;background:var(--color-primary-light)"></div></div><span class="mono text-sm">35%</span></div></td>
+                  <td class="mono">310 K€</td>
+                  <td class="mono text-success">+16,3%</td>
+                  <td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="width:24px;height:24px;font-size:9px;background:#E76F51">SC</div><span class="text-sm">S. Caron</span></div></td>
+                  <td><span class="health-dot health-dot--ok"></span></td>
+                </tr>
+                <tr onclick="showToast('Ouverture fiche projet…','info')">
+                  <td><div class="project-cell"><div class="project-cell__color" style="background:#7c3aed"></div><div><div class="project-cell__name">EHPAD Les Magnolias</div><div class="project-cell__sub">Angers · 3 600 m²</div></div></div></td>
+                  <td><span class="badge badge--muted" style="font-size:11px">Privé</span></td>
+                  <td><span class="badge badge--accent" style="font-size:11px">PRO</span></td>
+                  <td><div style="display:flex;align-items:center;gap:8px"><div class="progress" style="width:70px"><div class="progress__bar" style="width:40%;background:var(--color-primary-light)"></div></div><span class="mono text-sm">40%</span></div></td>
+                  <td class="mono">275 K€</td>
+                  <td class="mono text-success">+12,1%</td>
+                  <td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="width:24px;height:24px;font-size:9px;background:#2D6A4F">TD</div><span class="text-sm">T. Durand</span></div></td>
+                  <td><span class="health-dot health-dot--ok"></span></td>
+                </tr>
+                <tr onclick="showToast('Ouverture fiche projet…','info')">
+                  <td><div class="project-cell"><div class="project-cell__color" style="background:#0284c7"></div><div><div class="project-cell__name">Campus Numérique</div><div class="project-cell__sub">Nantes · 5 200 m²</div></div></div></td>
+                  <td><span class="badge badge--primary" style="font-size:11px">Public</span></td>
+                  <td><span class="badge badge--accent" style="font-size:11px">APS</span></td>
+                  <td><div style="display:flex;align-items:center;gap:8px"><div class="progress" style="width:70px"><div class="progress__bar" style="width:75%;background:var(--color-warning)"></div></div><span class="mono text-sm">75%</span></div></td>
+                  <td class="mono">420 K€</td>
+                  <td class="mono">+10,4%</td>
+                  <td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="width:24px;height:24px;font-size:9px;background:#1B4965">ML</div><span class="text-sm">M. Lefort</span></div></td>
+                  <td><span class="health-dot health-dot--warning"></span></td>
+                </tr>
+                <tr onclick="showToast('Ouverture fiche projet…','info')">
+                  <td><div class="project-cell"><div class="project-cell__color" style="background:#059669"></div><div><div class="project-cell__name">Logements Quai des Brumes</div><div class="project-cell__sub">Saint-Nazaire · 6 400 m²</div></div></div></td>
+                  <td><span class="badge badge--muted" style="font-size:11px">Privé</span></td>
+                  <td><span class="badge badge--accent" style="font-size:11px">DET</span></td>
+                  <td><div style="display:flex;align-items:center;gap:8px"><div class="progress" style="width:70px"><div class="progress__bar" style="width:55%;background:var(--color-primary-light)"></div></div><span class="mono text-sm">55%</span></div></td>
+                  <td class="mono">380 K€</td>
+                  <td class="mono text-success">+11,7%</td>
+                  <td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="width:24px;height:24px;font-size:9px;background:#5FA8D3">JB</div><span class="text-sm">J. Bernard</span></div></td>
+                  <td><span class="health-dot health-dot--ok"></span></td>
+                </tr>
+                <tr onclick="showToast('Ouverture fiche projet…','info')">
+                  <td><div class="project-cell"><div class="project-cell__color" style="background:#d97706"></div><div><div class="project-cell__name">Gymnase intercommunal</div><div class="project-cell__sub">Pays de Loire · 1 200 m²</div></div></div></td>
+                  <td><span class="badge badge--primary" style="font-size:11px">Public</span></td>
+                  <td><span class="badge badge--accent" style="font-size:11px">ESQ</span></td>
+                  <td><div style="display:flex;align-items:center;gap:8px"><div class="progress" style="width:70px"><div class="progress__bar" style="width:20%;background:var(--color-primary-light)"></div></div><span class="mono text-sm">20%</span></div></td>
+                  <td class="mono">180 K€</td>
+                  <td class="mono text-muted">—</td>
+                  <td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="width:24px;height:24px;font-size:9px;background:#E76F51">SC</div><span class="text-sm">S. Caron</span></div></td>
+                  <td><span class="health-dot health-dot--ok"></span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== VIEW: Cards ========== -->
+      <div class="view-panel" id="view-cards">
+        <div class="projects-grid">
+          <div class="project-card" onclick="showToast('Ouverture fiche projet…','info')">
+            <div class="project-card__accent" style="background:var(--color-success)"></div>
+            <div class="project-card__body">
+              <div class="project-card__header"><div class="project-card__title">Groupe scolaire Victor Hugo</div><span class="health-dot health-dot--ok"></span></div>
+              <div class="project-card__client">Ville de Nantes · Public · 3 200 m²</div>
+              <div class="project-card__stats">
+                <div><div class="project-card__stat-label">Phase</div><div class="project-card__stat-value"><span class="badge badge--accent" style="font-size:11px">PRO</span></div></div>
+                <div><div class="project-card__stat-label">Honoraires</div><div class="project-card__stat-value project-card__stat-value--mono">238 K€</div></div>
+                <div><div class="project-card__stat-label">Rentabilité</div><div class="project-card__stat-value text-success">+14,2%</div></div>
+                <div><div class="project-card__stat-label">Montant travaux</div><div class="project-card__stat-value project-card__stat-value--mono">2,8 M€</div></div>
+              </div>
+              <div class="project-card__progress"><div class="project-card__progress-label"><span class="text-muted">Avancement</span><span class="text-mono">62%</span></div><div class="progress"><div class="progress__bar" style="width:62%;background:var(--color-primary-light)"></div></div></div>
+            </div>
+            <div class="project-card__footer"><div class="avatar-stack"><div class="avatar" style="background:#1B4965">ML</div><div class="avatar" style="background:#2D6A4F">TD</div><div class="avatar" style="background:#E76F51">SC</div></div><span class="text-sm text-muted">Rendu PRO · 06/03</span></div>
+          </div>
+
+          <div class="project-card" onclick="showToast('Ouverture fiche projet…','info')">
+            <div class="project-card__accent" style="background:var(--color-warning)"></div>
+            <div class="project-card__body">
+              <div class="project-card__header"><div class="project-card__title">Résidence Les Oliviers</div><span class="health-dot health-dot--warning"></span></div>
+              <div class="project-card__client">SCI Les Oliviers · Privé · 4 800 m²</div>
+              <div class="project-card__stats">
+                <div><div class="project-card__stat-label">Phase</div><div class="project-card__stat-value"><span class="badge badge--accent" style="font-size:11px">DCE</span></div></div>
+                <div><div class="project-card__stat-label">Honoraires</div><div class="project-card__stat-value project-card__stat-value--mono">156 K€</div></div>
+                <div><div class="project-card__stat-label">Rentabilité</div><div class="project-card__stat-value text-warning">+6,8%</div></div>
+                <div><div class="project-card__stat-label">Montant travaux</div><div class="project-card__stat-value project-card__stat-value--mono">1,9 M€</div></div>
+              </div>
+              <div class="project-card__progress"><div class="project-card__progress-label"><span class="text-muted">Avancement</span><span class="text-mono">85%</span></div><div class="progress"><div class="progress__bar" style="width:85%;background:var(--color-warning)"></div></div></div>
+            </div>
+            <div class="project-card__footer"><div class="avatar-stack"><div class="avatar" style="background:#2D6A4F">TD</div><div class="avatar" style="background:#5FA8D3">JB</div></div><span class="text-sm text-muted">Rendu DCE · 28/02</span></div>
+          </div>
+
+          <div class="project-card" onclick="showToast('Ouverture fiche projet…','info')">
+            <div class="project-card__accent" style="background:var(--color-danger)"></div>
+            <div class="project-card__body">
+              <div class="project-card__header"><div class="project-card__title">Hôtel de ville — Extension</div><span class="health-dot health-dot--danger"></span></div>
+              <div class="project-card__client">Ville de Rennes · Public · 1 200 m²</div>
+              <div class="project-card__stats">
+                <div><div class="project-card__stat-label">Phase</div><div class="project-card__stat-value"><span class="badge badge--accent" style="font-size:11px">APD</span></div></div>
+                <div><div class="project-card__stat-label">Honoraires</div><div class="project-card__stat-value project-card__stat-value--mono">192 K€</div></div>
+                <div><div class="project-card__stat-label">Rentabilité</div><div class="project-card__stat-value text-danger">-5,1%</div></div>
+                <div><div class="project-card__stat-label">Montant travaux</div><div class="project-card__stat-value project-card__stat-value--mono">2,1 M€</div></div>
+              </div>
+              <div class="project-card__progress"><div class="project-card__progress-label"><span class="text-muted">Avancement</span><span class="text-mono">100%</span></div><div class="progress"><div class="progress__bar" style="width:100%;background:var(--color-danger)"></div></div></div>
+            </div>
+            <div class="project-card__footer"><div class="avatar-stack"><div class="avatar" style="background:#1B4965">ML</div></div><span class="text-sm text-danger">Retard +8j · Dépassement</span></div>
+          </div>
+
+          <div class="project-card">
+            <div class="project-card__accent" style="background:var(--color-success)"></div>
+            <div class="project-card__body">
+              <div class="project-card__header"><div class="project-card__title">Médiathèque de Brest</div><span class="health-dot health-dot--ok"></span></div>
+              <div class="project-card__client">Brest Métropole · Public · 2 800 m²</div>
+              <div class="project-card__stats">
+                <div><div class="project-card__stat-label">Phase</div><div class="project-card__stat-value"><span class="badge badge--accent" style="font-size:11px">DET</span></div></div>
+                <div><div class="project-card__stat-label">Honoraires</div><div class="project-card__stat-value project-card__stat-value--mono">310 K€</div></div>
+                <div><div class="project-card__stat-label">Rentabilité</div><div class="project-card__stat-value text-success">+16,3%</div></div>
+                <div><div class="project-card__stat-label">Montant travaux</div><div class="project-card__stat-value project-card__stat-value--mono">4,5 M€</div></div>
+              </div>
+              <div class="project-card__progress"><div class="project-card__progress-label"><span class="text-muted">Avancement</span><span class="text-mono">35%</span></div><div class="progress"><div class="progress__bar" style="width:35%;background:var(--color-primary-light)"></div></div></div>
+            </div>
+            <div class="project-card__footer"><div class="avatar-stack"><div class="avatar" style="background:#E76F51">SC</div><div class="avatar" style="background:#5FA8D3">JB</div></div><span class="text-sm text-muted">Chantier en cours</span></div>
+          </div>
+
+          <div class="project-card">
+            <div class="project-card__accent" style="background:var(--color-success)"></div>
+            <div class="project-card__body">
+              <div class="project-card__header"><div class="project-card__title">EHPAD Les Magnolias</div><span class="health-dot health-dot--ok"></span></div>
+              <div class="project-card__client">Groupe Korian · Privé · 3 600 m²</div>
+              <div class="project-card__stats">
+                <div><div class="project-card__stat-label">Phase</div><div class="project-card__stat-value"><span class="badge badge--accent" style="font-size:11px">PRO</span></div></div>
+                <div><div class="project-card__stat-label">Honoraires</div><div class="project-card__stat-value project-card__stat-value--mono">275 K€</div></div>
+                <div><div class="project-card__stat-label">Rentabilité</div><div class="project-card__stat-value text-success">+12,1%</div></div>
+                <div><div class="project-card__stat-label">Montant travaux</div><div class="project-card__stat-value project-card__stat-value--mono">3,2 M€</div></div>
+              </div>
+              <div class="project-card__progress"><div class="project-card__progress-label"><span class="text-muted">Avancement</span><span class="text-mono">40%</span></div><div class="progress"><div class="progress__bar" style="width:40%;background:var(--color-primary-light)"></div></div></div>
+            </div>
+            <div class="project-card__footer"><div class="avatar-stack"><div class="avatar" style="background:#2D6A4F">TD</div></div><span class="text-sm text-muted">Livraison prévue 12/2025</span></div>
+          </div>
+
+          <div class="project-card">
+            <div class="project-card__accent" style="background:var(--color-warning)"></div>
+            <div class="project-card__body">
+              <div class="project-card__header"><div class="project-card__title">Campus Numérique</div><span class="health-dot health-dot--warning"></span></div>
+              <div class="project-card__client">Université de Nantes · Public · 5 200 m²</div>
+              <div class="project-card__stats">
+                <div><div class="project-card__stat-label">Phase</div><div class="project-card__stat-value"><span class="badge badge--accent" style="font-size:11px">APS</span></div></div>
+                <div><div class="project-card__stat-label">Honoraires</div><div class="project-card__stat-value project-card__stat-value--mono">420 K€</div></div>
+                <div><div class="project-card__stat-label">Rentabilité</div><div class="project-card__stat-value">+10,4%</div></div>
+                <div><div class="project-card__stat-label">Montant travaux</div><div class="project-card__stat-value project-card__stat-value--mono">5,8 M€</div></div>
+              </div>
+              <div class="project-card__progress"><div class="project-card__progress-label"><span class="text-muted">Avancement</span><span class="text-mono">75%</span></div><div class="progress"><div class="progress__bar" style="width:75%;background:var(--color-warning)"></div></div></div>
+            </div>
+            <div class="project-card__footer"><div class="avatar-stack"><div class="avatar" style="background:#1B4965">ML</div><div class="avatar" style="background:#5FA8D3">JB</div><div class="avatar" style="background:#E76F51">SC</div></div><span class="text-sm text-warning">Léger retard +3j</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== VIEW: Gantt ========== -->
+      <div class="view-panel" id="view-gantt">
+        <div class="card">
+          <div class="card__header">
+            <span class="card__title">Timeline multi-projets — 2024 / 2026</span>
+            <div style="display:flex;gap:12px;align-items:center">
+              <span style="display:flex;align-items:center;gap:4px;font-size:11px"><span style="width:10px;height:10px;border-radius:2px;background:var(--color-success)"></span> Terminé</span>
+              <span style="display:flex;align-items:center;gap:4px;font-size:11px"><span style="width:10px;height:10px;border-radius:2px;background:var(--color-primary-light)"></span> En cours</span>
+              <span style="display:flex;align-items:center;gap:4px;font-size:11px"><span style="width:10px;height:10px;border-radius:2px;background:var(--color-muted)"></span> À venir</span>
+            </div>
+          </div>
+          <div class="card__body card__body--flush gantt-view">
+            <table class="gantt-table">
+              <thead>
+                <tr>
+                  <th>Projet</th>
+                  <th class="gantt-month">T1 24</th>
+                  <th class="gantt-month">T2 24</th>
+                  <th class="gantt-month">T3 24</th>
+                  <th class="gantt-month">T4 24</th>
+                  <th class="gantt-month" style="background:var(--color-primary-bg)">T1 25</th>
+                  <th class="gantt-month">T2 25</th>
+                  <th class="gantt-month">T3 25</th>
+                  <th class="gantt-month">T4 25</th>
+                  <th class="gantt-month">T1 26</th>
+                  <th class="gantt-month">T2 26</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><div class="project-cell"><div class="project-cell__color" style="background:#1B4965"></div><div><div class="project-cell__name">Grp. scolaire V. Hugo</div><div class="project-cell__sub">PRO en cours</div></div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:20%;width:75%;background:var(--color-success)">ESQ–APS</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:100%;background:var(--color-success)">APS</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:100%;background:var(--color-success)">APD</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:50%;background:var(--color-success)">APD</div><div class="gantt-bar" style="left:50%;width:50%;background:var(--color-primary-light)">PRO</div></div></td>
+                  <td style="background:rgba(95,168,211,.05)"><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:70%;background:var(--color-primary-light)">PRO</div><div class="gantt-bar" style="left:70%;width:30%;background:var(--color-muted)">DCE</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:40%;background:var(--color-muted)">DCE</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:100%;background:var(--color-muted)">DET</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:100%;background:var(--color-muted)">DET</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:100%;background:var(--color-muted)">DET</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:60%;background:var(--color-muted)">AOR</div></div></td>
+                </tr>
+                <tr>
+                  <td><div class="project-cell"><div class="project-cell__color" style="background:#2D6A4F"></div><div><div class="project-cell__name">Rés. Les Oliviers</div><div class="project-cell__sub">DCE en cours</div></div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:100%;background:var(--color-success)">ESQ</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:100%;background:var(--color-success)">APS–APD</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:100%;background:var(--color-success)">PRO</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:50%;background:var(--color-success)">PRO</div><div class="gantt-bar" style="left:55%;width:45%;background:var(--color-primary-light)">DCE</div></div></td>
+                  <td style="background:rgba(95,168,211,.05)"><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:30%;background:var(--color-primary-light)">DCE</div><div class="gantt-bar" style="left:40%;width:60%;background:var(--color-muted)">DET</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:100%;background:var(--color-muted)">DET</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:100%;background:var(--color-muted)">DET</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:40%;background:var(--color-muted)">AOR</div></div></td>
+                  <td></td><td></td>
+                </tr>
+                <tr>
+                  <td><div class="project-cell"><div class="project-cell__color" style="background:#5FA8D3"></div><div><div class="project-cell__name">Médiathèque Brest</div><div class="project-cell__sub">DET en cours</div></div></div></td>
+                  <td></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:30%;width:70%;background:var(--color-success)">ESQ</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:100%;background:var(--color-success)">APS–APD</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:100%;background:var(--color-success)">PRO–DCE</div></div></td>
+                  <td style="background:rgba(95,168,211,.05)"><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:100%;background:var(--color-primary-light)">DET</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:100%;background:var(--color-muted)">DET</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:100%;background:var(--color-muted)">DET</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:50%;background:var(--color-muted)">AOR</div></div></td>
+                  <td></td><td></td>
+                </tr>
+                <tr>
+                  <td><div class="project-cell"><div class="project-cell__color" style="background:#0284c7"></div><div><div class="project-cell__name">Campus Numérique</div><div class="project-cell__sub">APS en cours</div></div></div></td>
+                  <td></td><td></td><td></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:30%;width:70%;background:var(--color-success)">ESQ</div></div></td>
+                  <td style="background:rgba(95,168,211,.05)"><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:100%;background:var(--color-primary-light)">APS</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:100%;background:var(--color-muted)">APD</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:100%;background:var(--color-muted)">PRO</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:100%;background:var(--color-muted)">DCE</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:100%;background:var(--color-muted)">DET</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:100%;background:var(--color-muted)">DET</div></div></td>
+                </tr>
+                <tr>
+                  <td><div class="project-cell"><div class="project-cell__color" style="background:#7c3aed"></div><div><div class="project-cell__name">EHPAD Les Magnolias</div><div class="project-cell__sub">PRO en cours</div></div></div></td>
+                  <td></td><td></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:50%;width:50%;background:var(--color-success)">ESQ</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:100%;background:var(--color-success)">APS–APD</div></div></td>
+                  <td style="background:rgba(95,168,211,.05)"><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:100%;background:var(--color-primary-light)">PRO</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:50%;background:var(--color-muted)">PRO</div><div class="gantt-bar" style="left:55%;width:45%;background:var(--color-muted)">DCE</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:100%;background:var(--color-muted)">DET</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:100%;background:var(--color-muted)">DET</div></div></td>
+                  <td><div class="gantt-cell"><div class="gantt-bar" style="left:0;width:60%;background:var(--color-muted)">AOR</div></div></td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ========== MODAL: Nouveau projet ========== -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal__header">
+      <h2 class="modal__title">Nouveau projet</h2>
+      <button class="modal__close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="form-group"><label>Nom du projet</label><input type="text" class="form-input" placeholder="Ex: Groupe scolaire Victor Hugo — Réhabilitation"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Type de marché</label><select class="form-select"><option>Marché public</option><option>Marché privé</option></select></div>
+        <div class="form-group"><label>Type d'ouvrage</label><select class="form-select"><option>Équipement scolaire</option><option>Logement</option><option>Tertiaire</option><option>Santé / EHPAD</option><option>Équipement sportif</option><option>Culturel</option></select></div>
+      </div>
+      <div class="form-group"><label>Maître d'ouvrage</label><select class="form-select"><option value="">Sélectionner depuis le CRM…</option><option>Ville de Nantes</option><option>Ville de Rennes</option><option>SCI Les Oliviers</option><option>Groupe Korian</option><option>+ Nouveau client</option></select></div>
+      <div class="form-row--3">
+        <div class="form-group"><label>Surface (m²)</label><input type="text" class="form-input" placeholder="3 200" style="font-family:var(--font-mono)"></div>
+        <div class="form-group"><label>Montant travaux (€)</label><input type="text" class="form-input" placeholder="2 800 000" style="font-family:var(--font-mono)"></div>
+        <div class="form-group"><label>Taux honoraires (%)</label><input type="text" class="form-input" placeholder="8,5" style="font-family:var(--font-mono)"></div>
+      </div>
+      <div class="form-group"><label>Adresse du projet</label><input type="text" class="form-input" placeholder="12 rue Victor Hugo, 44000 Nantes"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Chef de projet</label><select class="form-select"><option>Marie Lefort</option><option>Thomas Durand</option><option>Sophie Caron</option><option>Julien Bernard</option></select></div>
+        <div class="form-group"><label>Missions</label><select class="form-select"><option>Mission de base (ESQ → AOR)</option><option>Mission partielle</option><option>Base + OPC</option><option>Base + OPC + SYN</option></select></div>
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--secondary" onclick="closeModal()">Annuler</button>
+      <button class="btn btn--primary" onclick="closeModal();showToast('Projet créé avec succès ! Redirection vers la fiche…','success')">Créer le projet</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+function toggleSidebar(){const s=document.getElementById('sidebar'),i=document.getElementById('toggleIcon');s.classList.toggle('sidebar--collapsed');i.textContent=s.classList.contains('sidebar--collapsed')?'▶':'◀'}
+
+// View switch
+function switchView(view){
+  document.querySelectorAll('.view-switch__btn').forEach(b=>b.classList.remove('view-switch__btn--active'));
+  document.querySelector(`[data-view="${view}"]`).classList.add('view-switch__btn--active');
+  document.querySelectorAll('.view-panel').forEach(p=>p.classList.remove('view-panel--active'));
+  document.getElementById('view-'+view).classList.add('view-panel--active');
+}
+
+// Filter projects (simple text filter on table)
+function filterProjects(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  document.querySelectorAll('#projectsTable tbody tr').forEach(tr=>{
+    tr.style.display=tr.textContent.toLowerCase().includes(q)?'':'none';
+  });
+}
+
+// Modal
+function openModal(){const o=document.getElementById('modalOverlay');o.style.display='flex';requestAnimationFrame(()=>o.classList.add('modal-overlay--visible'));document.body.style.overflow='hidden'}
+function closeModal(e){if(e&&e.target!==e.currentTarget)return;const o=document.getElementById('modalOverlay');o.classList.remove('modal-overlay--visible');setTimeout(()=>{o.style.display='none';document.body.style.overflow=''},250)}
+
+// Toast
+function showToast(msg,type='info'){const c=document.getElementById('toastContainer'),t=document.createElement('div');t.className=`toast toast--${type}`;const icons={success:'✅',info:'ℹ️'};t.innerHTML=`<span>${icons[type]||'ℹ️'}</span><span>${msg}</span>`;c.appendChild(t);setTimeout(()=>t.remove(),3000)}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()})
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAA — Saisie des temps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+.sidebar,.topbar{display:none!important;}
+/* ============================================================
+   CSS Custom Properties
+   ============================================================ */
+:root {
+  --color-primary: #1B4965;
+  --color-primary-light: #5FA8D3;
+  --color-primary-hover: #153a52;
+  --color-primary-bg: #e8f1f8;
+  --color-secondary: #3C4858;
+  --color-accent: #E6A817;
+  --color-accent-bg: #fdf5e0;
+  --color-success: #2D6A4F;
+  --color-success-bg: #e6f3ed;
+  --color-danger: #C1292E;
+  --color-danger-bg: #fbe8e8;
+  --color-warning: #E76F51;
+  --color-warning-bg: #fdf0ec;
+  --color-bg: #F8F9FA;
+  --color-surface: #FFFFFF;
+  --color-border: #DEE2E6;
+  --color-text: #212529;
+  --color-text-muted: #6C757D;
+  --color-muted: #ADB5BD;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+  --transition: 0.2s ease;
+
+  --sidebar-width: 260px;
+  --sidebar-collapsed: 64px;
+  --header-height: 56px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-bg);
+  overflow-x: hidden;
+}
+
+a { color: var(--color-primary); text-decoration: none; }
+a:hover { color: var(--color-primary-light); }
+
+/* ============================================================
+   Layout
+   ============================================================ */
+.layout { display: flex; min-height: 100vh; }
+
+/* ============================================================
+   Sidebar (réutilisé)
+   ============================================================ */
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--color-primary);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  transition: width 0.25s ease;
+  overflow: hidden;
+}
+.sidebar.sidebar--collapsed { width: var(--sidebar-collapsed); }
+
+.sidebar__logo {
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  gap: 12px;
+  flex-shrink: 0;
+}
+.sidebar__logo-icon {
+  width: 32px; height: 32px;
+  background: var(--color-accent);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 16px; color: var(--color-primary);
+  flex-shrink: 0;
+}
+.sidebar__logo-text {
+  font-size: 18px; font-weight: 700; letter-spacing: -0.02em;
+  white-space: nowrap; opacity: 1; transition: opacity var(--transition);
+}
+.sidebar--collapsed .sidebar__logo-text { opacity: 0; }
+
+.sidebar__nav { flex: 1; padding: 8px; overflow-y: auto; }
+
+.sidebar__section-title {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.45); padding: 16px 12px 6px; white-space: nowrap;
+}
+.sidebar--collapsed .sidebar__section-title { opacity: 0; height: 0; padding: 0; }
+
+.sidebar__item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 9px 12px; border-radius: var(--radius-md);
+  color: rgba(255,255,255,0.7); cursor: pointer;
+  transition: all var(--transition); white-space: nowrap; font-size: 13.5px;
+}
+.sidebar__item:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.sidebar__item--active { background: rgba(255,255,255,0.15); color: #fff; font-weight: 500; }
+
+.sidebar__item-icon { width: 20px; height: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.sidebar__item-label { opacity: 1; transition: opacity var(--transition); }
+.sidebar--collapsed .sidebar__item-label { opacity: 0; }
+
+.sidebar__badge {
+  margin-left: auto; background: var(--color-danger); color: #fff;
+  font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 10px;
+}
+.sidebar--collapsed .sidebar__badge { display: none; }
+
+.sidebar__toggle {
+  padding: 12px; border-top: 1px solid rgba(255,255,255,0.1);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: rgba(255,255,255,0.5); transition: color var(--transition); flex-shrink: 0;
+}
+.sidebar__toggle:hover { color: #fff; }
+
+/* ============================================================
+   Main
+   ============================================================ */
+.main {
+  flex: 1; margin-left: var(--sidebar-width);
+  transition: margin-left 0.25s ease;
+  display: flex; flex-direction: column; min-height: 100vh;
+}
+.sidebar--collapsed ~ .main { margin-left: var(--sidebar-collapsed); }
+
+/* Topbar */
+.topbar {
+  height: var(--header-height); background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  display: flex; align-items: center; padding: 0 24px; gap: 16px;
+  position: sticky; top: 0; z-index: 50;
+}
+.topbar__search { flex: 1; max-width: 480px; position: relative; }
+.topbar__search input {
+  width: 100%; padding: 8px 12px 8px 36px;
+  border: 1px solid var(--color-border); border-radius: var(--radius-md);
+  font-family: var(--font-sans); font-size: 13px; background: var(--color-bg);
+  transition: all var(--transition); outline: none;
+}
+.topbar__search input:focus { border-color: var(--color-primary-light); box-shadow: 0 0 0 3px rgba(95,168,211,0.15); background: var(--color-surface); }
+.topbar__search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 14px; }
+
+.topbar__actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.topbar__btn {
+  width: 36px; height: 36px; border-radius: var(--radius-md); border: none;
+  background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: var(--color-text-muted); transition: all var(--transition); position: relative; font-size: 18px;
+}
+.topbar__btn:hover { background: var(--color-bg); color: var(--color-text); }
+.topbar__btn .notif-dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background: var(--color-danger); border-radius: 50%; border: 2px solid var(--color-surface); }
+.topbar__avatar {
+  width: 34px; height: 34px; border-radius: 50%; background: var(--color-primary-light);
+  color: #fff; font-weight: 600; font-size: 13px; display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+
+/* ============================================================
+   Page
+   ============================================================ */
+.page { flex: 1; padding: 24px; max-width: 1280px; width: 100%; margin: 0 auto; }
+
+/* Breadcrumb */
+.breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--color-text-muted); margin-bottom: 16px; }
+.breadcrumb a { color: var(--color-text-muted); transition: color var(--transition); }
+.breadcrumb a:hover { color: var(--color-primary); }
+.breadcrumb__current { color: var(--color-text); font-weight: 500; }
+
+/* Page Header */
+.page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
+.page-header__left { display: flex; align-items: flex-start; gap: 16px; }
+.page-header__icon {
+  width: 48px; height: 48px; background: var(--color-primary-bg); border-radius: var(--radius-lg);
+  display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;
+}
+.page-header__title { font-size: 24px; font-weight: 600; color: var(--color-text); letter-spacing: -0.02em; line-height: 1.3; }
+.page-header__meta { display: flex; align-items: center; gap: 12px; margin-top: 4px; flex-wrap: wrap; }
+.page-header__actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;
+  border-radius: var(--radius-md); font-family: var(--font-sans); font-size: 13px;
+  font-weight: 500; border: 1px solid transparent; cursor: pointer;
+  transition: all var(--transition); white-space: nowrap;
+}
+.btn--primary { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+.btn--primary:hover { background: var(--color-primary-hover); }
+.btn--secondary { background: var(--color-surface); color: var(--color-text); border-color: var(--color-border); }
+.btn--secondary:hover { background: var(--color-bg); }
+.btn--ghost { background: transparent; color: var(--color-text-muted); }
+.btn--ghost:hover { background: var(--color-bg); color: var(--color-text); }
+.btn--success { background: var(--color-success); color: #fff; border-color: var(--color-success); }
+.btn--success:hover { background: #245a42; }
+.btn--sm { padding: 5px 10px; font-size: 12px; }
+.btn--icon { padding: 8px; }
+
+/* Badges */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px;
+  border-radius: 20px; font-size: 12px; font-weight: 500; white-space: nowrap;
+}
+.badge--public { background: var(--color-primary-bg); color: var(--color-primary); }
+.badge--phase { background: var(--color-accent-bg); color: #b8860b; }
+.badge--success { background: var(--color-success-bg); color: var(--color-success); }
+.badge--danger { background: var(--color-danger-bg); color: var(--color-danger); }
+.badge--warning { background: var(--color-warning-bg); color: var(--color-warning); }
+.badge--muted { background: #EBEDEF; color: var(--color-text-muted); }
+
+/* Card */
+.card {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); overflow: hidden; transition: box-shadow var(--transition);
+}
+.card:hover { box-shadow: var(--shadow-sm); }
+.card__header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--color-border);
+}
+.card__title { font-size: 15px; font-weight: 600; color: var(--color-text); }
+.card__body { padding: 20px; }
+.card__body--flush { padding: 0; }
+
+/* ============================================================
+   KPI Row
+   ============================================================ */
+.kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; }
+
+.kpi {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); padding: 14px 18px; transition: all var(--transition);
+}
+.kpi:hover { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.kpi__label { font-size: 12px; color: var(--color-text-muted); margin-bottom: 4px; }
+.kpi__value { font-family: var(--font-mono); font-size: 22px; font-weight: 500; color: var(--color-text); letter-spacing: -0.02em; }
+.kpi__sub { font-size: 12px; color: var(--color-text-muted); margin-top: 2px; }
+
+/* ============================================================
+   Week Navigation
+   ============================================================ */
+.week-nav {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 24px;
+}
+.week-nav__btn {
+  width: 36px; height: 36px; border-radius: var(--radius-md); border: 1px solid var(--color-border);
+  background: var(--color-surface); cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 16px; color: var(--color-text-muted); transition: all var(--transition);
+}
+.week-nav__btn:hover { background: var(--color-bg); color: var(--color-text); }
+.week-nav__label { font-size: 16px; font-weight: 600; color: var(--color-text); }
+.week-nav__sub { font-size: 13px; color: var(--color-text-muted); margin-left: 8px; }
+.week-nav__right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+/* ============================================================
+   Timesheet Table
+   ============================================================ */
+.timesheet-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.timesheet {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+
+.timesheet thead th {
+  padding: 10px 12px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  background: var(--color-bg);
+  border-bottom: 2px solid var(--color-border);
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.timesheet thead th:first-child { text-align: left; min-width: 280px; }
+.timesheet thead th.th-day { min-width: 70px; }
+.timesheet thead th.th-total { min-width: 70px; background: rgba(27,73,101,0.06); }
+
+.timesheet thead .today-marker {
+  background: var(--color-primary-bg);
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.timesheet tbody td {
+  padding: 0;
+  border-bottom: 1px solid var(--color-border);
+  text-align: center;
+  vertical-align: middle;
+  height: 52px;
+}
+
+.timesheet tbody td:first-child {
+  text-align: left;
+  padding: 8px 12px;
+}
+
+.timesheet tbody td.td-total {
+  background: rgba(27,73,101,0.03);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+/* Project info cell */
+.ts-project {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ts-project__color {
+  width: 4px;
+  height: 36px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.ts-project__info { flex: 1; min-width: 0; }
+.ts-project__name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ts-project__detail { font-size: 11px; color: var(--color-text-muted); display: flex; align-items: center; gap: 6px; }
+
+.ts-project__actions {
+  display: flex; gap: 4px; opacity: 0; transition: opacity var(--transition);
+}
+.ts-project:hover .ts-project__actions { opacity: 1; }
+
+.ts-action-btn {
+  width: 24px; height: 24px; border: none; background: transparent;
+  border-radius: var(--radius-sm); cursor: pointer; font-size: 12px;
+  color: var(--color-text-muted); display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition);
+}
+.ts-action-btn:hover { background: var(--color-bg); color: var(--color-text); }
+
+/* Time input cell */
+.ts-cell {
+  position: relative;
+  padding: 4px;
+}
+
+.ts-input {
+  width: 100%;
+  height: 40px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--color-text);
+  background: transparent;
+  outline: none;
+  transition: all var(--transition);
+  cursor: pointer;
+}
+
+.ts-input:hover { background: var(--color-bg); border-color: var(--color-border); }
+.ts-input:focus { background: var(--color-surface); border-color: var(--color-primary-light); box-shadow: 0 0 0 2px rgba(95,168,211,0.2); }
+.ts-input::placeholder { color: var(--color-muted); font-size: 13px; }
+
+/* Filled cell visual feedback */
+.ts-input--filled { color: var(--color-text); font-weight: 500; }
+.ts-input--high { color: var(--color-warning); font-weight: 500; }
+.ts-input--zero { color: var(--color-muted); }
+
+/* Non-refacturable indicator */
+.ts-cell--nonref { position: relative; }
+.ts-cell--nonref::after {
+  content: '';
+  position: absolute;
+  top: 6px; right: 6px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--color-warning);
+}
+
+/* Weekend column */
+.td-weekend { background: rgba(0,0,0,0.02); }
+.th-weekend { background: #EBEDEF !important; }
+
+/* Footer row */
+.timesheet tfoot td {
+  padding: 10px 12px;
+  font-weight: 600;
+  font-size: 13px;
+  background: var(--color-bg);
+  border-top: 2px solid var(--color-border);
+  text-align: center;
+  font-family: var(--font-mono);
+}
+
+.timesheet tfoot td:first-child { text-align: left; font-family: var(--font-sans); }
+.timesheet tfoot td.td-total { background: rgba(27,73,101,0.08); color: var(--color-primary); font-size: 15px; }
+
+/* Capacity bar below totals */
+.capacity-bar {
+  margin-top: 8px;
+  height: 4px;
+  background: var(--color-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.capacity-bar__fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+/* ============================================================
+   Add Row
+   ============================================================ */
+.ts-add-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  cursor: pointer;
+  color: var(--color-primary-light);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all var(--transition);
+  border-top: 1px dashed var(--color-border);
+}
+.ts-add-row:hover { background: var(--color-primary-bg); color: var(--color-primary); }
+
+/* ============================================================
+   Timer Widget
+   ============================================================ */
+.timer-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.timer-bar__icon {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+  transition: all var(--transition);
+  cursor: pointer;
+}
+
+.timer-bar__icon--stopped { background: var(--color-success-bg); color: var(--color-success); }
+.timer-bar__icon--running { background: var(--color-danger-bg); color: var(--color-danger); animation: pulse 2s infinite; }
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(193,41,46,0.15); }
+  50% { box-shadow: 0 0 0 8px rgba(193,41,46,0); }
+}
+
+.timer-bar__info { flex: 1; }
+.timer-bar__label { font-size: 13px; font-weight: 500; }
+.timer-bar__detail { font-size: 12px; color: var(--color-text-muted); }
+
+.timer-bar__time {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 500;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+  min-width: 110px;
+  text-align: right;
+}
+
+.timer-bar__time--running { color: var(--color-danger); }
+
+.timer-bar__actions { display: flex; gap: 8px; }
+
+/* ============================================================
+   Summary sidebar
+   ============================================================ */
+.grid-layout { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+
+.summary-card { position: sticky; top: 80px; }
+
+.summary-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 0; border-bottom: 1px solid var(--color-bg);
+}
+.summary-item:last-child { border-bottom: none; }
+.summary-item__label { font-size: 13px; color: var(--color-text-muted); display: flex; align-items: center; gap: 6px; }
+.summary-item__value { font-family: var(--font-mono); font-size: 13px; font-weight: 500; }
+
+.summary-project {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 0; border-bottom: 1px solid var(--color-bg);
+}
+.summary-project:last-child { border-bottom: none; }
+.summary-project__dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.summary-project__name { font-size: 13px; flex: 1; }
+.summary-project__hours { font-family: var(--font-mono); font-size: 13px; font-weight: 500; }
+
+/* ============================================================
+   Modal
+   ============================================================ */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000;
+  display: none; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.25s ease;
+}
+.modal-overlay--visible { display: flex; opacity: 1; }
+.modal {
+  background: var(--color-surface); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg); width: 90%; max-width: 520px; max-height: 85vh;
+  overflow-y: auto; transform: scale(0.95); transition: transform 0.25s ease;
+}
+.modal-overlay--visible .modal { transform: scale(1); }
+.modal__header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--color-border); }
+.modal__title { font-size: 17px; font-weight: 600; }
+.modal__close {
+  width: 32px; height: 32px; border-radius: var(--radius-md); border: none;
+  background: transparent; cursor: pointer; font-size: 18px; color: var(--color-text-muted);
+  display: flex; align-items: center; justify-content: center; transition: all var(--transition);
+}
+.modal__close:hover { background: var(--color-bg); color: var(--color-text); }
+.modal__body { padding: 24px; }
+.modal__footer { padding: 16px 24px; border-top: 1px solid var(--color-border); display: flex; justify-content: flex-end; gap: 8px; }
+
+/* Form */
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--color-secondary); margin-bottom: 6px; }
+.form-input, .form-select {
+  width: 100%; padding: 9px 12px; border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); font-family: var(--font-sans); font-size: 14px;
+  transition: all var(--transition); outline: none; background: var(--color-surface);
+}
+.form-input:focus, .form-select:focus { border-color: var(--color-primary-light); box-shadow: 0 0 0 3px rgba(95,168,211,0.15); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+/* Checkbox toggle */
+.toggle-group { display: flex; align-items: center; gap: 10px; }
+.toggle {
+  width: 40px; height: 22px; border-radius: 11px;
+  background: var(--color-muted); position: relative; cursor: pointer;
+  transition: background var(--transition);
+}
+.toggle--active { background: var(--color-primary); }
+.toggle__knob {
+  width: 18px; height: 18px; border-radius: 50%; background: #fff;
+  position: absolute; top: 2px; left: 2px; transition: left var(--transition);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+.toggle--active .toggle__knob { left: 20px; }
+.toggle-label { font-size: 13px; color: var(--color-text); }
+
+/* ============================================================
+   Toast
+   ============================================================ */
+.toast-container { position: fixed; top: 16px; right: 16px; z-index: 2000; display: flex; flex-direction: column; gap: 8px; }
+.toast {
+  padding: 12px 16px; border-radius: var(--radius-md); background: var(--color-surface);
+  border: 1px solid var(--color-border); box-shadow: var(--shadow-md);
+  display: flex; align-items: center; gap: 10px; font-size: 13px;
+  animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.5s forwards; min-width: 280px;
+}
+.toast--success { border-left: 3px solid var(--color-success); }
+.toast--error { border-left: 3px solid var(--color-danger); }
+.toast--info { border-left: 3px solid var(--color-primary-light); }
+.toast--warning { border-left: 3px solid var(--color-warning); }
+
+@keyframes slideIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes fadeOut { to { opacity: 0; transform: translateX(40px); } }
+
+/* ============================================================
+   Alert banner
+   ============================================================ */
+.alert-banner {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 16px; border-radius: var(--radius-md);
+  font-size: 13px; margin-bottom: 16px;
+}
+.alert-banner--warning { background: var(--color-warning-bg); color: var(--color-warning); border: 1px solid rgba(231,111,81,0.2); }
+.alert-banner--info { background: var(--color-primary-bg); color: var(--color-primary); border: 1px solid rgba(95,168,211,0.2); }
+.alert-banner__dismiss {
+  margin-left: auto; cursor: pointer; opacity: 0.6; font-size: 16px;
+  transition: opacity var(--transition);
+}
+.alert-banner__dismiss:hover { opacity: 1; }
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 1279px) {
+  .kpi-row { grid-template-columns: repeat(3, 1fr); }
+  .grid-layout { grid-template-columns: 1fr; }
+}
+@media (max-width: 1023px) {
+  .sidebar { width: var(--sidebar-collapsed); }
+  .sidebar .sidebar__logo-text, .sidebar .sidebar__item-label,
+  .sidebar .sidebar__badge, .sidebar .sidebar__section-title { opacity: 0; }
+  .main { margin-left: var(--sidebar-collapsed); }
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 767px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; }
+  .kpi-row { grid-template-columns: 1fr 1fr; }
+  .page { padding: 16px; }
+  .timer-bar { flex-wrap: wrap; }
+  .timer-bar__time { font-size: 22px; }
+}
+</style>
+
+<style>
+/* Embedded mode overrides */
+.sidebar { display: none !important; }
+.topbar { display: none !important; }
+.main { margin-left: 0 !important; }
+body { background: var(--color-bg); }
+</style>
+</head>
+<body>
+
+<div class="layout" id="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__logo">
+      <div class="sidebar__logo-icon">G</div>
+      <span class="sidebar__logo-text">GAA</span>
+    </div>
+    <nav class="sidebar__nav">
+      <div class="sidebar__section-title">Cœur métier</div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">📊</span><span class="sidebar__item-label">Tableau de bord</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">📁</span><span class="sidebar__item-label">Projets</span><span class="sidebar__badge">12</span></div>
+      <div class="sidebar__item sidebar__item--active"><span class="sidebar__item-icon">⏱️</span><span class="sidebar__item-label">Temps</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">💰</span><span class="sidebar__item-label">Finances</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">👥</span><span class="sidebar__item-label">Contacts</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">📅</span><span class="sidebar__item-label">Planning</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">🏗️</span><span class="sidebar__item-label">Chantier</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">📄</span><span class="sidebar__item-label">Documents</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">✅</span><span class="sidebar__item-label">Tâches</span><span class="sidebar__badge">5</span></div>
+      <div class="sidebar__section-title">Outils</div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">📈</span><span class="sidebar__item-label">Reporting</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">🔔</span><span class="sidebar__item-label">Alertes</span><span class="sidebar__badge">3</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">⚙️</span><span class="sidebar__item-label">Paramètres</span></div>
+    </nav>
+    <div class="sidebar__toggle"  title="Réduire le menu"><span id="toggleIcon">◀</span></div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__search">
+        <span class="topbar__search-icon">🔍</span>
+        <input type="text" placeholder="Rechercher un projet, contact, document…" />
+      </div>
+      <div class="topbar__actions">
+        <button class="topbar__btn" title="Notifications">🔔<span class="notif-dot"></span></button>
+        <button class="topbar__btn" title="Aide">❓</button>
+        <div class="topbar__avatar" title="Thomas Durand">TD</div>
+      </div>
+    </header>
+
+    <main class="page">
+
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb">
+        <a href="#">Temps</a>
+        <span style="font-size:10px;">›</span>
+        <span class="breadcrumb__current">Ma feuille de temps</span>
+      </nav>
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <div class="page-header__left">
+          <div class="page-header__icon">⏱️</div>
+          <div>
+            <h1 class="page-header__title">Saisie des temps</h1>
+            <div class="page-header__meta">
+              <span class="badge badge--public">Thomas Durand</span>
+              <span class="badge badge--muted">Architecte · 35h/semaine</span>
+            </div>
+          </div>
+        </div>
+        <div class="page-header__actions">
+          <button class="btn btn--secondary" onclick="showToast('Export généré', 'success')">📥 Exporter</button>
+          <button class="btn btn--success" onclick="submitTimesheet()">✓ Soumettre la semaine</button>
+        </div>
+      </div>
+
+      <!-- Alert -->
+      <div class="alert-banner alert-banner--warning" id="alertBanner">
+        <span>⚠️</span>
+        <span>Il vous reste <strong>4h</strong> à saisir pour atteindre votre capacité hebdomadaire de 35h. Rappel : la saisie doit être complète avant vendredi 18h.</span>
+        <span class="alert-banner__dismiss" onclick="document.getElementById('alertBanner').style.display='none'">✕</span>
+      </div>
+
+      <!-- Timer Bar -->
+      <div class="timer-bar" id="timerBar">
+        <div class="timer-bar__icon timer-bar__icon--stopped" id="timerIcon" onclick="toggleTimer()">▶</div>
+        <div class="timer-bar__info">
+          <div class="timer-bar__label" id="timerLabel">Timer — Aucune tâche sélectionnée</div>
+          <div class="timer-bar__detail" id="timerDetail">Cliquez pour démarrer le chronomètre sur un projet</div>
+        </div>
+        <div class="timer-bar__time" id="timerDisplay">00:00:00</div>
+        <div class="timer-bar__actions">
+          <button class="btn btn--secondary btn--sm" onclick="openTimerModal()">Choisir un projet</button>
+          <button class="btn btn--ghost btn--sm" id="timerSaveBtn" onclick="saveTimer()" style="display:none;">💾 Imputer</button>
+        </div>
+      </div>
+
+      <!-- Week Navigation -->
+      <div class="week-nav">
+        <button class="week-nav__btn" onclick="showToast('Semaine précédente', 'info')">◀</button>
+        <span class="week-nav__label">Semaine 8</span>
+        <span class="week-nav__sub">17 — 23 février 2025</span>
+        <button class="week-nav__btn" onclick="showToast('Semaine suivante', 'info')">▶</button>
+        <div class="week-nav__right">
+          <button class="btn btn--ghost btn--sm" onclick="showToast('Affichage par demi-journée', 'info')">½ journée</button>
+          <button class="btn btn--secondary btn--sm" style="font-weight:600;border-color:var(--color-primary);color:var(--color-primary)">¼ heure</button>
+          <span style="color:var(--color-border)">|</span>
+          <button class="btn btn--ghost btn--sm" onclick="openAddRowModal()">+ Ajouter une ligne</button>
+        </div>
+      </div>
+
+      <!-- Main grid: Timesheet + Summary -->
+      <div class="grid-layout">
+
+        <!-- Timesheet -->
+        <div>
+          <div class="timesheet-wrapper">
+            <table class="timesheet" id="timesheetTable">
+              <thead>
+                <tr>
+                  <th>Projet / Phase / Tâche</th>
+                  <th class="th-day">Lun<br><span style="font-weight:400;font-size:10px;">17</span></th>
+                  <th class="th-day">Mar<br><span style="font-weight:400;font-size:10px;">18</span></th>
+                  <th class="th-day">Mer<br><span style="font-weight:400;font-size:10px;">19</span></th>
+                  <th class="th-day">Jeu<br><span style="font-weight:400;font-size:10px;">20</span></th>
+                  <th class="th-day today-marker">Ven<br><span style="font-weight:400;font-size:10px;">21</span></th>
+                  <th class="th-day th-weekend">Sam<br><span style="font-weight:400;font-size:10px;">22</span></th>
+                  <th class="th-day th-weekend">Dim<br><span style="font-weight:400;font-size:10px;">23</span></th>
+                  <th class="th-total">Total</th>
+                </tr>
+              </thead>
+              <tbody id="timesheetBody">
+                <!-- Row 1: Groupe scolaire -->
+                <tr>
+                  <td>
+                    <div class="ts-project">
+                      <div class="ts-project__color" style="background:#1B4965"></div>
+                      <div class="ts-project__info">
+                        <div class="ts-project__name">Groupe scolaire Victor Hugo</div>
+                        <div class="ts-project__detail">
+                          <span class="badge badge--phase" style="font-size:10px;padding:1px 6px;">PRO</span>
+                          Plans niveaux
+                          <span class="badge badge--success" style="font-size:10px;padding:1px 6px;">Refact.</span>
+                        </div>
+                      </div>
+                      <div class="ts-project__actions">
+                        <button class="ts-action-btn" title="Modifier">✏️</button>
+                        <button class="ts-action-btn" title="Supprimer">🗑️</button>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="ts-cell"><input class="ts-input ts-input--filled" value="4" data-row="0" data-col="0"></td>
+                  <td class="ts-cell"><input class="ts-input ts-input--filled" value="3.5" data-row="0" data-col="1"></td>
+                  <td class="ts-cell"><input class="ts-input ts-input--filled" value="4" data-row="0" data-col="2"></td>
+                  <td class="ts-cell"><input class="ts-input ts-input--filled" value="3" data-row="0" data-col="3"></td>
+                  <td class="ts-cell"><input class="ts-input" value="" placeholder="—" data-row="0" data-col="4"></td>
+                  <td class="ts-cell td-weekend"><input class="ts-input" value="" placeholder="—" data-row="0" data-col="5"></td>
+                  <td class="ts-cell td-weekend"><input class="ts-input" value="" placeholder="—" data-row="0" data-col="6"></td>
+                  <td class="td-total" data-row-total="0">14.5</td>
+                </tr>
+
+                <!-- Row 2: Résidence Les Oliviers -->
+                <tr>
+                  <td>
+                    <div class="ts-project">
+                      <div class="ts-project__color" style="background:#2D6A4F"></div>
+                      <div class="ts-project__info">
+                        <div class="ts-project__name">Résidence Les Oliviers</div>
+                        <div class="ts-project__detail">
+                          <span class="badge badge--phase" style="font-size:10px;padding:1px 6px;">DCE</span>
+                          CCTP lots archi
+                          <span class="badge badge--success" style="font-size:10px;padding:1px 6px;">Refact.</span>
+                        </div>
+                      </div>
+                      <div class="ts-project__actions">
+                        <button class="ts-action-btn" title="Modifier">✏️</button>
+                        <button class="ts-action-btn" title="Supprimer">🗑️</button>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="ts-cell"><input class="ts-input ts-input--filled" value="3" data-row="1" data-col="0"></td>
+                  <td class="ts-cell"><input class="ts-input ts-input--filled" value="3.5" data-row="1" data-col="1"></td>
+                  <td class="ts-cell"><input class="ts-input ts-input--filled" value="3" data-row="1" data-col="2"></td>
+                  <td class="ts-cell"><input class="ts-input ts-input--filled" value="2" data-row="1" data-col="3"></td>
+                  <td class="ts-cell"><input class="ts-input" value="" placeholder="—" data-row="1" data-col="4"></td>
+                  <td class="ts-cell td-weekend"><input class="ts-input" value="" placeholder="—" data-row="1" data-col="5"></td>
+                  <td class="ts-cell td-weekend"><input class="ts-input" value="" placeholder="—" data-row="1" data-col="6"></td>
+                  <td class="td-total" data-row-total="1">11.5</td>
+                </tr>
+
+                <!-- Row 3: Hôtel de ville (non refacturable) -->
+                <tr>
+                  <td>
+                    <div class="ts-project">
+                      <div class="ts-project__color" style="background:#E76F51"></div>
+                      <div class="ts-project__info">
+                        <div class="ts-project__name">Hôtel de ville — Extension</div>
+                        <div class="ts-project__detail">
+                          <span class="badge badge--phase" style="font-size:10px;padding:1px 6px;">APD</span>
+                          Réunions BET
+                          <span class="badge badge--warning" style="font-size:10px;padding:1px 6px;">Non refact.</span>
+                        </div>
+                      </div>
+                      <div class="ts-project__actions">
+                        <button class="ts-action-btn" title="Modifier">✏️</button>
+                        <button class="ts-action-btn" title="Supprimer">🗑️</button>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="ts-cell ts-cell--nonref"><input class="ts-input" value="" placeholder="—" data-row="2" data-col="0"></td>
+                  <td class="ts-cell ts-cell--nonref"><input class="ts-input ts-input--filled" value="1" data-row="2" data-col="1"></td>
+                  <td class="ts-cell ts-cell--nonref"><input class="ts-input" value="" placeholder="—" data-row="2" data-col="2"></td>
+                  <td class="ts-cell ts-cell--nonref"><input class="ts-input ts-input--filled" value="2" data-row="2" data-col="3"></td>
+                  <td class="ts-cell ts-cell--nonref"><input class="ts-input" value="" placeholder="—" data-row="2" data-col="4"></td>
+                  <td class="ts-cell ts-cell--nonref td-weekend"><input class="ts-input" value="" placeholder="—" data-row="2" data-col="5"></td>
+                  <td class="ts-cell ts-cell--nonref td-weekend"><input class="ts-input" value="" placeholder="—" data-row="2" data-col="6"></td>
+                  <td class="td-total" data-row-total="2">3</td>
+                </tr>
+
+                <!-- Row 4: Non productif -->
+                <tr>
+                  <td>
+                    <div class="ts-project">
+                      <div class="ts-project__color" style="background:var(--color-muted)"></div>
+                      <div class="ts-project__info">
+                        <div class="ts-project__name" style="color:var(--color-text-muted)">Temps non productif</div>
+                        <div class="ts-project__detail">
+                          <span class="badge badge--muted" style="font-size:10px;padding:1px 6px;">Interne</span>
+                          Réunion d'agence, administratif
+                        </div>
+                      </div>
+                      <div class="ts-project__actions">
+                        <button class="ts-action-btn" title="Modifier">✏️</button>
+                        <button class="ts-action-btn" title="Supprimer">🗑️</button>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="ts-cell"><input class="ts-input" value="" placeholder="—" data-row="3" data-col="0"></td>
+                  <td class="ts-cell"><input class="ts-input" value="" placeholder="—" data-row="3" data-col="1"></td>
+                  <td class="ts-cell"><input class="ts-input" value="" placeholder="—" data-row="3" data-col="2"></td>
+                  <td class="ts-cell"><input class="ts-input ts-input--filled" value="2" data-row="3" data-col="3"></td>
+                  <td class="ts-cell"><input class="ts-input" value="" placeholder="—" data-row="3" data-col="4"></td>
+                  <td class="ts-cell td-weekend"><input class="ts-input" value="" placeholder="—" data-row="3" data-col="5"></td>
+                  <td class="ts-cell td-weekend"><input class="ts-input" value="" placeholder="—" data-row="3" data-col="6"></td>
+                  <td class="td-total" data-row-total="3">2</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td>Total journalier</td>
+                  <td data-col-total="0">7</td>
+                  <td data-col-total="1">8</td>
+                  <td data-col-total="2">7</td>
+                  <td data-col-total="3">9</td>
+                  <td data-col-total="4">0</td>
+                  <td class="td-weekend" data-col-total="5">0</td>
+                  <td class="td-weekend" data-col-total="6">0</td>
+                  <td class="td-total" id="grandTotal">31</td>
+                </tr>
+              </tfoot>
+            </table>
+            <div class="ts-add-row" onclick="openAddRowModal()">
+              <span>＋</span> Ajouter une ligne projet / phase / tâche
+            </div>
+          </div>
+
+          <!-- Capacity bar -->
+          <div style="display:flex;align-items:center;gap:12px;margin-top:12px;padding:0 4px;">
+            <span style="font-size:12px;color:var(--color-text-muted);">Capacité</span>
+            <div style="flex:1;">
+              <div class="capacity-bar">
+                <div class="capacity-bar__fill" id="capacityBar" style="width:88.5%;background:var(--color-primary-light);"></div>
+              </div>
+            </div>
+            <span style="font-family:var(--font-mono);font-size:12px;font-weight:500;" id="capacityLabel">31h / 35h (88%)</span>
+          </div>
+        </div>
+
+        <!-- Summary sidebar -->
+        <div>
+          <div class="summary-card">
+            <!-- Répartition -->
+            <div class="card" style="margin-bottom:16px;">
+              <div class="card__header">
+                <span class="card__title">Répartition</span>
+              </div>
+              <div class="card__body" style="padding:12px 20px;">
+                <div class="summary-project">
+                  <div class="summary-project__dot" style="background:#1B4965"></div>
+                  <span class="summary-project__name">Groupe scolaire</span>
+                  <span class="summary-project__hours">14.5h</span>
+                </div>
+                <div class="summary-project">
+                  <div class="summary-project__dot" style="background:#2D6A4F"></div>
+                  <span class="summary-project__name">Résidence Oliviers</span>
+                  <span class="summary-project__hours">11.5h</span>
+                </div>
+                <div class="summary-project">
+                  <div class="summary-project__dot" style="background:#E76F51"></div>
+                  <span class="summary-project__name">Hôtel de ville</span>
+                  <span class="summary-project__hours">3h</span>
+                </div>
+                <div class="summary-project">
+                  <div class="summary-project__dot" style="background:var(--color-muted)"></div>
+                  <span class="summary-project__name">Non productif</span>
+                  <span class="summary-project__hours">2h</span>
+                </div>
+
+                <!-- Visual bar chart -->
+                <div style="display:flex;height:12px;border-radius:6px;overflow:hidden;margin-top:12px;">
+                  <div style="width:46.8%;background:#1B4965;" title="Groupe scolaire 14.5h"></div>
+                  <div style="width:37.1%;background:#2D6A4F;" title="Résidence Oliviers 11.5h"></div>
+                  <div style="width:9.7%;background:#E76F51;" title="Hôtel de ville 3h"></div>
+                  <div style="width:6.4%;background:var(--color-muted);" title="Non productif 2h"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stats semaine -->
+            <div class="card" style="margin-bottom:16px;">
+              <div class="card__header">
+                <span class="card__title">Indicateurs</span>
+              </div>
+              <div class="card__body" style="padding:12px 20px;">
+                <div class="summary-item">
+                  <span class="summary-item__label">🕐 Heures saisies</span>
+                  <span class="summary-item__value">31h / 35h</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-item__label">✅ Refacturable</span>
+                  <span class="summary-item__value" style="color:var(--color-success)">26h (84%)</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-item__label">⚠️ Non refacturable</span>
+                  <span class="summary-item__value" style="color:var(--color-warning)">3h (10%)</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-item__label">📋 Non productif</span>
+                  <span class="summary-item__value" style="color:var(--color-text-muted)">2h (6%)</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-item__label">📊 Taux d'occupation</span>
+                  <span class="summary-item__value">88%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Comparaison budget -->
+            <div class="card" style="margin-bottom:16px;">
+              <div class="card__header">
+                <span class="card__title">Budget phase en cours</span>
+              </div>
+              <div class="card__body" style="padding:12px 20px;">
+                <div style="margin-bottom:12px;">
+                  <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+                    <span style="font-weight:500;">Grp. scolaire — PRO</span>
+                    <span style="font-family:var(--font-mono);font-size:12px;">287h / 400h</span>
+                  </div>
+                  <div class="capacity-bar"><div class="capacity-bar__fill" style="width:72%;background:var(--color-primary-light);"></div></div>
+                  <div style="font-size:11px;color:var(--color-text-muted);margin-top:2px;">72% — <span style="color:var(--color-success)">dans le budget</span></div>
+                </div>
+                <div style="margin-bottom:12px;">
+                  <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+                    <span style="font-weight:500;">Rés. Oliviers — DCE</span>
+                    <span style="font-family:var(--font-mono);font-size:12px;">198h / 220h</span>
+                  </div>
+                  <div class="capacity-bar"><div class="capacity-bar__fill" style="width:90%;background:var(--color-warning);"></div></div>
+                  <div style="font-size:11px;color:var(--color-text-muted);margin-top:2px;">90% — <span style="color:var(--color-warning)">attention au seuil</span></div>
+                </div>
+                <div>
+                  <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+                    <span style="font-weight:500;">Hôtel de ville — APD</span>
+                    <span style="font-family:var(--font-mono);font-size:12px;">310h / 280h</span>
+                  </div>
+                  <div class="capacity-bar"><div class="capacity-bar__fill" style="width:100%;background:var(--color-danger);"></div></div>
+                  <div style="font-size:11px;color:var(--color-text-muted);margin-top:2px;">111% — <span style="color:var(--color-danger)">dépassement +30h</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Statut validation -->
+            <div class="card">
+              <div class="card__header">
+                <span class="card__title">Validation</span>
+              </div>
+              <div class="card__body" style="padding:12px 20px;">
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span class="badge badge--success" style="font-size:11px;">✓ S7</span>
+                    <span style="font-size:12px;">Semaine 7 — validée par M. Lefort</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span class="badge badge--warning" style="font-size:11px;">● S8</span>
+                    <span style="font-size:12px;">Semaine 8 — en cours de saisie</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span class="badge badge--muted" style="font-size:11px;">○ S9</span>
+                    <span style="font-size:12px;">Semaine 9 — à venir</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Ajouter une ligne
+     ============================================================ -->
+<div class="modal-overlay" id="addRowModal" onclick="closeAddRowModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal__header">
+      <h2 class="modal__title">Ajouter une imputation</h2>
+      <button class="modal__close" onclick="closeAddRowModal()">&times;</button>
+    </div>
+    <div class="modal__body">
+      <div class="form-group">
+        <label>Projet</label>
+        <select class="form-select" id="newRowProject">
+          <option value="">Sélectionner un projet…</option>
+          <option>Groupe scolaire Victor Hugo</option>
+          <option>Résidence Les Oliviers</option>
+          <option>Hôtel de ville — Extension</option>
+          <option>Médiathèque de Brest</option>
+          <option>EHPAD Les Magnolias</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Phase</label>
+          <select class="form-select" id="newRowPhase">
+            <option value="">Phase…</option>
+            <option>ESQ</option><option>APS</option><option>APD</option>
+            <option>PRO</option><option>DCE</option><option>DET</option><option>AOR</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tâche</label>
+          <select class="form-select" id="newRowTask">
+            <option value="">Tâche…</option>
+            <option>Plans niveaux</option>
+            <option>Plans coupes</option>
+            <option>CCTP</option>
+            <option>Notice descriptive</option>
+            <option>Quantitatif</option>
+            <option>Réunion MOA</option>
+            <option>Coordination BET</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Type de temps</label>
+        <div style="display:flex;gap:16px;margin-top:4px;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:400;">
+            <input type="radio" name="timeType" value="refacturable" checked style="accent-color:var(--color-primary)"> Refacturable
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:400;">
+            <input type="radio" name="timeType" value="nonrefacturable" style="accent-color:var(--color-warning)"> Non refacturable
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:400;">
+            <input type="radio" name="timeType" value="nonproductif" style="accent-color:var(--color-muted)"> Non productif
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--secondary" onclick="closeAddRowModal()">Annuler</button>
+      <button class="btn btn--primary" onclick="addRow()">Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: Timer - choisir projet
+     ============================================================ -->
+<div class="modal-overlay" id="timerModal" onclick="closeTimerModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal__header">
+      <h2 class="modal__title">Démarrer le timer</h2>
+      <button class="modal__close" onclick="closeTimerModal()">&times;</button>
+    </div>
+    <div class="modal__body">
+      <div class="form-group">
+        <label>Projet</label>
+        <select class="form-select" id="timerProject">
+          <option>Groupe scolaire Victor Hugo</option>
+          <option>Résidence Les Oliviers</option>
+          <option>Hôtel de ville — Extension</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Phase</label>
+          <select class="form-select" id="timerPhase">
+            <option>PRO</option><option>DCE</option><option>APD</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tâche</label>
+          <select class="form-select" id="timerTask">
+            <option>Plans niveaux</option>
+            <option>CCTP</option>
+            <option>Coordination BET</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--secondary" onclick="closeTimerModal()">Annuler</button>
+      <button class="btn btn--primary" onclick="startTimerWithProject()">▶ Démarrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+// ---- Sidebar ----
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const icon = document.getElementById('toggleIcon');
+  sidebar.classList.toggle('sidebar--collapsed');
+  icon.textContent = sidebar.classList.contains('sidebar--collapsed') ? '▶' : '◀';
+}
+
+// ---- Toast ----
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast toast--${type}`;
+  const icons = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
+  toast.innerHTML = `<span>${icons[type] || 'ℹ️'}</span><span>${message}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+// ---- Timesheet Calculation ----
+function recalculate() {
+  const inputs = document.querySelectorAll('.ts-input');
+  const rows = {};
+  const cols = {};
+  let grand = 0;
+
+  inputs.forEach(input => {
+    const r = input.dataset.row;
+    const c = input.dataset.col;
+    const val = parseFloat(input.value) || 0;
+
+    if (!rows[r]) rows[r] = 0;
+    if (!cols[c]) cols[c] = 0;
+    rows[r] += val;
+    cols[c] += val;
+    grand += val;
+
+    // Style
+    input.classList.remove('ts-input--filled', 'ts-input--high', 'ts-input--zero');
+    if (val > 0) input.classList.add(val > 8 ? 'ts-input--high' : 'ts-input--filled');
+  });
+
+  // Update row totals
+  Object.keys(rows).forEach(r => {
+    const cell = document.querySelector(`[data-row-total="${r}"]`);
+    if (cell) cell.textContent = rows[r] % 1 === 0 ? rows[r] : rows[r].toFixed(1);
+  });
+
+  // Update col totals
+  Object.keys(cols).forEach(c => {
+    const cell = document.querySelector(`[data-col-total="${c}"]`);
+    if (cell) cell.textContent = cols[c] % 1 === 0 ? cols[c] : cols[c].toFixed(1);
+  });
+
+  // Grand total
+  document.getElementById('grandTotal').textContent = grand % 1 === 0 ? grand : grand.toFixed(1);
+
+  // Capacity bar
+  const pct = Math.min((grand / 35) * 100, 100);
+  const bar = document.getElementById('capacityBar');
+  bar.style.width = pct + '%';
+  bar.style.background = pct >= 100 ? 'var(--color-success)' : pct >= 80 ? 'var(--color-primary-light)' : 'var(--color-warning)';
+  document.getElementById('capacityLabel').textContent = `${grand % 1 === 0 ? grand : grand.toFixed(1)}h / 35h (${Math.round(pct)}%)`;
+}
+
+// Add input listeners
+document.querySelectorAll('.ts-input').forEach(input => {
+  input.addEventListener('input', recalculate);
+  input.addEventListener('focus', function() { if (this.value === '') this.placeholder = ''; });
+  input.addEventListener('blur', function() { if (this.value === '') this.placeholder = '—'; });
+});
+
+// ---- Timer ----
+let timerRunning = false;
+let timerSeconds = 0;
+let timerInterval = null;
+let timerProjectName = '';
+
+function toggleTimer() {
+  if (!timerProjectName && !timerRunning) {
+    openTimerModal();
+    return;
+  }
+  if (timerRunning) {
+    stopTimer();
+  } else {
+    startTimer();
+  }
+}
+
+function startTimer() {
+  timerRunning = true;
+  const icon = document.getElementById('timerIcon');
+  icon.className = 'timer-bar__icon timer-bar__icon--running';
+  icon.textContent = '⏸';
+  document.getElementById('timerDisplay').classList.add('timer-bar__time--running');
+  document.getElementById('timerSaveBtn').style.display = '';
+
+  timerInterval = setInterval(() => {
+    timerSeconds++;
+    updateTimerDisplay();
+  }, 1000);
+}
+
+function stopTimer() {
+  timerRunning = false;
+  clearInterval(timerInterval);
+  const icon = document.getElementById('timerIcon');
+  icon.className = 'timer-bar__icon timer-bar__icon--stopped';
+  icon.textContent = '▶';
+  document.getElementById('timerDisplay').classList.remove('timer-bar__time--running');
+}
+
+function updateTimerDisplay() {
+  const h = Math.floor(timerSeconds / 3600);
+  const m = Math.floor((timerSeconds % 3600) / 60);
+  const s = timerSeconds % 60;
+  document.getElementById('timerDisplay').textContent =
+    `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function saveTimer() {
+  const hours = (timerSeconds / 3600).toFixed(2);
+  stopTimer();
+  timerSeconds = 0;
+  updateTimerDisplay();
+  document.getElementById('timerSaveBtn').style.display = 'none';
+  showToast(`${hours}h imputées sur ${timerProjectName}`, 'success');
+  timerProjectName = '';
+  document.getElementById('timerLabel').textContent = 'Timer — Aucune tâche sélectionnée';
+  document.getElementById('timerDetail').textContent = 'Cliquez pour démarrer le chronomètre sur un projet';
+}
+
+function openTimerModal() {
+  const overlay = document.getElementById('timerModal');
+  overlay.style.display = 'flex';
+  requestAnimationFrame(() => overlay.classList.add('modal-overlay--visible'));
+}
+
+function closeTimerModal(e) {
+  if (e && e.target !== e.currentTarget) return;
+  const overlay = document.getElementById('timerModal');
+  overlay.classList.remove('modal-overlay--visible');
+  setTimeout(() => overlay.style.display = 'none', 250);
+}
+
+function startTimerWithProject() {
+  const proj = document.getElementById('timerProject').value;
+  const phase = document.getElementById('timerPhase').value;
+  const task = document.getElementById('timerTask').value;
+  timerProjectName = proj;
+  document.getElementById('timerLabel').textContent = `Timer — ${proj}`;
+  document.getElementById('timerDetail').textContent = `${phase} · ${task}`;
+  closeTimerModal();
+  timerSeconds = 0;
+  updateTimerDisplay();
+  startTimer();
+  showToast(`Timer démarré sur ${proj}`, 'info');
+}
+
+// ---- Add Row Modal ----
+function openAddRowModal() {
+  const overlay = document.getElementById('addRowModal');
+  overlay.style.display = 'flex';
+  requestAnimationFrame(() => overlay.classList.add('modal-overlay--visible'));
+}
+
+function closeAddRowModal(e) {
+  if (e && e.target !== e.currentTarget) return;
+  const overlay = document.getElementById('addRowModal');
+  overlay.classList.remove('modal-overlay--visible');
+  setTimeout(() => overlay.style.display = 'none', 250);
+}
+
+function addRow() {
+  const proj = document.getElementById('newRowProject').value;
+  const phase = document.getElementById('newRowPhase').value;
+  const task = document.getElementById('newRowTask').value;
+  if (!proj) { showToast('Sélectionnez un projet', 'warning'); return; }
+
+  const tbody = document.getElementById('timesheetBody');
+  const rowIdx = tbody.children.length;
+  const colors = ['#7c3aed', '#0284c7', '#059669', '#d97706', '#dc2626'];
+  const color = colors[rowIdx % colors.length];
+
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td>
+      <div class="ts-project">
+        <div class="ts-project__color" style="background:${color}"></div>
+        <div class="ts-project__info">
+          <div class="ts-project__name">${proj}</div>
+          <div class="ts-project__detail">
+            <span class="badge badge--phase" style="font-size:10px;padding:1px 6px;">${phase || '—'}</span>
+            ${task || '—'}
+            <span class="badge badge--success" style="font-size:10px;padding:1px 6px;">Refact.</span>
+          </div>
+        </div>
+        <div class="ts-project__actions">
+          <button class="ts-action-btn" title="Modifier">✏️</button>
+          <button class="ts-action-btn" title="Supprimer" onclick="this.closest('tr').remove();recalculate();">🗑️</button>
+        </div>
+      </div>
+    </td>
+    ${[0,1,2,3,4,5,6].map(c => `
+      <td class="ts-cell${c >= 5 ? ' td-weekend' : ''}">
+        <input class="ts-input" value="" placeholder="—" data-row="${rowIdx}" data-col="${c}">
+      </td>
+    `).join('')}
+    <td class="td-total" data-row-total="${rowIdx}">0</td>
+  `;
+  tbody.appendChild(tr);
+
+  // Bind new inputs
+  tr.querySelectorAll('.ts-input').forEach(input => {
+    input.addEventListener('input', recalculate);
+    input.addEventListener('focus', function() { if (this.value === '') this.placeholder = ''; });
+    input.addEventListener('blur', function() { if (this.value === '') this.placeholder = '—'; });
+  });
+
+  closeAddRowModal();
+  showToast(`Ligne ajoutée : ${proj} — ${phase}`, 'success');
+}
+
+// ---- Submit Timesheet ----
+function submitTimesheet() {
+  const total = parseFloat(document.getElementById('grandTotal').textContent);
+  if (total < 28) { // 80% de 35h
+    showToast(`Saisie incomplète : ${total}h sur 35h requises (minimum 80%)`, 'warning');
+    return;
+  }
+  showToast('Feuille de temps soumise pour validation ✓', 'success');
+}
+
+// ---- Keyboard: Escape ----
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeAddRowModal();
+    closeTimerModal();
+  }
+});
+</script>
+
+</body>
+</html>

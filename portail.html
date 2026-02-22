@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAA — Portail Externe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--color-primary:#1B4965;--color-primary-light:#5FA8D3;--color-primary-hover:#153a52;--color-primary-bg:#e8f1f8;--color-secondary:#3C4858;--color-accent:#E6A817;--color-accent-bg:#fdf5e0;--color-success:#2D6A4F;--color-success-bg:#e6f3ed;--color-danger:#C1292E;--color-danger-bg:#fbe8e8;--color-warning:#E76F51;--color-warning-bg:#fdf0ec;--color-bg:#F8F9FA;--color-surface:#FFFFFF;--color-border:#DEE2E6;--color-text:#212529;--color-text-muted:#6C757D;--color-muted:#ADB5BD;--font-sans:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;--font-mono:'JetBrains Mono',monospace;--radius-sm:4px;--radius-md:8px;--radius-lg:12px;--shadow-sm:0 1px 3px rgba(0,0,0,.06);--shadow-md:0 4px 12px rgba(0,0,0,.08);--shadow-lg:0 8px 32px rgba(0,0,0,.12);--transition:.2s ease}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);font-size:14px;line-height:1.5;color:var(--color-text);background:var(--color-bg)}
+.sidebar{display:none!important}.topbar{display:none!important}
+
+/* Portail top bar - distinct from GAA internal */
+.portal-bar{background:var(--color-primary);color:#fff;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between}
+.portal-bar__left{display:flex;align-items:center;gap:12px}
+.portal-bar__logo{font-size:18px;font-weight:700;letter-spacing:-.02em}
+.portal-bar__sep{width:1px;height:24px;background:rgba(255,255,255,.2)}
+.portal-bar__label{font-size:13px;opacity:.8}
+.portal-bar__right{display:flex;align-items:center;gap:12px}
+.portal-bar__user{display:flex;align-items:center;gap:8px;font-size:13px}
+.portal-bar__avatar{width:32px;height:32px;border-radius:50%;background:var(--color-accent);color:var(--color-primary);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+
+/* Portal nav tabs */
+.portal-nav{background:var(--color-surface);border-bottom:1px solid var(--color-border);padding:0 24px;display:flex;gap:0}
+.portal-nav__item{padding:14px 20px;font-size:13px;font-weight:500;color:var(--color-text-muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all var(--transition)}
+.portal-nav__item:hover{color:var(--color-text)}
+.portal-nav__item--active{color:var(--color-primary);border-bottom-color:var(--color-primary)}
+
+.page{padding:24px;max-width:1200px;margin:0 auto}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius-md);font-family:var(--font-sans);font-size:13px;font-weight:500;border:1px solid transparent;cursor:pointer;transition:all var(--transition);white-space:nowrap}
+.btn--primary{background:var(--color-primary);color:#fff}.btn--primary:hover{background:var(--color-primary-hover)}
+.btn--secondary{background:var(--color-surface);color:var(--color-text);border-color:var(--color-border)}.btn--secondary:hover{background:var(--color-bg)}
+.btn--ghost{background:transparent;color:var(--color-text-muted)}.btn--ghost:hover{background:var(--color-bg)}
+.btn--sm{padding:5px 10px;font-size:12px}
+.btn--success{background:var(--color-success);color:#fff}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500}
+.badge--primary{background:var(--color-primary-bg);color:var(--color-primary)}
+.badge--success{background:var(--color-success-bg);color:var(--color-success)}
+.badge--danger{background:var(--color-danger-bg);color:var(--color-danger)}
+.badge--warning{background:var(--color-warning-bg);color:var(--color-warning)}
+.badge--muted{background:#EBEDEF;color:var(--color-text-muted)}
+.badge--accent{background:var(--color-accent-bg);color:#b8860b}
+.card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);overflow:hidden}
+.card__header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--color-border)}
+.card__title{font-size:14px;font-weight:600}
+.card__body{padding:16px 20px}.card__body--flush{padding:0}
+.text-muted{color:var(--color-text-muted)}.text-mono{font-family:var(--font-mono)}.text-sm{font-size:12px}
+.text-success{color:var(--color-success)}.text-danger{color:var(--color-danger)}.text-warning{color:var(--color-warning)}
+.mb-24{margin-bottom:24px}
+.avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;color:#fff;flex-shrink:0}
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--color-text-muted);font-weight:600;padding:8px 14px;border-bottom:2px solid var(--color-border);background:var(--color-bg)}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--color-border);font-size:13px;vertical-align:middle}
+.data-table tr:hover td{background:rgba(248,249,250,.5)}
+.progress{height:8px;background:var(--color-bg);border-radius:4px;overflow:hidden}
+.progress__bar{height:100%;border-radius:4px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.tab-panel{display:none;animation:fadeIn .3s ease}.tab-panel--active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* Phase stepper */
+.stepper{display:flex;align-items:center;gap:0;overflow-x:auto;padding:4px 0}
+.stepper__step{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:70px;position:relative}
+.stepper__dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;z-index:1}
+.stepper__label{font-size:10px;font-weight:500}
+.stepper__line{flex:1;height:3px;min-width:20px;background:var(--color-border);margin:0 -2px}
+.stepper__line--done{background:var(--color-success)}
+.stepper__line--active{background:var(--color-primary-light)}
+
+/* Upload zone */
+.upload-zone{border:2px dashed var(--color-border);border-radius:var(--radius-lg);padding:24px;text-align:center;cursor:pointer;transition:all var(--transition)}
+.upload-zone:hover{border-color:var(--color-primary-light);background:var(--color-primary-bg)}
+
+/* Msg */
+.msg-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--color-border)}
+.msg-item:last-child{border-bottom:none}
+
+.toast-container{position:fixed;top:16px;right:16px;z-index:2000;display:flex;flex-direction:column;gap:8px}
+.toast{padding:12px 16px;border-radius:var(--radius-md);background:var(--color-surface);border:1px solid var(--color-border);box-shadow:var(--shadow-md);display:flex;align-items:center;gap:10px;font-size:13px;animation:slideIn .3s ease,fadeOut .3s ease 2.5s forwards;min-width:280px}
+.toast--success{border-left:3px solid var(--color-success)}.toast--info{border-left:3px solid var(--color-primary-light)}
+@keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes fadeOut{to{opacity:0;transform:translateX(40px)}}
+@media(max-width:1023px){.grid-2,.grid-3{grid-template-columns:1fr}.stepper{flex-wrap:wrap}}
+@media(max-width:767px){.page{padding:16px}.portal-bar{padding:0 12px}}
+</style>
+</head>
+<body>
+
+<!-- PORTAL TOP BAR -->
+<div class="portal-bar">
+  <div class="portal-bar__left">
+    <span class="portal-bar__logo">GAA</span>
+    <span class="portal-bar__sep"></span>
+    <span class="portal-bar__label">Portail projet · Atelier Mercier Architecture</span>
+  </div>
+  <div class="portal-bar__right">
+    <span class="portal-bar__user"><span class="portal-bar__avatar">MD</span><span>M. Dupré — Ville de Brest</span></span>
+    <button class="btn btn--sm" style="background:rgba(255,255,255,.15);color:#fff;border:none;font-size:12px">Déconnexion</button>
+  </div>
+</div>
+
+<!-- PORTAL NAV -->
+<div class="portal-nav">
+  <div class="portal-nav__item portal-nav__item--active" data-tab="dashboard" onclick="switchTab(this)">📊 Tableau de bord</div>
+  <div class="portal-nav__item" data-tab="documents" onclick="switchTab(this)">📄 Documents</div>
+  <div class="portal-nav__item" data-tab="chantier" onclick="switchTab(this)">🏗️ Chantier</div>
+  <div class="portal-nav__item" data-tab="messages" onclick="switchTab(this)">💬 Messages</div>
+</div>
+<div class="page">
+  <!-- TAB: Dashboard MOA -->
+  <div class="tab-panel tab-panel--active" id="tab-dashboard">
+    <div style="margin-bottom:20px"><h2 style="font-size:20px;font-weight:600">Médiathèque de Brest</h2><div class="text-sm text-muted" style="margin-top:4px">Maître d'ouvrage : Ville de Brest · Architecte : Atelier Mercier · Surface : 2 400 m²</div></div>
+
+    <!-- Phase stepper -->
+    <div class="card mb-24">
+      <div class="card__header"><span class="card__title">Avancement du projet</span><span class="badge badge--primary">Phase DET — Mois 8/14</span></div>
+      <div class="card__body">
+        <div class="stepper" style="margin-bottom:16px">
+          <div class="stepper__step"><div class="stepper__dot" style="background:var(--color-success-bg);color:var(--color-success)">✓</div><div class="stepper__label" style="color:var(--color-success)">ESQ</div></div>
+          <div class="stepper__line stepper__line--done"></div>
+          <div class="stepper__step"><div class="stepper__dot" style="background:var(--color-success-bg);color:var(--color-success)">✓</div><div class="stepper__label" style="color:var(--color-success)">APS</div></div>
+          <div class="stepper__line stepper__line--done"></div>
+          <div class="stepper__step"><div class="stepper__dot" style="background:var(--color-success-bg);color:var(--color-success)">✓</div><div class="stepper__label" style="color:var(--color-success)">APD</div></div>
+          <div class="stepper__line stepper__line--done"></div>
+          <div class="stepper__step"><div class="stepper__dot" style="background:var(--color-success-bg);color:var(--color-success)">✓</div><div class="stepper__label" style="color:var(--color-success)">PRO</div></div>
+          <div class="stepper__line stepper__line--done"></div>
+          <div class="stepper__step"><div class="stepper__dot" style="background:var(--color-success-bg);color:var(--color-success)">✓</div><div class="stepper__label" style="color:var(--color-success)">DCE</div></div>
+          <div class="stepper__line stepper__line--done"></div>
+          <div class="stepper__step"><div class="stepper__dot" style="background:var(--color-success-bg);color:var(--color-success)">✓</div><div class="stepper__label" style="color:var(--color-success)">ACT</div></div>
+          <div class="stepper__line stepper__line--done"></div>
+          <div class="stepper__step"><div class="stepper__dot" style="background:var(--color-primary);color:#fff;font-weight:700">●</div><div class="stepper__label" style="color:var(--color-primary);font-weight:600">DET</div></div>
+          <div class="stepper__line stepper__line--active"></div>
+          <div class="stepper__step"><div class="stepper__dot" style="background:var(--color-bg);color:var(--color-muted);border:2px solid var(--color-border)">○</div><div class="stepper__label" style="color:var(--color-muted)">AOR</div></div>
+        </div>
+        <div class="progress" style="height:12px"><div class="progress__bar" style="width:57%;background:linear-gradient(90deg,var(--color-success),var(--color-primary))"></div></div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px"><span class="text-sm text-muted">Avancement global</span><span class="text-mono text-sm" style="font-weight:600">57%</span></div>
+      </div>
+    </div>
+
+    <!-- Key info cards -->
+    <div class="grid-3 mb-24">
+      <div class="card">
+        <div class="card__body" style="text-align:center"><div style="font-size:28px;margin-bottom:4px">📅</div><div class="text-sm text-muted">Réception prévisionnelle</div><div class="text-mono" style="font-size:18px;font-weight:600">30/09/2025</div></div>
+      </div>
+      <div class="card">
+        <div class="card__body" style="text-align:center"><div style="font-size:28px;margin-bottom:4px">🏗️</div><div class="text-sm text-muted">Prochaine visite</div><div class="text-mono" style="font-size:18px;font-weight:600">27/02/2025</div></div>
+      </div>
+      <div class="card">
+        <div class="card__body" style="text-align:center"><div style="font-size:28px;margin-bottom:4px">📄</div><div class="text-sm text-muted">Documents à valider</div><div class="text-mono" style="font-size:18px;font-weight:600;color:var(--color-warning)">2</div></div>
+      </div>
+    </div>
+
+    <!-- Prochaines étapes + derniers CR -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card__header"><span class="card__title">Prochaines étapes</span></div>
+        <div class="card__body">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:var(--color-primary);flex-shrink:0"></div><div><div style="font-size:13px;font-weight:500">Réunion MOA — Point avancement DET</div><div class="text-sm text-muted">27/02/2025 · 14h00</div></div></div>
+            <div style="display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:var(--color-accent);flex-shrink:0"></div><div><div style="font-size:13px;font-weight:500">Validation plans menuiseries ext.</div><div class="text-sm text-muted">Avant le 07/03/2025</div></div></div>
+            <div style="display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:var(--color-muted);flex-shrink:0"></div><div><div style="font-size:13px;font-weight:500">Pré-réception</div><div class="text-sm text-muted">15/09/2025 (prévisionnel)</div></div></div>
+            <div style="display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:var(--color-muted);flex-shrink:0"></div><div><div style="font-size:13px;font-weight:500">Réception des ouvrages</div><div class="text-sm text-muted">30/09/2025 (prévisionnel)</div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card__header"><span class="card__title">Derniers comptes-rendus</span></div>
+        <div class="card__body">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;background:var(--color-bg);border-radius:var(--radius-md)"><div><div style="font-weight:500;font-size:13px">CR-018 — 20/02/2025</div><div class="text-sm text-muted">3 obs. ouvertes, 2 levées</div></div><button class="btn btn--ghost btn--sm">📄 Voir</button></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;background:var(--color-bg);border-radius:var(--radius-md)"><div><div style="font-weight:500;font-size:13px">CR-017 — 13/02/2025</div><div class="text-sm text-muted">1 obs. ouverte, 4 levées</div></div><button class="btn btn--ghost btn--sm">📄 Voir</button></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;background:var(--color-bg);border-radius:var(--radius-md)"><div><div style="font-weight:500;font-size:13px">CR-016 — 06/02/2025</div><div class="text-sm text-muted">5 levées</div></div><button class="btn btn--ghost btn--sm">📄 Voir</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Documents -->
+  <div class="tab-panel" id="tab-documents">
+    <div class="grid-2 mb-24">
+      <div>
+        <h3 style="font-size:16px;font-weight:600;margin-bottom:12px">Documents partagés</h3>
+        <div class="card">
+          <div class="card__header"><span class="card__title">À valider par le MOA</span><span class="badge badge--warning">2 en attente</span></div>
+          <div class="card__body">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--color-warning-bg);border-radius:var(--radius-md);border:1px solid rgba(231,111,81,.2)"><span style="font-size:18px">📐</span><div style="flex:1"><div style="font-weight:500;font-size:13px">Plans PRO — R+2 (Indice B)</div><div class="text-sm text-muted">Partagé le 15/02 · 3,5 Mo</div></div><div style="display:flex;gap:4px"><button class="btn btn--success btn--sm" onclick="showToast('Document approuvé','success')">✅ Approuver</button><button class="btn btn--ghost btn--sm">📄</button></div></div>
+              <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--color-warning-bg);border-radius:var(--radius-md);border:1px solid rgba(231,111,81,.2)"><span style="font-size:18px">📄</span><div style="flex:1"><div style="font-weight:500;font-size:13px">Notice descriptive PRO</div><div class="text-sm text-muted">Partagé le 19/02 · 1,2 Mo</div></div><div style="display:flex;gap:4px"><button class="btn btn--success btn--sm">✅ Approuver</button><button class="btn btn--ghost btn--sm">📄</button></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h3 style="font-size:16px;font-weight:600;margin-bottom:12px">Derniers documents</h3>
+        <div class="card">
+          <div class="card__body card__body--flush">
+            <table class="data-table">
+              <thead><tr><th>Document</th><th>Phase</th><th>Date</th><th></th></tr></thead>
+              <tbody>
+                <tr><td style="font-weight:500">📐 Plans PRO coupes</td><td class="text-sm">PRO</td><td class="text-mono text-sm">17/02</td><td><button class="btn btn--ghost btn--sm">📥</button></td></tr>
+                <tr><td style="font-weight:500">📄 CR-018</td><td class="text-sm">DET</td><td class="text-mono text-sm">20/02</td><td><button class="btn btn--ghost btn--sm">📥</button></td></tr>
+                <tr><td style="font-weight:500">📊 Quantitatif PRO</td><td class="text-sm">PRO</td><td class="text-mono text-sm">20/02</td><td><button class="btn btn--ghost btn--sm">📥</button></td></tr>
+                <tr><td style="font-weight:500">📐 Plans PRO R+1 (Ind. B)</td><td class="text-sm">PRO</td><td class="text-mono text-sm">20/02</td><td><button class="btn btn--ghost btn--sm">📥</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Signature -->
+    <div class="card" style="border-left:3px solid var(--color-accent)">
+      <div class="card__header"><span class="card__title">✍️ Signature en attente</span></div>
+      <div class="card__body">
+        <div style="display:flex;align-items:center;gap:12px"><span style="font-size:24px">📋</span><div style="flex:1"><div style="font-weight:500">PV de réception phase PRO</div><div class="text-sm text-muted">Signature électronique requise via Yousign · Envoyé le 18/02</div></div><button class="btn btn--primary" onclick="showToast('Redirection vers Yousign…','info')">✍️ Signer</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Chantier -->
+  <div class="tab-panel" id="tab-chantier">
+    <div class="grid-2 mb-24">
+      <div class="card">
+        <div class="card__header"><span class="card__title">Avancement par lot</span></div>
+        <div class="card__body">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>Lot 01 — Gros œuvre</span><span class="text-mono" style="font-weight:600">72%</span></div><div class="progress"><div class="progress__bar" style="width:72%;background:var(--color-primary)"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>Lot 02 — Charpente</span><span class="text-mono" style="font-weight:600">85%</span></div><div class="progress"><div class="progress__bar" style="width:85%;background:var(--color-success)"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>Lot 03 — Étanchéité</span><span class="text-mono" style="font-weight:600">60%</span></div><div class="progress"><div class="progress__bar" style="width:60%;background:var(--color-warning)"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>Lot 04 — Menuiseries</span><span class="text-mono" style="font-weight:600">35%</span></div><div class="progress"><div class="progress__bar" style="width:35%;background:var(--color-primary-light)"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>Lot 05 — Électricité</span><span class="text-mono" style="font-weight:600">45%</span></div><div class="progress"><div class="progress__bar" style="width:45%;background:var(--color-primary-light)"></div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card__header"><span class="card__title">Réserves & Observations</span><span class="badge badge--danger">7 ouvertes</span></div>
+        <div class="card__body">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--color-danger-bg);border-radius:var(--radius-sm);font-size:12px"><span class="badge badge--danger" style="font-size:9px">Ouverte</span><span style="font-weight:500">OBS-042</span><span>Faux-aplomb P12</span><span class="text-muted">· GO</span></div>
+            <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--color-danger-bg);border-radius:var(--radius-sm);font-size:12px"><span class="badge badge--danger" style="font-size:9px">Ouverte</span><span style="font-weight:500">OBS-041</span><span>Réservation CVC manquante</span><span class="text-muted">· CVC</span></div>
+            <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--color-danger-bg);border-radius:var(--radius-sm);font-size:12px"><span class="badge badge--danger" style="font-size:9px">Ouverte</span><span style="font-weight:500">OBS-040</span><span>Infiltration acrotère</span><span class="text-muted">· Étanch.</span></div>
+            <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--color-success-bg);border-radius:var(--radius-sm);font-size:12px;opacity:.6"><span class="badge badge--success" style="font-size:9px">Levée</span><span style="font-weight:500">OBS-038</span><span>Ferraillage zone B</span><span class="text-muted">· 20/02</span></div>
+          </div>
+          <div style="text-align:right;margin-top:8px"><button class="btn btn--ghost btn--sm">Voir toutes les observations →</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Messages -->
+  <div class="tab-panel" id="tab-messages">
+    <div class="card mb-24">
+      <div class="card__header"><span class="card__title">Échanges avec l'équipe projet</span></div>
+      <div class="card__body">
+        <div style="display:flex;flex-direction:column;gap:0">
+          <div class="msg-item"><div class="avatar" style="width:32px;height:32px;font-size:10px;background:#1B4965">ML</div><div style="flex:1"><div style="display:flex;justify-content:space-between"><span style="font-weight:500;font-size:13px">M. Lefort <span class="text-sm text-muted" style="font-weight:400">— Chef de projet</span></span><span class="text-mono text-sm text-muted">22/02 · 09:15</span></div><div style="font-size:13px;margin-top:4px">Bonjour M. Dupré, la réunion du 27/02 est confirmée à 14h. Nous vous présenterons le point d'avancement DET et l'état des réserves.</div></div></div>
+          <div class="msg-item"><div class="avatar" style="width:32px;height:32px;font-size:10px;background:var(--color-accent);color:var(--color-primary)">MD</div><div style="flex:1"><div style="display:flex;justify-content:space-between"><span style="font-weight:500;font-size:13px">M. Dupré <span class="text-sm text-muted" style="font-weight:400">— MOA</span></span><span class="text-mono text-sm text-muted">20/02 · 16:10</span></div><div style="font-size:13px;margin-top:4px">Merci pour le CR-018. Le problème du poteau P12 m'inquiète. Pouvez-vous me confirmer que cela n'impactera pas le planning global ?</div></div></div>
+          <div class="msg-item"><div class="avatar" style="width:32px;height:32px;font-size:10px;background:#E76F51">SC</div><div style="flex:1"><div style="display:flex;justify-content:space-between"><span style="font-weight:500;font-size:13px">S. Caron <span class="text-sm text-muted" style="font-weight:400">— Architecte</span></span><span class="text-mono text-sm text-muted">20/02 · 15:30</span></div><div style="font-size:13px;margin-top:4px">M. Dupré, le CR-018 est disponible dans vos documents. La visite a mis en évidence 3 nouvelles observations dont le poteau P12 (lot GO). L'entreprise interviendra semaine prochaine.</div></div></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:16px;padding-top:12px;border-top:1px solid var(--color-border)"><input type="text" placeholder="Écrire un message à l'équipe projet…" style="flex:1;padding:8px 12px;border:1px solid var(--color-border);border-radius:var(--radius-md);font-family:var(--font-sans);font-size:13px;outline:none"><button class="btn btn--primary btn--sm">Envoyer</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+<script>
+function switchTab(el){document.querySelectorAll('.portal-nav__item').forEach(t=>t.classList.remove('portal-nav__item--active'));document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('tab-panel--active'));el.classList.add('portal-nav__item--active');document.getElementById('tab-'+el.dataset.tab)?.classList.add('tab-panel--active')}
+function showToast(msg,type='info'){const c=document.getElementById('toastContainer'),t=document.createElement('div');t.className='toast toast--'+type;t.innerHTML='<span>'+(type==='success'?'✅':'ℹ️')+'</span><span>'+msg+'</span>';c.appendChild(t);setTimeout(()=>t.remove(),3000)}
+</script>
+</body>
+</html>

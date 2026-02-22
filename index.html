@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAA — Gestion d'Agence d'Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --color-primary: #1B4965;
+  --color-primary-light: #5FA8D3;
+  --color-primary-hover: #153a52;
+  --color-primary-bg: #e8f1f8;
+  --color-accent: #E6A817;
+  --color-accent-bg: #fdf5e0;
+  --color-success: #2D6A4F;
+  --color-danger: #C1292E;
+  --color-warning: #E76F51;
+  --color-bg: #F8F9FA;
+  --color-surface: #FFFFFF;
+  --color-border: #DEE2E6;
+  --color-text: #212529;
+  --color-text-muted: #6C757D;
+  --color-muted: #ADB5BD;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --shadow-md: 0 4px 12px rgba(0,0,0,.08);
+  --transition: .2s ease;
+  --sidebar-width: 260px;
+  --sidebar-collapsed: 64px;
+  --header-height: 56px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-bg);
+  overflow: hidden;
+  height: 100vh;
+}
+
+.app { display: flex; height: 100vh; }
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--color-primary);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  transition: width .25s ease;
+  overflow: hidden;
+  z-index: 100;
+}
+.sidebar--collapsed { width: var(--sidebar-collapsed); }
+
+.sidebar__logo {
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(255,255,255,.1);
+  gap: 12px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.sidebar__logo-icon {
+  width: 32px; height: 32px;
+  background: var(--color-accent);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 16px; color: var(--color-primary);
+  flex-shrink: 0;
+}
+.sidebar__logo-text {
+  font-size: 18px; font-weight: 700; letter-spacing: -.02em;
+  white-space: nowrap; transition: opacity var(--transition);
+}
+.sidebar--collapsed .sidebar__logo-text { opacity: 0; width: 0; }
+
+.sidebar__nav { flex: 1; padding: 8px; overflow-y: auto; }
+
+.sidebar__section-title {
+  font-size: 11px; text-transform: uppercase; letter-spacing: .08em;
+  color: rgba(255,255,255,.4); padding: 16px 12px 6px;
+  white-space: nowrap; transition: all var(--transition);
+}
+.sidebar--collapsed .sidebar__section-title { opacity: 0; height: 0; padding: 0; margin: 0; overflow: hidden; }
+
+.sidebar__item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 9px 12px; border-radius: var(--radius-md);
+  color: rgba(255,255,255,.65); cursor: pointer;
+  transition: all var(--transition); white-space: nowrap;
+  font-size: 13.5px; user-select: none;
+}
+.sidebar__item:hover { background: rgba(255,255,255,.1); color: #fff; }
+.sidebar__item--active { background: rgba(255,255,255,.15); color: #fff; font-weight: 500; }
+.sidebar__item--disabled { opacity: .35; pointer-events: none; }
+
+.sidebar__item-icon {
+  width: 20px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.sidebar__item-label { transition: opacity var(--transition); }
+.sidebar--collapsed .sidebar__item-label { opacity: 0; width: 0; }
+
+.sidebar__badge {
+  margin-left: auto;
+  background: var(--color-danger); color: #fff;
+  font-size: 11px; font-weight: 600;
+  padding: 1px 7px; border-radius: 10px;
+}
+.sidebar--collapsed .sidebar__badge { display: none; }
+
+.sidebar__toggle {
+  padding: 12px;
+  border-top: 1px solid rgba(255,255,255,.1);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: rgba(255,255,255,.5); flex-shrink: 0;
+}
+.sidebar__toggle:hover { color: #fff; }
+
+/* ============================================================
+   RIGHT COLUMN: topbar + content
+   ============================================================ */
+.app__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.topbar {
+  height: var(--header-height);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  display: flex; align-items: center;
+  padding: 0 24px; gap: 16px;
+  flex-shrink: 0;
+}
+.topbar__search { flex: 1; max-width: 480px; position: relative; }
+.topbar__search input {
+  width: 100%; padding: 8px 12px 8px 36px;
+  border: 1px solid var(--color-border); border-radius: var(--radius-md);
+  font-family: var(--font-sans); font-size: 13px;
+  background: var(--color-bg); outline: none; transition: all var(--transition);
+}
+.topbar__search input:focus { border-color: var(--color-primary-light); box-shadow: 0 0 0 3px rgba(95,168,211,.15); background: var(--color-surface); }
+.topbar__search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); font-size: 14px; }
+.topbar__actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.topbar__btn {
+  width: 36px; height: 36px; border-radius: var(--radius-md);
+  border: none; background: transparent; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--color-text-muted); font-size: 18px;
+  transition: all var(--transition); position: relative;
+}
+.topbar__btn:hover { background: var(--color-bg); color: var(--color-text); }
+.topbar__btn .notif-dot {
+  position: absolute; top: 6px; right: 6px;
+  width: 8px; height: 8px; background: var(--color-danger);
+  border-radius: 50%; border: 2px solid var(--color-surface);
+}
+.topbar__avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--color-accent); color: var(--color-primary);
+  font-weight: 700; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.topbar__page-title {
+  font-size: 14px; font-weight: 600; color: var(--color-text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ============================================================
+   IFRAME CONTAINER
+   ============================================================ */
+.frame-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+.frame-container iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+/* Loading indicator */
+.loading-bar {
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--color-primary-light);
+  z-index: 10;
+  animation: loadPulse 1.2s ease infinite;
+  display: none;
+}
+.loading-bar--active { display: block; }
+@keyframes loadPulse {
+  0% { opacity: .3; transform: scaleX(.3); transform-origin: left; }
+  50% { opacity: 1; transform: scaleX(.7); }
+  100% { opacity: .3; transform: scaleX(1); }
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1023px) {
+  .sidebar { width: var(--sidebar-collapsed); }
+  .sidebar .sidebar__logo-text,
+  .sidebar .sidebar__item-label,
+  .sidebar .sidebar__badge,
+  .sidebar .sidebar__section-title { opacity: 0; width: 0; height: auto; }
+}
+@media (max-width: 767px) {
+  .sidebar { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__logo" onclick="navigate('dashboard')">
+      <div class="sidebar__logo-icon">G</div>
+      <span class="sidebar__logo-text">GAA</span>
+    </div>
+    <nav class="sidebar__nav">
+      <div class="sidebar__section-title">Cœur métier</div>
+      <div class="sidebar__item sidebar__item--active" data-page="dashboard" onclick="navigate('dashboard')">
+        <span class="sidebar__item-icon">📊</span>
+        <span class="sidebar__item-label">Tableau de bord</span>
+      </div>
+      <div class="sidebar__item" data-page="projets" onclick="navigate('projets')">
+        <span class="sidebar__item-icon">📁</span>
+        <span class="sidebar__item-label">Projets</span>
+        <span class="sidebar__badge">12</span>
+      </div>
+      <div class="sidebar__item" data-page="fiche-projet" onclick="navigate('fiche-projet')">
+        <span class="sidebar__item-icon">📋</span>
+        <span class="sidebar__item-label">Fiche projet</span>
+      </div>
+      <div class="sidebar__item" data-page="temps" onclick="navigate('temps')">
+        <span class="sidebar__item-icon">⏱️</span>
+        <span class="sidebar__item-label">Temps</span>
+      </div>
+      <div class="sidebar__item" data-page="finances" onclick="navigate('finances')">
+        <span class="sidebar__item-icon">💰</span>
+        <span class="sidebar__item-label">Finances</span>
+      </div>
+      <div class="sidebar__item" data-page="contacts" onclick="navigate('contacts')">
+        <span class="sidebar__item-icon">👥</span>
+        <span class="sidebar__item-label">Contacts</span>
+      </div>
+      <div class="sidebar__item" data-page="planning" onclick="navigate('planning')">
+        <span class="sidebar__item-icon">📅</span>
+        <span class="sidebar__item-label">Planning</span>
+      </div>
+      <div class="sidebar__item" data-page="chantier" onclick="navigate('chantier')">
+        <span class="sidebar__item-icon">🏗️</span>
+        <span class="sidebar__item-label">Chantier</span>
+      </div>
+      <div class="sidebar__item" data-page="documents" onclick="navigate('documents')">
+        <span class="sidebar__item-icon">📄</span>
+        <span class="sidebar__item-label">Documents</span>
+      </div>
+      <div class="sidebar__item" data-page="taches" onclick="navigate('taches')">
+        <span class="sidebar__item-icon">✅</span>
+        <span class="sidebar__item-label">Tâches</span>
+        <span class="sidebar__badge">5</span>
+      </div>
+      <div class="sidebar__section-title">Outils</div>
+      <div class="sidebar__item" data-page="reporting" onclick="navigate('reporting')">
+        <span class="sidebar__item-icon">📈</span>
+        <span class="sidebar__item-label">Reporting</span>
+      </div>
+      <div class="sidebar__item" data-page="alertes" onclick="navigate('alertes')">
+        <span class="sidebar__item-icon">🔔</span>
+        <span class="sidebar__item-label">Alertes</span>
+        <span class="sidebar__badge">3</span>
+      </div>
+      <div class="sidebar__item" data-page="parametrage" onclick="navigate('parametrage')">
+        <span class="sidebar__item-icon">⚙️</span>
+        <span class="sidebar__item-label">Paramètres</span>
+      </div>
+      <div class="sidebar__item" data-page="messagerie" onclick="navigate('messagerie')">
+        <span class="sidebar__item-icon">💬</span>
+        <span class="sidebar__item-label">Messagerie</span>
+      </div>
+      <div class="sidebar__item" data-page="assurances" onclick="navigate('assurances')">
+        <span class="sidebar__item-icon">🛡️</span>
+        <span class="sidebar__item-label">Assurances</span>
+      </div>
+      <div class="sidebar__item" data-page="portail" onclick="navigate('portail')">
+        <span class="sidebar__item-icon">🌐</span>
+        <span class="sidebar__item-label">Portail externe</span>
+      </div>
+    </nav>
+    <div class="sidebar__toggle" onclick="toggleSidebar()">
+      <span id="toggleIcon">◀</span>
+    </div>
+  </aside>
+
+  <!-- RIGHT SIDE -->
+  <div class="app__content">
+    <header class="topbar">
+      <div class="topbar__search">
+        <span class="topbar__search-icon">🔍</span>
+        <input type="text" placeholder="Rechercher un projet, contact, document…" />
+      </div>
+      <span class="topbar__page-title" id="pageTitle">Tableau de bord</span>
+      <div class="topbar__actions">
+        <button class="topbar__btn" title="Notifications">🔔<span class="notif-dot"></span></button>
+        <button class="topbar__btn" title="Aide">❓</button>
+        <div class="topbar__avatar" title="Antoine Mercier">AM</div>
+      </div>
+    </header>
+
+    <div class="frame-container">
+      <div class="loading-bar" id="loadingBar"></div>
+      <iframe id="contentFrame" src="dashboard.html"></iframe>
+    </div>
+  </div>
+</div>
+
+<script>
+const pages = {
+  'dashboard':     { title: 'Tableau de bord',           file: 'dashboard.html' },
+  'projets':       { title: 'Portefeuille projets',      file: 'projets.html' },
+  'fiche-projet':  { title: 'Fiche projet',              file: 'fiche-projet.html' },
+  'temps':         { title: 'Saisie des temps',          file: 'temps.html' },
+  'finances':      { title: 'Finances & Facturation',    file: 'finances.html' },
+  'contacts':      { title: 'CRM & Contacts',            file: 'contacts.html' },
+  'taches':        { title: 'Gestion des tâches',        file: 'taches.html' },
+  'parametrage':   { title: 'Paramétrage & Administration', file: 'parametrage.html' },
+  'planning':      { title: 'Planning de charge',         file: 'planning.html' },
+  'documents':     { title: 'Gestion documentaire',       file: 'documents.html' },
+  'chantier':      { title: 'Suivi de chantier',          file: 'chantier.html' },
+  'reporting':     { title: 'Reporting & BI',             file: 'reporting.html' },
+  'alertes':       { title: 'Alertes & Automatisation',   file: 'alertes.html' },
+  'messagerie':    { title: 'Messagerie & Connaissances', file: 'messagerie.html' },
+  'assurances':    { title: 'Assurances & Intégrations',  file: 'assurances.html' },
+  'portail':       { title: 'Portail externe MOA',        file: 'portail.html' },
+};
+
+let currentPage = 'dashboard';
+
+function navigate(page) {
+  if (!pages[page] || page === currentPage) return;
+  currentPage = page;
+
+  // Update sidebar active state
+  document.querySelectorAll('.sidebar__item').forEach(el => {
+    el.classList.toggle('sidebar__item--active', el.dataset.page === page);
+  });
+
+  // Update page title
+  document.getElementById('pageTitle').textContent = pages[page].title;
+
+  // Show loading bar
+  const loadingBar = document.getElementById('loadingBar');
+  loadingBar.classList.add('loading-bar--active');
+
+  // Load page in iframe
+  const frame = document.getElementById('contentFrame');
+  frame.onload = () => {
+    loadingBar.classList.remove('loading-bar--active');
+  };
+  frame.src = pages[page].file;
+
+  // Update URL hash for bookmarking
+  history.replaceState(null, '', '#' + page);
+}
+
+function toggleSidebar() {
+  const s = document.getElementById('sidebar');
+  const i = document.getElementById('toggleIcon');
+  s.classList.toggle('sidebar--collapsed');
+  i.textContent = s.classList.contains('sidebar--collapsed') ? '▶' : '◀';
+}
+
+// Handle hash on load
+window.addEventListener('DOMContentLoaded', () => {
+  const hash = location.hash.replace('#', '');
+  if (hash && pages[hash]) {
+    navigate(hash);
+  }
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if (e.altKey) {
+    const shortcuts = { '1': 'dashboard', '2': 'projets', '3': 'fiche-projet', '4': 'temps', '5': 'finances', '6': 'contacts', '7': 'taches', '8': 'parametrage', '9': 'planning', '0': 'documents' };
+    if (shortcuts[e.key]) {
+      e.preventDefault();
+      navigate(shortcuts[e.key]);
+    }
+  }
+});
+</script>
+
+</body>
+</html>

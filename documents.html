@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAA — Gestion documentaire</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--color-primary:#1B4965;--color-primary-light:#5FA8D3;--color-primary-hover:#153a52;--color-primary-bg:#e8f1f8;--color-secondary:#3C4858;--color-accent:#E6A817;--color-accent-bg:#fdf5e0;--color-success:#2D6A4F;--color-success-bg:#e6f3ed;--color-danger:#C1292E;--color-danger-bg:#fbe8e8;--color-warning:#E76F51;--color-warning-bg:#fdf0ec;--color-bg:#F8F9FA;--color-surface:#FFFFFF;--color-border:#DEE2E6;--color-text:#212529;--color-text-muted:#6C757D;--color-muted:#ADB5BD;--font-sans:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;--font-mono:'JetBrains Mono',monospace;--radius-sm:4px;--radius-md:8px;--radius-lg:12px;--shadow-sm:0 1px 3px rgba(0,0,0,.06);--shadow-md:0 4px 12px rgba(0,0,0,.08);--shadow-lg:0 8px 32px rgba(0,0,0,.12);--transition:.2s ease}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);font-size:14px;line-height:1.5;color:var(--color-text);background:var(--color-bg);overflow-x:hidden}
+a{color:var(--color-primary);text-decoration:none}
+.sidebar{display:none!important}.topbar{display:none!important}
+.main{display:flex;flex-direction:column;min-height:100vh}
+.page{flex:1;padding:24px;max-width:1440px;width:100%;margin:0 auto}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius-md);font-family:var(--font-sans);font-size:13px;font-weight:500;border:1px solid transparent;cursor:pointer;transition:all var(--transition);white-space:nowrap}
+.btn--primary{background:var(--color-primary);color:#fff;border-color:var(--color-primary)}.btn--primary:hover{background:var(--color-primary-hover)}
+.btn--secondary{background:var(--color-surface);color:var(--color-text);border-color:var(--color-border)}.btn--secondary:hover{background:var(--color-bg)}
+.btn--ghost{background:transparent;color:var(--color-text-muted)}.btn--ghost:hover{background:var(--color-bg);color:var(--color-text)}
+.btn--sm{padding:5px 10px;font-size:12px}
+.btn--success{background:var(--color-success);color:#fff;border-color:var(--color-success)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;white-space:nowrap}
+.badge--primary{background:var(--color-primary-bg);color:var(--color-primary)}
+.badge--success{background:var(--color-success-bg);color:var(--color-success)}
+.badge--danger{background:var(--color-danger-bg);color:var(--color-danger)}
+.badge--warning{background:var(--color-warning-bg);color:var(--color-warning)}
+.badge--muted{background:#EBEDEF;color:var(--color-text-muted)}
+.badge--accent{background:var(--color-accent-bg);color:#b8860b}
+.card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);overflow:hidden;transition:box-shadow var(--transition)}.card:hover{box-shadow:var(--shadow-sm)}
+.card__header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--color-border)}
+.card__title{font-size:14px;font-weight:600}
+.card__body{padding:16px 20px}.card__body--flush{padding:0}
+.text-muted{color:var(--color-text-muted)}.text-mono{font-family:var(--font-mono)}.text-sm{font-size:12px}
+.text-success{color:var(--color-success)}.text-danger{color:var(--color-danger)}.text-warning{color:var(--color-warning)}
+.mb-24{margin-bottom:24px}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--color-text-muted);margin-bottom:16px}
+.breadcrumb a{color:var(--color-text-muted)}.breadcrumb a:hover{color:var(--color-primary)}
+.breadcrumb__current{color:var(--color-text);font-weight:500}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:24px}
+.page-header__left{display:flex;align-items:flex-start;gap:16px}
+.page-header__icon{width:48px;height:48px;background:var(--color-primary-bg);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.page-header__title{font-size:24px;font-weight:600;letter-spacing:-.02em;line-height:1.3}
+.page-header__meta{display:flex;align-items:center;gap:12px;margin-top:4px;flex-wrap:wrap}
+.page-header__actions{display:flex;gap:8px;flex-shrink:0}
+.avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;color:#fff;flex-shrink:0}
+
+/* GED Layout: tree + content */
+.ged-layout{display:grid;grid-template-columns:260px 1fr;gap:0;border:1px solid var(--color-border);border-radius:var(--radius-lg);overflow:hidden;background:var(--color-surface);min-height:580px}
+
+/* Tree panel */
+.tree-panel{background:var(--color-bg);border-right:1px solid var(--color-border);display:flex;flex-direction:column;overflow:hidden}
+.tree-panel__header{padding:12px 14px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;justify-content:space-between}
+.tree-panel__title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--color-text-muted)}
+.tree-panel__body{flex:1;overflow-y:auto;padding:8px}
+
+/* Tree items */
+.tree-item{cursor:pointer;user-select:none}
+.tree-item__row{display:flex;align-items:center;gap:4px;padding:5px 8px;border-radius:var(--radius-sm);font-size:12.5px;transition:all var(--transition)}
+.tree-item__row:hover{background:var(--color-surface)}
+.tree-item__row--active{background:var(--color-primary-bg);color:var(--color-primary);font-weight:500}
+.tree-item__toggle{width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--color-text-muted);flex-shrink:0;transition:transform var(--transition)}
+.tree-item__toggle--open{transform:rotate(90deg)}
+.tree-item__icon{font-size:14px;flex-shrink:0}
+.tree-item__label{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tree-item__count{font-size:10px;color:var(--color-text-muted);font-family:var(--font-mono)}
+.tree-item__children{padding-left:16px}
+.tree-item__children--hidden{display:none}
+
+/* Content panel */
+.content-panel{display:flex;flex-direction:column;overflow:hidden}
+.content-panel__toolbar{padding:10px 16px;border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.content-panel__toolbar input{padding:6px 10px 6px 30px;border:1px solid var(--color-border);border-radius:var(--radius-md);font-family:var(--font-sans);font-size:12px;outline:none;width:220px;transition:all var(--transition)}
+.content-panel__toolbar input:focus{border-color:var(--color-primary-light);box-shadow:0 0 0 3px rgba(95,168,211,.15)}
+.content-panel__body{flex:1;overflow-y:auto}
+
+/* Data table */
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--color-text-muted);font-weight:600;padding:8px 14px;border-bottom:2px solid var(--color-border);background:var(--color-bg);position:sticky;top:0;z-index:5}
+.data-table td{padding:9px 14px;border-bottom:1px solid var(--color-border);font-size:13px;vertical-align:middle}
+.data-table tr{transition:background var(--transition);cursor:pointer}
+.data-table tr:hover td{background:rgba(248,249,250,.5)}
+.data-table .mono{font-family:var(--font-mono);font-size:12px}
+
+/* File icon */
+.file-icon{width:28px;height:28px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.file-icon--pdf{background:#fbe8e8;color:#c1292e}
+.file-icon--dwg{background:var(--color-primary-bg);color:var(--color-primary)}
+.file-icon--doc{background:#dbeafe;color:#1e40af}
+.file-icon--img{background:#d1fae5;color:#065f46}
+.file-icon--ifc{background:var(--color-accent-bg);color:#b8860b}
+.file-icon--xls{background:#d1fae5;color:#065f46}
+
+/* Lock indicator */
+.lock-icon{font-size:12px;color:var(--color-warning)}
+
+/* Upload zone */
+.upload-zone{border:2px dashed var(--color-border);border-radius:var(--radius-lg);padding:32px;text-align:center;transition:all var(--transition);cursor:pointer}
+.upload-zone:hover{border-color:var(--color-primary-light);background:var(--color-primary-bg)}
+.upload-zone__icon{font-size:32px;margin-bottom:8px}
+.upload-zone__text{font-size:14px;color:var(--color-text-muted)}
+
+/* Drawer */
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:900;display:none;opacity:0;transition:opacity .25s ease}
+.drawer-overlay--visible{display:block;opacity:1}
+.drawer{position:fixed;right:-580px;top:0;bottom:0;width:580px;background:var(--color-surface);box-shadow:var(--shadow-lg);z-index:910;transition:right .3s ease;display:flex;flex-direction:column}
+.drawer--open{right:0}
+.drawer__header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--color-border);flex-shrink:0}
+.drawer__title{font-size:16px;font-weight:600}
+.drawer__body{flex:1;overflow-y:auto;padding:20px}
+.drawer__close{width:32px;height:32px;border-radius:var(--radius-md);border:none;background:transparent;cursor:pointer;font-size:18px;color:var(--color-text-muted);display:flex;align-items:center;justify-content:center}
+.drawer__close:hover{background:var(--color-bg);color:var(--color-text)}
+
+/* Version timeline */
+.version-item{display:flex;gap:10px;padding:8px 0;position:relative}
+.version-item::before{content:'';position:absolute;left:11px;top:28px;bottom:-8px;width:2px;background:var(--color-border)}
+.version-item:last-child::before{display:none}
+.version-item__dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;z-index:1}
+.version-item__content{flex:1}
+
+/* Workflow steps */
+.wf-step{display:flex;align-items:center;gap:8px;padding:8px 0}
+.wf-step__dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.wf-step__line{width:24px;height:2px;background:var(--color-border)}
+.wf-step__line--done{background:var(--color-success)}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:none;align-items:center;justify-content:center;opacity:0;transition:opacity .25s ease}
+.modal-overlay--visible{display:flex;opacity:1}
+.modal{background:var(--color-surface);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);width:90%;max-width:580px;max-height:85vh;overflow-y:auto;transform:scale(.95);transition:transform .25s ease}
+.modal-overlay--visible .modal{transform:scale(1)}
+.modal__header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--color-border)}
+.modal__title{font-size:17px;font-weight:600}
+.modal__close{width:32px;height:32px;border-radius:var(--radius-md);border:none;background:transparent;cursor:pointer;font-size:18px;color:var(--color-text-muted);display:flex;align-items:center;justify-content:center}
+.modal__close:hover{background:var(--color-bg);color:var(--color-text)}
+.modal__body{padding:24px}
+.modal__footer{padding:16px 24px;border-top:1px solid var(--color-border);display:flex;justify-content:flex-end;gap:8px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:500;color:var(--color-secondary);margin-bottom:6px}
+.form-input,.form-select{width:100%;padding:9px 12px;border:1px solid var(--color-border);border-radius:var(--radius-md);font-family:var(--font-sans);font-size:14px;outline:none;transition:all var(--transition);background:var(--color-surface)}
+.form-input:focus,.form-select:focus{border-color:var(--color-primary-light);box-shadow:0 0 0 3px rgba(95,168,211,.15)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* Toast */
+.toast-container{position:fixed;top:16px;right:16px;z-index:2000;display:flex;flex-direction:column;gap:8px}
+.toast{padding:12px 16px;border-radius:var(--radius-md);background:var(--color-surface);border:1px solid var(--color-border);box-shadow:var(--shadow-md);display:flex;align-items:center;gap:10px;font-size:13px;animation:slideIn .3s ease,fadeOut .3s ease 2.5s forwards;min-width:280px}
+.toast--success{border-left:3px solid var(--color-success)}.toast--info{border-left:3px solid var(--color-primary-light)}.toast--warning{border-left:3px solid var(--color-warning)}
+@keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes fadeOut{to{opacity:0;transform:translateX(40px)}}
+
+@media(max-width:1023px){.ged-layout{grid-template-columns:200px 1fr}}
+@media(max-width:767px){.ged-layout{grid-template-columns:1fr;grid-template-rows:auto 1fr}.tree-panel{max-height:200px}.page{padding:16px}.drawer{width:100%}}
+</style>
+</head>
+<body>
+<div class="main">
+  <main class="page">
+    <nav class="breadcrumb"><a href="#">Accueil</a><span style="font-size:10px">›</span><a href="#">Projets</a><span style="font-size:10px">›</span><span class="breadcrumb__current">Documents — Grp. scolaire Victor Hugo</span></nav>
+    <div class="page-header">
+      <div class="page-header__left">
+        <div class="page-header__icon">📄</div>
+        <div><h1 class="page-header__title">Gestion documentaire</h1>
+          <div class="page-header__meta">
+            <span class="badge badge--primary">Grp. scolaire Victor Hugo</span>
+            <span class="badge badge--muted">124 documents · 2,8 Go</span>
+          </div>
+        </div>
+      </div>
+      <div class="page-header__actions">
+        <button class="btn btn--secondary">📋 Matrice de diffusion</button>
+        <button class="btn btn--secondary">📑 Modèles</button>
+        <button class="btn btn--primary" onclick="openModal()">📤 Déposer un document</button>
+      </div>
+    </div>
+    <!-- GED Layout -->
+    <div class="ged-layout mb-24">
+      <!-- Tree -->
+      <div class="tree-panel">
+        <div class="tree-panel__header"><span class="tree-panel__title">Arborescence</span><button class="btn btn--ghost btn--sm" style="padding:2px 4px">+</button></div>
+        <div class="tree-panel__body">
+          <div class="tree-item">
+            <div class="tree-item__row" onclick="toggleTree(this)"><span class="tree-item__toggle tree-item__toggle--open">▶</span><span class="tree-item__icon">📂</span><span class="tree-item__label">ESQ — Esquisse</span><span class="tree-item__count">8</span></div>
+            <div class="tree-item__children"><div class="tree-item"><div class="tree-item__row"><span class="tree-item__toggle" style="visibility:hidden">▶</span><span class="tree-item__icon">📁</span><span class="tree-item__label">Plans</span><span class="tree-item__count">3</span></div></div><div class="tree-item"><div class="tree-item__row"><span class="tree-item__toggle" style="visibility:hidden">▶</span><span class="tree-item__icon">📁</span><span class="tree-item__label">Études</span><span class="tree-item__count">5</span></div></div></div>
+          </div>
+          <div class="tree-item">
+            <div class="tree-item__row" onclick="toggleTree(this)"><span class="tree-item__toggle tree-item__toggle--open">▶</span><span class="tree-item__icon">📂</span><span class="tree-item__label">APS</span><span class="tree-item__count">15</span></div>
+            <div class="tree-item__children"><div class="tree-item"><div class="tree-item__row"><span class="tree-item__toggle" style="visibility:hidden">▶</span><span class="tree-item__icon">📁</span><span class="tree-item__label">Plans</span><span class="tree-item__count">6</span></div></div><div class="tree-item"><div class="tree-item__row"><span class="tree-item__toggle" style="visibility:hidden">▶</span><span class="tree-item__icon">📁</span><span class="tree-item__label">Notices</span><span class="tree-item__count">4</span></div></div><div class="tree-item"><div class="tree-item__row"><span class="tree-item__toggle" style="visibility:hidden">▶</span><span class="tree-item__icon">📁</span><span class="tree-item__label">BET</span><span class="tree-item__count">5</span></div></div></div>
+          </div>
+          <div class="tree-item">
+            <div class="tree-item__row" onclick="toggleTree(this)"><span class="tree-item__toggle tree-item__toggle--open">▶</span><span class="tree-item__icon">📂</span><span class="tree-item__label">APD</span><span class="tree-item__count">22</span></div>
+            <div class="tree-item__children"><div class="tree-item"><div class="tree-item__row"><span class="tree-item__toggle" style="visibility:hidden">▶</span><span class="tree-item__icon">📁</span><span class="tree-item__label">Plans</span><span class="tree-item__count">10</span></div></div><div class="tree-item"><div class="tree-item__row"><span class="tree-item__toggle" style="visibility:hidden">▶</span><span class="tree-item__icon">📁</span><span class="tree-item__label">Notices</span><span class="tree-item__count">5</span></div></div><div class="tree-item"><div class="tree-item__row"><span class="tree-item__toggle" style="visibility:hidden">▶</span><span class="tree-item__icon">📁</span><span class="tree-item__label">BET</span><span class="tree-item__count">7</span></div></div></div>
+          </div>
+          <div class="tree-item">
+            <div class="tree-item__row tree-item__row--active" onclick="toggleTree(this)"><span class="tree-item__toggle tree-item__toggle--open">▶</span><span class="tree-item__icon">📂</span><span class="tree-item__label" style="font-weight:600">PRO</span><span class="tree-item__count">38</span></div>
+            <div class="tree-item__children">
+              <div class="tree-item"><div class="tree-item__row tree-item__row--active"><span class="tree-item__toggle" style="visibility:hidden">▶</span><span class="tree-item__icon">📁</span><span class="tree-item__label">Plans</span><span class="tree-item__count">14</span></div></div>
+              <div class="tree-item"><div class="tree-item__row"><span class="tree-item__toggle" style="visibility:hidden">▶</span><span class="tree-item__icon">📁</span><span class="tree-item__label">CCTP</span><span class="tree-item__count">8</span></div></div>
+              <div class="tree-item"><div class="tree-item__row"><span class="tree-item__toggle" style="visibility:hidden">▶</span><span class="tree-item__icon">📁</span><span class="tree-item__label">Notices</span><span class="tree-item__count">6</span></div></div>
+              <div class="tree-item"><div class="tree-item__row"><span class="tree-item__toggle" style="visibility:hidden">▶</span><span class="tree-item__icon">📁</span><span class="tree-item__label">BET</span><span class="tree-item__count">10</span></div></div>
+            </div>
+          </div>
+          <div class="tree-item">
+            <div class="tree-item__row" onclick="toggleTree(this)"><span class="tree-item__toggle">▶</span><span class="tree-item__icon">📂</span><span class="tree-item__label">DCE</span><span class="tree-item__count">18</span></div>
+            <div class="tree-item__children tree-item__children--hidden"></div>
+          </div>
+          <div class="tree-item">
+            <div class="tree-item__row" onclick="toggleTree(this)"><span class="tree-item__toggle">▶</span><span class="tree-item__icon">📂</span><span class="tree-item__label">DET</span><span class="tree-item__count">23</span></div>
+            <div class="tree-item__children tree-item__children--hidden"></div>
+          </div>
+          <div class="tree-item">
+            <div class="tree-item__row"><span class="tree-item__toggle" style="visibility:hidden">▶</span><span class="tree-item__icon">📂</span><span class="tree-item__label" style="color:var(--color-muted)">AOR</span><span class="tree-item__count">0</span></div>
+          </div>
+          <div style="border-top:1px solid var(--color-border);margin-top:8px;padding-top:8px">
+            <div class="tree-item"><div class="tree-item__row"><span class="tree-item__toggle" style="visibility:hidden">▶</span><span class="tree-item__icon">📁</span><span class="tree-item__label">Administratif</span><span class="tree-item__count">12</span></div></div>
+            <div class="tree-item"><div class="tree-item__row"><span class="tree-item__toggle" style="visibility:hidden">▶</span><span class="tree-item__icon">📁</span><span class="tree-item__label">Correspondances</span><span class="tree-item__count">9</span></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="content-panel">
+        <div class="content-panel__toolbar">
+          <div style="position:relative"><span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--color-text-muted)">🔍</span><input type="text" placeholder="Rechercher dans PRO / Plans…"></div>
+          <select class="form-select" style="width:130px;padding:5px 8px;font-size:12px;border-radius:20px"><option>Tous statuts</option><option>Brouillon</option><option>En revue</option><option>Validé</option><option>Diffusé</option></select>
+          <select class="form-select" style="width:120px;padding:5px 8px;font-size:12px;border-radius:20px"><option>Tous types</option><option>Plans</option><option>Notices</option><option>CCTP</option></select>
+          <div style="margin-left:auto;display:flex;gap:4px"><button class="btn btn--ghost btn--sm" title="Vue liste">☰</button><button class="btn btn--ghost btn--sm" title="Vue grille">▦</button></div>
+        </div>
+        <div class="content-panel__body">
+          <table class="data-table">
+            <thead><tr><th style="width:30px"></th><th>Document</th><th>Ind.</th><th>Statut</th><th>Auteur</th><th>Date</th><th>Taille</th><th></th></tr></thead>
+            <tbody>
+              <tr onclick="openDrawer()">
+                <td><div class="file-icon file-icon--dwg">📐</div></td>
+                <td><div style="font-weight:500">Plan PRO — RDC</div><div class="text-sm text-muted">PRO-PL-001-RDC.dwg</div></td>
+                <td><span class="text-mono" style="font-weight:600">C</span></td>
+                <td><span class="badge badge--success" style="font-size:10px">✅ Validé</span></td>
+                <td><div style="display:flex;align-items:center;gap:4px"><div class="avatar" style="width:20px;height:20px;font-size:8px;background:#2D6A4F">TD</div><span class="text-sm">T. Durand</span></div></td>
+                <td class="mono text-sm">18/02/25</td>
+                <td class="mono text-sm">4,2 Mo</td>
+                <td><button class="btn btn--ghost btn--sm">⋯</button></td>
+              </tr>
+              <tr onclick="openDrawer()">
+                <td><div class="file-icon file-icon--dwg">📐</div></td>
+                <td><div style="font-weight:500">Plan PRO — R+1</div><div class="text-sm text-muted">PRO-PL-002-R1.dwg</div></td>
+                <td><span class="text-mono" style="font-weight:600">B</span></td>
+                <td><span class="badge badge--warning" style="font-size:10px">🔍 En revue</span> <span class="lock-icon" title="Verrouillé">🔒</span></td>
+                <td><div style="display:flex;align-items:center;gap:4px"><div class="avatar" style="width:20px;height:20px;font-size:8px;background:#2D6A4F">TD</div><span class="text-sm">T. Durand</span></div></td>
+                <td class="mono text-sm">20/02/25</td>
+                <td class="mono text-sm">3,8 Mo</td>
+                <td><button class="btn btn--ghost btn--sm">⋯</button></td>
+              </tr>
+              <tr onclick="openDrawer()">
+                <td><div class="file-icon file-icon--dwg">📐</div></td>
+                <td><div style="font-weight:500">Plan PRO — R+2</div><div class="text-sm text-muted">PRO-PL-003-R2.dwg</div></td>
+                <td><span class="text-mono" style="font-weight:600">B</span></td>
+                <td><span class="badge badge--primary" style="font-size:10px">📤 Diffusé</span></td>
+                <td><div style="display:flex;align-items:center;gap:4px"><div class="avatar" style="width:20px;height:20px;font-size:8px;background:#2D6A4F">TD</div><span class="text-sm">T. Durand</span></div></td>
+                <td class="mono text-sm">15/02/25</td>
+                <td class="mono text-sm">3,5 Mo</td>
+                <td><button class="btn btn--ghost btn--sm">⋯</button></td>
+              </tr>
+              <tr>
+                <td><div class="file-icon file-icon--dwg">📐</div></td>
+                <td><div style="font-weight:500">Plan PRO — Coupes transversales</div><div class="text-sm text-muted">PRO-PL-010-COUPES.dwg</div></td>
+                <td><span class="text-mono" style="font-weight:600">B</span></td>
+                <td><span class="badge badge--success" style="font-size:10px">✅ Validé</span></td>
+                <td><div style="display:flex;align-items:center;gap:4px"><div class="avatar" style="width:20px;height:20px;font-size:8px;background:#2D6A4F">TD</div><span class="text-sm">T. Durand</span></div></td>
+                <td class="mono text-sm">17/02/25</td>
+                <td class="mono text-sm">2,9 Mo</td>
+                <td><button class="btn btn--ghost btn--sm">⋯</button></td>
+              </tr>
+              <tr>
+                <td><div class="file-icon file-icon--pdf">📄</div></td>
+                <td><div style="font-weight:500">Notice descriptive PRO</div><div class="text-sm text-muted">PRO-NOT-001-DESCRIPTIVE.pdf</div></td>
+                <td><span class="text-mono" style="font-weight:600">A</span></td>
+                <td><span class="badge badge--accent" style="font-size:10px">✏️ À corriger</span></td>
+                <td><div style="display:flex;align-items:center;gap:4px"><div class="avatar" style="width:20px;height:20px;font-size:8px;background:#1B4965">ML</div><span class="text-sm">M. Lefort</span></div></td>
+                <td class="mono text-sm">19/02/25</td>
+                <td class="mono text-sm">1,2 Mo</td>
+                <td><button class="btn btn--ghost btn--sm">⋯</button></td>
+              </tr>
+              <tr>
+                <td><div class="file-icon file-icon--doc">📝</div></td>
+                <td><div style="font-weight:500">CCTP Lot 01 — Gros œuvre</div><div class="text-sm text-muted">PRO-CCTP-LOT01-GO.docx</div></td>
+                <td><span class="text-mono" style="font-weight:600">A</span></td>
+                <td><span class="badge badge--muted" style="font-size:10px">📝 Brouillon</span></td>
+                <td><div style="display:flex;align-items:center;gap:4px"><div class="avatar" style="width:20px;height:20px;font-size:8px;background:#2D6A4F">TD</div><span class="text-sm">T. Durand</span></div></td>
+                <td class="mono text-sm">21/02/25</td>
+                <td class="mono text-sm">856 Ko</td>
+                <td><button class="btn btn--ghost btn--sm">⋯</button></td>
+              </tr>
+              <tr>
+                <td><div class="file-icon file-icon--xls">📊</div></td>
+                <td><div style="font-weight:500">Quantitatif estimatif PRO</div><div class="text-sm text-muted">PRO-QE-001.xlsx</div></td>
+                <td><span class="text-mono" style="font-weight:600">—</span></td>
+                <td><span class="badge badge--muted" style="font-size:10px">📝 Brouillon</span></td>
+                <td><div style="display:flex;align-items:center;gap:4px"><div class="avatar" style="width:20px;height:20px;font-size:8px;background:#E76F51">SC</div><span class="text-sm">S. Caron</span></div></td>
+                <td class="mono text-sm">20/02/25</td>
+                <td class="mono text-sm">340 Ko</td>
+                <td><button class="btn btn--ghost btn--sm">⋯</button></td>
+              </tr>
+              <tr>
+                <td><div class="file-icon file-icon--ifc">🏗️</div></td>
+                <td><div style="font-weight:500">Maquette BIM PRO</div><div class="text-sm text-muted">PRO-BIM-001.ifc</div></td>
+                <td><span class="text-mono" style="font-weight:600">v3</span></td>
+                <td><span class="badge badge--success" style="font-size:10px">✅ Validé</span></td>
+                <td><div style="display:flex;align-items:center;gap:4px"><div class="avatar" style="width:20px;height:20px;font-size:8px;background:#5FA8D3">JB</div><span class="text-sm">J. Bernard</span></div></td>
+                <td class="mono text-sm">16/02/25</td>
+                <td class="mono text-sm">48 Mo</td>
+                <td><button class="btn btn--ghost btn--sm">⋯</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- DRAWER: Détail document -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer__header"><h3 class="drawer__title">Plan PRO — R+1</h3><button class="drawer__close" onclick="closeDrawer()">✕</button></div>
+  <div class="drawer__body">
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <span class="badge badge--warning">🔍 En revue</span>
+      <span class="badge badge--accent">🔒 Verrouillé par M. Lefort</span>
+      <span class="badge badge--primary" style="font-size:11px">Indice B</span>
+    </div>
+
+    <!-- Preview placeholder -->
+    <div style="background:var(--color-bg);border:1px solid var(--color-border);border-radius:var(--radius-lg);height:160px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;flex-direction:column;gap:8px"><span style="font-size:32px">📐</span><span class="text-sm text-muted">PRO-PL-002-R1.dwg · 3,8 Mo</span><button class="btn btn--primary btn--sm">📥 Télécharger</button></div>
+
+    <!-- Metadata -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+      <div><span class="text-sm text-muted">Phase</span><br><span style="font-weight:500">PRO</span></div>
+      <div><span class="text-sm text-muted">Type</span><br><span style="font-weight:500">Plan</span></div>
+      <div><span class="text-sm text-muted">Lot</span><br><span style="font-weight:500">Architecture</span></div>
+      <div><span class="text-sm text-muted">Auteur</span><br><div style="display:flex;align-items:center;gap:4px;margin-top:2px"><div class="avatar" style="width:20px;height:20px;font-size:8px;background:#2D6A4F">TD</div><span style="font-weight:500">T. Durand</span></div></div>
+      <div><span class="text-sm text-muted">Créé le</span><br><span class="text-mono text-sm">10/02/2025</span></div>
+      <div><span class="text-sm text-muted">Dernière modif.</span><br><span class="text-mono text-sm">20/02/2025 14:35</span></div>
+    </div>
+
+    <!-- Workflow -->
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px">Circuit de validation</div>
+      <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+        <div class="wf-step"><div class="wf-step__dot" style="background:var(--color-success-bg);color:var(--color-success)">✓</div></div>
+        <div class="wf-step__line wf-step__line--done"></div>
+        <div class="wf-step"><div class="wf-step__dot" style="background:var(--color-success-bg);color:var(--color-success)">✓</div></div>
+        <div class="wf-step__line wf-step__line--done"></div>
+        <div class="wf-step"><div class="wf-step__dot" style="background:var(--color-warning-bg);color:var(--color-warning);font-weight:700">●</div></div>
+        <div class="wf-step__line"></div>
+        <div class="wf-step"><div class="wf-step__dot" style="background:var(--color-bg);color:var(--color-muted)">○</div></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--color-text-muted);margin-top:4px;padding:0 4px">
+        <span>Brouillon</span><span>Soumis</span><span style="color:var(--color-warning);font-weight:600">En revue</span><span>Validé</span>
+      </div>
+    </div>
+
+    <!-- Version history -->
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px">Historique des versions</div>
+      <div style="display:flex;flex-direction:column;gap:0">
+        <div class="version-item">
+          <div class="version-item__dot" style="background:var(--color-warning-bg);color:var(--color-warning);font-weight:700;font-size:11px">B</div>
+          <div class="version-item__content">
+            <div style="font-size:13px"><strong>Indice B</strong> — En revue <span class="lock-icon">🔒</span></div>
+            <div class="text-sm text-muted">T. Durand · 20/02/2025 14:35</div>
+            <div class="text-sm" style="margin-top:2px">Corrections suite remarques BET structure. Renforcement poteaux axe C.</div>
+          </div>
+        </div>
+        <div class="version-item">
+          <div class="version-item__dot" style="background:var(--color-primary-bg);color:var(--color-primary);font-weight:700;font-size:11px">A</div>
+          <div class="version-item__content">
+            <div style="font-size:13px"><strong>Indice A</strong> — Diffusé</div>
+            <div class="text-sm text-muted">T. Durand · 10/02/2025 16:20</div>
+            <div class="text-sm" style="margin-top:2px">Version initiale PRO. Diffusé BET structure + fluides le 12/02.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Diffusion -->
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Diffusions (Indice A)</div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:var(--color-bg);border-radius:var(--radius-sm);font-size:12px"><span>BET Structura (structure)</span><span class="text-mono text-sm">12/02/25 · Bordereau #BD-045</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:var(--color-bg);border-radius:var(--radius-sm);font-size:12px"><span>BET Thermex (fluides)</span><span class="text-mono text-sm">12/02/25 · Bordereau #BD-045</span></div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--color-border)">
+      <button class="btn btn--success btn--sm" onclick="showToast('Document validé — passage en indice B validé','success')">✅ Valider</button>
+      <button class="btn btn--secondary btn--sm" onclick="showToast('Renvoyé à correction','warning')">↩️ Renvoyer</button>
+      <button class="btn btn--secondary btn--sm" onclick="showToast('Document déverrouillé','info')">🔓 Déverrouiller</button>
+      <button class="btn btn--secondary btn--sm">📤 Diffuser</button>
+      <button class="btn btn--ghost btn--sm">🔄 Comparer A ↔ B</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Déposer un document -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal__header"><h2 class="modal__title">Déposer un document</h2><button class="modal__close" onclick="closeModal()">✕</button></div>
+    <div class="modal__body">
+      <div class="upload-zone" style="margin-bottom:16px"><div class="upload-zone__icon">📎</div><div class="upload-zone__text">Glisser-déposer des fichiers ici<br><span class="text-sm">ou cliquer pour parcourir · Max 100 Mo</span></div></div>
+      <div class="form-row">
+        <div class="form-group"><label>Phase</label><select class="form-select"><option selected>PRO</option><option>DCE</option><option>DET</option></select></div>
+        <div class="form-group"><label>Dossier</label><select class="form-select"><option>Plans</option><option>CCTP</option><option>Notices</option><option>BET</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Type de document</label><select class="form-select"><option>Plan</option><option>Notice</option><option>CCTP</option><option>Étude BET</option><option>Compte-rendu</option><option>Autre</option></select></div>
+        <div class="form-group"><label>Lot</label><select class="form-select"><option>Architecture</option><option>Lot 01 - GO</option><option>Lot 02 - Charpente</option><option>Structure</option><option>Fluides</option></select></div>
+      </div>
+      <div class="form-group"><label>Commentaire de version</label><input type="text" class="form-input" placeholder="Ex: Mise à jour suite remarques BET…"></div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--secondary" onclick="closeModal()">Annuler</button>
+      <button class="btn btn--primary" onclick="closeModal();showToast('Document déposé et versionné automatiquement','success')">Déposer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+function toggleTree(el){const children=el.parentElement.querySelector('.tree-item__children');const toggle=el.querySelector('.tree-item__toggle');if(children){children.classList.toggle('tree-item__children--hidden');toggle.classList.toggle('tree-item__toggle--open')}}
+function openDrawer(){document.getElementById('drawerOverlay').classList.add('drawer-overlay--visible');document.getElementById('drawer').classList.add('drawer--open');document.body.style.overflow='hidden'}
+function closeDrawer(){document.getElementById('drawerOverlay').classList.remove('drawer-overlay--visible');document.getElementById('drawer').classList.remove('drawer--open');document.body.style.overflow=''}
+function openModal(){const o=document.getElementById('modalOverlay');o.style.display='flex';requestAnimationFrame(()=>o.classList.add('modal-overlay--visible'));document.body.style.overflow='hidden'}
+function closeModal(e){if(e&&e.target!==e.currentTarget)return;const o=document.getElementById('modalOverlay');o.classList.remove('modal-overlay--visible');setTimeout(()=>{o.style.display='none';document.body.style.overflow=''},250)}
+function showToast(msg,type='info'){const c=document.getElementById('toastContainer'),t=document.createElement('div');t.className='toast toast--'+type;t.innerHTML='<span>'+(type==='success'?'✅':type==='warning'?'⚠️':'ℹ️')+'</span><span>'+msg+'</span>';c.appendChild(t);setTimeout(()=>t.remove(),3000)}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeDrawer()}})
+</script>
+</body>
+</html>

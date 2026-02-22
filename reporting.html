@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAA — Reporting & BI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--color-primary:#1B4965;--color-primary-light:#5FA8D3;--color-primary-hover:#153a52;--color-primary-bg:#e8f1f8;--color-secondary:#3C4858;--color-accent:#E6A817;--color-accent-bg:#fdf5e0;--color-success:#2D6A4F;--color-success-bg:#e6f3ed;--color-danger:#C1292E;--color-danger-bg:#fbe8e8;--color-warning:#E76F51;--color-warning-bg:#fdf0ec;--color-bg:#F8F9FA;--color-surface:#FFFFFF;--color-border:#DEE2E6;--color-text:#212529;--color-text-muted:#6C757D;--color-muted:#ADB5BD;--font-sans:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;--font-mono:'JetBrains Mono',monospace;--radius-sm:4px;--radius-md:8px;--radius-lg:12px;--shadow-sm:0 1px 3px rgba(0,0,0,.06);--shadow-md:0 4px 12px rgba(0,0,0,.08);--shadow-lg:0 8px 32px rgba(0,0,0,.12);--transition:.2s ease}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);font-size:14px;line-height:1.5;color:var(--color-text);background:var(--color-bg)}
+.sidebar{display:none!important}.topbar{display:none!important}
+.main{display:flex;flex-direction:column;min-height:100vh}
+.page{flex:1;padding:24px;max-width:1440px;width:100%;margin:0 auto}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius-md);font-family:var(--font-sans);font-size:13px;font-weight:500;border:1px solid transparent;cursor:pointer;transition:all var(--transition);white-space:nowrap}
+.btn--primary{background:var(--color-primary);color:#fff}.btn--primary:hover{background:var(--color-primary-hover)}
+.btn--secondary{background:var(--color-surface);color:var(--color-text);border-color:var(--color-border)}.btn--secondary:hover{background:var(--color-bg)}
+.btn--ghost{background:transparent;color:var(--color-text-muted)}.btn--ghost:hover{background:var(--color-bg);color:var(--color-text)}
+.btn--sm{padding:5px 10px;font-size:12px}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500}
+.badge--primary{background:var(--color-primary-bg);color:var(--color-primary)}
+.badge--success{background:var(--color-success-bg);color:var(--color-success)}
+.badge--danger{background:var(--color-danger-bg);color:var(--color-danger)}
+.badge--warning{background:var(--color-warning-bg);color:var(--color-warning)}
+.badge--muted{background:#EBEDEF;color:var(--color-text-muted)}
+.card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);overflow:hidden}
+.card__header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--color-border)}
+.card__title{font-size:14px;font-weight:600}
+.card__body{padding:16px 20px}.card__body--flush{padding:0}
+.text-muted{color:var(--color-text-muted)}.text-mono{font-family:var(--font-mono)}.text-sm{font-size:12px}
+.text-success{color:var(--color-success)}.text-danger{color:var(--color-danger)}.text-warning{color:var(--color-warning)}
+.mb-24{margin-bottom:24px}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--color-text-muted);margin-bottom:16px}
+.breadcrumb a{color:var(--color-text-muted)}.breadcrumb__current{color:var(--color-text);font-weight:500}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:24px}
+.page-header__left{display:flex;align-items:flex-start;gap:16px}
+.page-header__icon{width:48px;height:48px;background:var(--color-primary-bg);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.page-header__title{font-size:24px;font-weight:600;letter-spacing:-.02em}
+.page-header__meta{display:flex;align-items:center;gap:12px;margin-top:4px;flex-wrap:wrap}
+.page-header__actions{display:flex;gap:8px;flex-shrink:0}
+.tabs{display:flex;border-bottom:2px solid var(--color-border);gap:0;margin-bottom:20px;overflow-x:auto}
+.tabs__item{padding:10px 20px;font-size:13.5px;font-weight:500;color:var(--color-text-muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all var(--transition);white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font-sans)}
+.tabs__item:hover{color:var(--color-text)}.tabs__item--active{color:var(--color-primary);border-bottom-color:var(--color-primary)}
+.tab-panel{display:none;animation:fadeIn .3s ease}.tab-panel--active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.kpi{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:16px}
+.kpi__value{font-family:var(--font-mono);font-size:24px;font-weight:600}
+.kpi__label{font-size:11px;color:var(--color-text-muted);margin-top:2px}
+.kpi__trend{font-size:11px;margin-top:4px;font-weight:500}
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--color-text-muted);font-weight:600;padding:8px 14px;border-bottom:2px solid var(--color-border);background:var(--color-bg)}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--color-border);font-size:13px;vertical-align:middle}
+.data-table tr:hover td{background:rgba(248,249,250,.5)}
+.progress{height:6px;background:var(--color-bg);border-radius:3px;overflow:hidden}
+.progress__bar{height:100%;border-radius:3px}
+/* Chart bars */
+.chart-bar-h{display:flex;align-items:center;gap:8px}
+.chart-bar-h__bar{height:18px;border-radius:3px;min-width:2px;transition:width .6s ease}
+.chart-bar-h__label{font-family:var(--font-mono);font-size:12px;font-weight:500;white-space:nowrap}
+/* Grid */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+@media(max-width:1023px){.kpi-strip{grid-template-columns:repeat(2,1fr)}.grid-2,.grid-3{grid-template-columns:1fr}}
+@media(max-width:767px){.page{padding:16px}}
+.form-select{padding:5px 10px;border:1px solid var(--color-border);border-radius:20px;font-family:var(--font-sans);font-size:12px;outline:none}
+</style>
+</head>
+<body>
+<div class="main">
+<main class="page">
+  <nav class="breadcrumb"><a href="#">Accueil</a><span style="font-size:10px">›</span><span class="breadcrumb__current">Reporting & Business Intelligence</span></nav>
+  <div class="page-header">
+    <div class="page-header__left">
+      <div class="page-header__icon">📈</div>
+      <div><h1 class="page-header__title">Reporting & BI</h1><div class="page-header__meta"><span class="badge badge--muted">Données au 22/02/2025</span><select class="form-select" style="margin-left:4px"><option>2025</option><option>2024</option><option>2023</option></select></div></div>
+    </div>
+    <div class="page-header__actions"><button class="btn btn--secondary">📋 Rapports prédéfinis</button><button class="btn btn--primary">📥 Exporter PDF</button></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tabs__item tabs__item--active" data-tab="kpis">📊 KPIs Agence</button>
+    <button class="tabs__item" data-tab="rentabilite">💰 Rentabilité</button>
+    <button class="tabs__item" data-tab="temps">⏱️ Temps & Productivité</button>
+    <button class="tabs__item" data-tab="commercial">🎯 Commercial</button>
+  </div>
+  <!-- TAB: KPIs Agence -->
+  <div class="tab-panel tab-panel--active" id="tab-kpis">
+    <div class="kpi-strip">
+      <div class="kpi"><div class="kpi__value">695 K€</div><div class="kpi__label">CA prévisionnel annuel</div><div class="kpi__trend text-success">↗ +12% vs 2024</div></div>
+      <div class="kpi"><div class="kpi__value">13,4%</div><div class="kpi__label">Rentabilité moyenne</div><div class="kpi__trend text-success">↗ +1,2 pts vs 2024</div></div>
+      <div class="kpi"><div class="kpi__value">87%</div><div class="kpi__label">Taux d'occupation</div><div class="kpi__trend text-muted">→ stable</div></div>
+      <div class="kpi"><div class="kpi__value">38 j</div><div class="kpi__label">Délai moyen de paiement</div><div class="kpi__trend text-warning">↗ +5j vs 2024</div></div>
+    </div>
+
+    <div class="grid-2 mb-24">
+      <!-- CA mensuel -->
+      <div class="card">
+        <div class="card__header"><span class="card__title">CA mensuel — 2025 vs 2024</span></div>
+        <div class="card__body">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:8px"><span class="text-sm text-muted" style="width:30px">Jan</span><div style="flex:1;display:flex;gap:2px"><div style="height:14px;width:42%;background:var(--color-primary);border-radius:3px"></div><div style="height:14px;width:35%;background:var(--color-muted);border-radius:3px;opacity:.4"></div></div><span class="text-mono text-sm" style="width:50px">52 K€</span></div>
+            <div style="display:flex;align-items:center;gap:8px"><span class="text-sm text-muted" style="width:30px">Fév</span><div style="flex:1;display:flex;gap:2px"><div style="height:14px;width:56%;background:var(--color-primary);border-radius:3px"></div><div style="height:14px;width:40%;background:var(--color-muted);border-radius:3px;opacity:.4"></div></div><span class="text-mono text-sm" style="width:50px">68 K€</span></div>
+            <div style="display:flex;align-items:center;gap:8px"><span class="text-sm text-muted" style="width:30px">Mar</span><div style="flex:1;display:flex;gap:2px"><div style="height:14px;width:72%;background:var(--color-primary);border-radius:3px"></div><div style="height:14px;width:48%;background:var(--color-muted);border-radius:3px;opacity:.4"></div></div><span class="text-mono text-sm" style="width:50px">89 K€</span></div>
+            <div style="display:flex;align-items:center;gap:8px"><span class="text-sm text-muted" style="width:30px">Avr</span><div style="flex:1;display:flex;gap:2px"><div style="height:14px;width:60%;background:var(--color-primary);border-radius:3px"></div><div style="height:14px;width:52%;background:var(--color-muted);border-radius:3px;opacity:.4"></div></div><span class="text-mono text-sm" style="width:50px">74 K€</span></div>
+            <div style="display:flex;align-items:center;gap:8px"><span class="text-sm text-muted" style="width:30px">Mai</span><div style="flex:1;display:flex;gap:2px"><div style="height:14px;width:65%;background:var(--color-primary);border-radius:3px"></div><div style="height:14px;width:55%;background:var(--color-muted);border-radius:3px;opacity:.4"></div></div><span class="text-mono text-sm" style="width:50px">80 K€</span></div>
+            <div style="display:flex;align-items:center;gap:8px"><span class="text-sm text-muted" style="width:30px">Jun</span><div style="flex:1;display:flex;gap:2px"><div style="height:14px;width:55%;background:var(--color-primary-light);border-radius:3px;border:1px dashed var(--color-primary)"></div><div style="height:14px;width:60%;background:var(--color-muted);border-radius:3px;opacity:.4"></div></div><span class="text-mono text-sm text-muted" style="width:50px">~67 K€</span></div>
+          </div>
+          <div style="display:flex;gap:16px;margin-top:12px;font-size:11px"><span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:var(--color-primary);border-radius:2px"></span>2025</span><span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:var(--color-muted);border-radius:2px;opacity:.4"></span>2024</span></div>
+        </div>
+      </div>
+
+      <!-- Trésorerie prévisionnelle -->
+      <div class="card">
+        <div class="card__header"><span class="card__title">Trésorerie prévisionnelle 6 mois</span></div>
+        <div class="card__body">
+          <div style="display:flex;align-items:flex-end;gap:12px;height:140px">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div style="height:130px;display:flex;align-items:flex-end"><div style="width:100%;height:60%;background:var(--color-primary);border-radius:3px 3px 0 0;position:relative"><span style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:9px">148K</span></div></div><span style="font-size:10px;color:var(--color-text-muted)">Fév</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div style="height:130px;display:flex;align-items:flex-end"><div style="width:100%;height:72%;background:var(--color-primary);border-radius:3px 3px 0 0;position:relative"><span style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:9px">212K</span></div></div><span style="font-size:10px;color:var(--color-text-muted)">Mar</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div style="height:130px;display:flex;align-items:flex-end"><div style="width:100%;height:82%;background:var(--color-primary);border-radius:3px 3px 0 0;position:relative"><span style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:9px">246K</span></div></div><span style="font-size:10px;color:var(--color-text-muted)">Avr</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div style="height:130px;display:flex;align-items:flex-end"><div style="width:100%;height:90%;background:var(--color-success);border-radius:3px 3px 0 0;position:relative"><span style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:9px">278K</span></div></div><span style="font-size:10px;color:var(--color-text-muted)">Mai</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div style="height:130px;display:flex;align-items:flex-end"><div style="width:100%;height:78%;background:var(--color-primary-light);border-radius:3px 3px 0 0;border:1px dashed var(--color-primary);position:relative"><span style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:9px">~240K</span></div></div><span style="font-size:10px;color:var(--color-text-muted)">Jun</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div style="height:130px;display:flex;align-items:flex-end"><div style="width:100%;height:68%;background:var(--color-primary-light);border-radius:3px 3px 0 0;border:1px dashed var(--color-primary);position:relative"><span style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:9px">~205K</span></div></div><span style="font-size:10px;color:var(--color-text-muted)">Jul</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rapports prédéfinis -->
+    <div class="card">
+      <div class="card__header"><span class="card__title">Rapports prédéfinis</span></div>
+      <div class="card__body">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+          <div style="padding:16px;border:1px solid var(--color-border);border-radius:var(--radius-md);cursor:pointer;transition:all var(--transition)" onmouseover="this.style.borderColor='var(--color-primary-light)'" onmouseout="this.style.borderColor='var(--color-border)'"><div style="font-size:18px;margin-bottom:6px">📊</div><div style="font-weight:500;font-size:13px">Bilan annuel par projet</div><div class="text-sm text-muted">Rentabilité, temps, facturation par projet</div></div>
+          <div style="padding:16px;border:1px solid var(--color-border);border-radius:var(--radius-md);cursor:pointer;transition:all var(--transition)" onmouseover="this.style.borderColor='var(--color-primary-light)'" onmouseout="this.style.borderColor='var(--color-border)'"><div style="font-size:18px;margin-bottom:6px">👤</div><div style="font-weight:500;font-size:13px">Bilan par collaborateur</div><div class="text-sm text-muted">Temps passé, taux occupation, projets</div></div>
+          <div style="padding:16px;border:1px solid var(--color-border);border-radius:var(--radius-md);cursor:pointer;transition:all var(--transition)" onmouseover="this.style.borderColor='var(--color-primary-light)'" onmouseout="this.style.borderColor='var(--color-border)'"><div style="font-size:18px;margin-bottom:6px">💰</div><div style="font-weight:500;font-size:13px">Suivi des encours</div><div class="text-sm text-muted">Factures en attente, impayés, prévisionnel</div></div>
+          <div style="padding:16px;border:1px solid var(--color-border);border-radius:var(--radius-md);cursor:pointer;transition:all var(--transition)" onmouseover="this.style.borderColor='var(--color-primary-light)'" onmouseout="this.style.borderColor='var(--color-border)'"><div style="font-size:18px;margin-bottom:6px">⏱️</div><div style="font-weight:500;font-size:13px">Temps passé — Justification MOA</div><div class="text-sm text-muted">Export détaillé par phase et semaine</div></div>
+          <div style="padding:16px;border:1px solid var(--color-border);border-radius:var(--radius-md);cursor:pointer;transition:all var(--transition)" onmouseover="this.style.borderColor='var(--color-primary-light)'" onmouseout="this.style.borderColor='var(--color-border)'"><div style="font-size:18px;margin-bottom:6px">🏗️</div><div style="font-weight:500;font-size:13px">Benchmark par typologie</div><div class="text-sm text-muted">Ratios comparés logement / équipement / tertiaire</div></div>
+          <div style="padding:16px;border:1px solid var(--color-border);border-radius:var(--radius-md);cursor:pointer;transition:all var(--transition)" onmouseover="this.style.borderColor='var(--color-primary-light)'" onmouseout="this.style.borderColor='var(--color-border)'"><div style="font-size:18px;margin-bottom:6px">➕</div><div style="font-weight:500;font-size:13px;color:var(--color-primary)">Rapport personnalisé</div><div class="text-sm text-muted">Filtres multicritères, graphiques sur mesure</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Rentabilité -->
+  <div class="tab-panel" id="tab-rentabilite">
+    <div class="grid-2 mb-24">
+      <div class="card">
+        <div class="card__header"><span class="card__title">Rentabilité par projet — 2025</span></div>
+        <div class="card__body">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div class="chart-bar-h"><span class="text-sm" style="width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Médiathèque Brest</span><div class="chart-bar-h__bar" style="width:82%;background:var(--color-success)"></div><span class="chart-bar-h__label text-success">16,3%</span></div>
+            <div class="chart-bar-h"><span class="text-sm" style="width:130px">Grp. scolaire V.H.</span><div class="chart-bar-h__bar" style="width:71%;background:var(--color-success)"></div><span class="chart-bar-h__label text-success">14,2%</span></div>
+            <div class="chart-bar-h"><span class="text-sm" style="width:130px">EHPAD Magnolias</span><div class="chart-bar-h__bar" style="width:61%;background:var(--color-success)"></div><span class="chart-bar-h__label">12,1%</span></div>
+            <div class="chart-bar-h"><span class="text-sm" style="width:130px">Campus Numérique</span><div class="chart-bar-h__bar" style="width:52%;background:var(--color-primary-light)"></div><span class="chart-bar-h__label">10,4%</span></div>
+            <div class="chart-bar-h"><span class="text-sm" style="width:130px">Rés. Les Oliviers</span><div class="chart-bar-h__bar" style="width:34%;background:var(--color-warning)"></div><span class="chart-bar-h__label text-warning">6,8%</span></div>
+            <div class="chart-bar-h"><span class="text-sm" style="width:130px">Hôtel de ville</span><div class="chart-bar-h__bar" style="width:20%;background:var(--color-danger)"></div><span class="chart-bar-h__label text-danger">-5,1%</span></div>
+          </div>
+          <div style="margin-top:12px;padding-top:8px;border-top:1px solid var(--color-border);display:flex;justify-content:space-between"><span class="text-sm text-muted">Moyenne pondérée</span><span class="text-mono text-success" style="font-weight:600">13,4%</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card__header"><span class="card__title">Benchmark par typologie (3 ans)</span></div>
+        <div class="card__body">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="font-weight:500">Équipements publics</span><span class="text-mono" style="font-weight:600">15,2%</span></div><div class="progress" style="height:10px"><div class="progress__bar" style="width:76%;background:var(--color-success)"></div></div><div class="text-sm text-muted" style="margin-top:2px">4 projets · 1 078 K€ cumulés</div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="font-weight:500">Logements</span><span class="text-mono" style="font-weight:600">12,1%</span></div><div class="progress" style="height:10px"><div class="progress__bar" style="width:61%;background:var(--color-primary-light)"></div></div><div class="text-sm text-muted" style="margin-top:2px">2 projets · 536 K€</div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="font-weight:500">Santé / EHPAD</span><span class="text-mono" style="font-weight:600">11,5%</span></div><div class="progress" style="height:10px"><div class="progress__bar" style="width:58%;background:var(--color-primary-light)"></div></div><div class="text-sm text-muted" style="margin-top:2px">1 projet · 275 K€</div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="font-weight:500">Tertiaire</span><span class="text-mono" style="font-weight:600">8,3%</span></div><div class="progress" style="height:10px"><div class="progress__bar" style="width:42%;background:var(--color-warning)"></div></div><div class="text-sm text-muted" style="margin-top:2px">1 projet · 420 K€</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dérive par phase -->
+    <div class="card">
+      <div class="card__header"><span class="card__title">Écarts budget / réel par phase (projets terminés 2023-2025)</span></div>
+      <div class="card__body">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px"><span class="text-sm" style="width:50px;font-weight:500">ESQ</span><div style="flex:1;position:relative;height:18px;background:var(--color-bg);border-radius:3px"><div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--color-border)"></div><div style="position:absolute;left:50%;top:2px;height:14px;width:8%;background:var(--color-success);border-radius:3px;transform:translateX(-50%)" title="-2%"></div></div><span class="text-mono text-sm text-success" style="width:40px;text-align:right">-2%</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="text-sm" style="width:50px;font-weight:500">APS</span><div style="flex:1;position:relative;height:18px;background:var(--color-bg);border-radius:3px"><div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--color-border)"></div><div style="position:absolute;left:50%;top:2px;height:14px;width:12%;background:var(--color-warning);border-radius:3px" title="+5%"></div></div><span class="text-mono text-sm text-warning" style="width:40px;text-align:right">+5%</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="text-sm" style="width:50px;font-weight:500">APD</span><div style="flex:1;position:relative;height:18px;background:var(--color-bg);border-radius:3px"><div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--color-border)"></div><div style="position:absolute;left:50%;top:2px;height:14px;width:18%;background:var(--color-warning);border-radius:3px" title="+8%"></div></div><span class="text-mono text-sm text-warning" style="width:40px;text-align:right">+8%</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="text-sm" style="width:50px;font-weight:500">PRO</span><div style="flex:1;position:relative;height:18px;background:var(--color-bg);border-radius:3px"><div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--color-border)"></div><div style="position:absolute;left:50%;top:2px;height:14px;width:8%;background:var(--color-success);border-radius:3px;transform:translateX(-50%)" title="-1%"></div></div><span class="text-mono text-sm text-success" style="width:40px;text-align:right">-1%</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="text-sm" style="width:50px;font-weight:500">DET</span><div style="flex:1;position:relative;height:18px;background:var(--color-bg);border-radius:3px"><div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--color-border)"></div><div style="position:absolute;left:50%;top:2px;height:14px;width:30%;background:var(--color-danger);border-radius:3px" title="+15%"></div></div><span class="text-mono text-sm text-danger" style="width:40px;text-align:right">+15%</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="text-sm" style="width:50px;font-weight:500">AOR</span><div style="flex:1;position:relative;height:18px;background:var(--color-bg);border-radius:3px"><div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--color-border)"></div><div style="position:absolute;left:50%;top:2px;height:14px;width:20%;background:var(--color-warning);border-radius:3px" title="+10%"></div></div><span class="text-mono text-sm text-warning" style="width:40px;text-align:right">+10%</span></div>
+        </div>
+        <div style="margin-top:10px;font-size:12px;color:var(--color-danger);font-weight:500">⚠️ La phase DET est systématiquement sous-estimée de 15%. Recommandation : ajuster les ratios par défaut.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Temps & Productivité -->
+  <div class="tab-panel" id="tab-temps">
+    <div class="grid-2 mb-24">
+      <div class="card">
+        <div class="card__header"><span class="card__title">Répartition du temps — Fév 2025</span></div>
+        <div class="card__body">
+          <div style="display:flex;height:16px;border-radius:4px;overflow:hidden;margin-bottom:12px"><div style="width:72%;background:var(--color-primary)" title="Productif"></div><div style="width:12%;background:var(--color-accent)" title="Commercial"></div><div style="width:8%;background:var(--color-muted)" title="Administratif"></div><div style="width:8%;background:var(--color-warning)" title="Formation"></div></div>
+          <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:12px">
+            <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:var(--color-primary);border-radius:2px"></span>Productif 72%</span>
+            <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:var(--color-accent);border-radius:2px"></span>Commercial 12%</span>
+            <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:var(--color-muted);border-radius:2px"></span>Administratif 8%</span>
+            <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:var(--color-warning);border-radius:2px"></span>Formation 8%</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card__header"><span class="card__title">Productivité par collaborateur</span></div>
+        <div class="card__body">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div class="chart-bar-h"><span class="text-sm" style="width:90px">S. Caron</span><div class="chart-bar-h__bar" style="width:92%;background:var(--color-success)"></div><span class="chart-bar-h__label">92%</span></div>
+            <div class="chart-bar-h"><span class="text-sm" style="width:90px">T. Durand</span><div class="chart-bar-h__bar" style="width:88%;background:var(--color-success)"></div><span class="chart-bar-h__label">88%</span></div>
+            <div class="chart-bar-h"><span class="text-sm" style="width:90px">P. Roussel</span><div class="chart-bar-h__bar" style="width:85%;background:var(--color-primary-light)"></div><span class="chart-bar-h__label">85%</span></div>
+            <div class="chart-bar-h"><span class="text-sm" style="width:90px">J. Bernard</span><div class="chart-bar-h__bar" style="width:82%;background:var(--color-primary-light)"></div><span class="chart-bar-h__label">82%</span></div>
+            <div class="chart-bar-h"><span class="text-sm" style="width:90px">M. Lefort</span><div class="chart-bar-h__bar" style="width:78%;background:var(--color-primary-light)"></div><span class="chart-bar-h__label">78%</span></div>
+            <div class="chart-bar-h"><span class="text-sm" style="width:90px">A. Mercier</span><div class="chart-bar-h__bar" style="width:55%;background:var(--color-warning)"></div><span class="chart-bar-h__label text-warning">55%</span></div>
+          </div>
+          <div class="text-sm text-muted" style="margin-top:8px">% temps productif / temps total saisi</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Commercial -->
+  <div class="tab-panel" id="tab-commercial">
+    <div class="kpi-strip" style="grid-template-columns:repeat(3,1fr)">
+      <div class="kpi"><div class="kpi__value">33%</div><div class="kpi__label">Taux de transformation</div><div class="kpi__trend text-success">↗ +5 pts vs 2024</div></div>
+      <div class="kpi"><div class="kpi__value">3</div><div class="kpi__label">Concours en cours</div></div>
+      <div class="kpi"><div class="kpi__value">420 K€</div><div class="kpi__label">Pipeline prévisionnel pondéré</div></div>
+    </div>
+    <div class="card mb-24">
+      <div class="card__header"><span class="card__title">Pipeline commercial</span></div>
+      <div class="card__body card__body--flush">
+        <table class="data-table">
+          <thead><tr><th>Opportunité</th><th>MOA</th><th>Montant travaux</th><th>Honoraires est.</th><th>Probabilité</th><th>Pondéré</th><th>Étape</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:500">Gymnase intercommunal</td><td class="text-sm">CC du Pays de Brest</td><td class="text-mono text-sm">2,1 M€</td><td class="text-mono text-sm">178 K€</td><td class="text-mono text-sm">40%</td><td class="text-mono text-sm" style="font-weight:600">71 K€</td><td><span class="badge badge--accent" style="font-size:10px">Esquisse à remettre</span></td></tr>
+            <tr><td style="font-weight:500">École maternelle Montreuil</td><td class="text-sm">Ville de Montreuil</td><td class="text-mono text-sm">1,8 M€</td><td class="text-mono text-sm">153 K€</td><td class="text-mono text-sm">60%</td><td class="text-mono text-sm" style="font-weight:600">92 K€</td><td><span class="badge badge--primary" style="font-size:10px">Jury 15/03</span></td></tr>
+            <tr><td style="font-weight:500">Réhabilitation logements Nantes</td><td class="text-sm">Nantes Métropole Habitat</td><td class="text-mono text-sm">3,2 M€</td><td class="text-mono text-sm">256 K€</td><td class="text-mono text-sm">25%</td><td class="text-mono text-sm" style="font-weight:600">64 K€</td><td><span class="badge badge--muted" style="font-size:10px">Candidature déposée</span></td></tr>
+            <tr><td style="font-weight:500">Extension clinique St-Luc</td><td class="text-sm">Clinique St-Luc</td><td class="text-mono text-sm">4,5 M€</td><td class="text-mono text-sm">382 K€</td><td class="text-mono text-sm">50%</td><td class="text-mono text-sm" style="font-weight:600">191 K€</td><td><span class="badge badge--success" style="font-size:10px">Négociation</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+<script>
+document.querySelectorAll('.tabs__item').forEach(tab=>{tab.addEventListener('click',()=>{document.querySelectorAll('.tabs__item').forEach(t=>t.classList.remove('tabs__item--active'));document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('tab-panel--active'));tab.classList.add('tabs__item--active');document.getElementById('tab-'+tab.dataset.tab)?.classList.add('tab-panel--active')})})
+</script>
+</body>
+</html>

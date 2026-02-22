@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAA — Paramétrage & Administration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--color-primary:#1B4965;--color-primary-light:#5FA8D3;--color-primary-hover:#153a52;--color-primary-bg:#e8f1f8;--color-secondary:#3C4858;--color-accent:#E6A817;--color-accent-bg:#fdf5e0;--color-success:#2D6A4F;--color-success-bg:#e6f3ed;--color-danger:#C1292E;--color-danger-bg:#fbe8e8;--color-warning:#E76F51;--color-warning-bg:#fdf0ec;--color-bg:#F8F9FA;--color-surface:#FFFFFF;--color-border:#DEE2E6;--color-text:#212529;--color-text-muted:#6C757D;--color-muted:#ADB5BD;--font-sans:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;--font-mono:'JetBrains Mono',monospace;--radius-sm:4px;--radius-md:8px;--radius-lg:12px;--shadow-sm:0 1px 3px rgba(0,0,0,.06);--shadow-md:0 4px 12px rgba(0,0,0,.08);--shadow-lg:0 8px 32px rgba(0,0,0,.12);--transition:.2s ease}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);font-size:14px;line-height:1.5;color:var(--color-text);background:var(--color-bg);overflow-x:hidden}
+a{color:var(--color-primary);text-decoration:none}a:hover{color:var(--color-primary-light)}
+.sidebar{display:none!important}.topbar{display:none!important}
+.main{display:flex;flex-direction:column;min-height:100vh}
+.page{flex:1;padding:24px;max-width:1360px;width:100%;margin:0 auto}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius-md);font-family:var(--font-sans);font-size:13px;font-weight:500;border:1px solid transparent;cursor:pointer;transition:all var(--transition);white-space:nowrap}
+.btn--primary{background:var(--color-primary);color:#fff;border-color:var(--color-primary)}.btn--primary:hover{background:var(--color-primary-hover)}
+.btn--secondary{background:var(--color-surface);color:var(--color-text);border-color:var(--color-border)}.btn--secondary:hover{background:var(--color-bg)}
+.btn--ghost{background:transparent;color:var(--color-text-muted)}.btn--ghost:hover{background:var(--color-bg);color:var(--color-text)}
+.btn--sm{padding:5px 10px;font-size:12px}
+.btn--danger-outline{background:transparent;color:var(--color-danger);border-color:var(--color-danger)}.btn--danger-outline:hover{background:var(--color-danger-bg)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;white-space:nowrap}
+.badge--primary{background:var(--color-primary-bg);color:var(--color-primary)}
+.badge--success{background:var(--color-success-bg);color:var(--color-success)}
+.badge--danger{background:var(--color-danger-bg);color:var(--color-danger)}
+.badge--warning{background:var(--color-warning-bg);color:var(--color-warning)}
+.badge--muted{background:#EBEDEF;color:var(--color-text-muted)}
+.badge--accent{background:var(--color-accent-bg);color:#b8860b}
+.card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);overflow:hidden;transition:box-shadow var(--transition)}
+.card:hover{box-shadow:var(--shadow-sm)}
+.card__header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--color-border)}
+.card__title{font-size:14px;font-weight:600}
+.card__body{padding:16px 20px}.card__body--flush{padding:0}
+.text-muted{color:var(--color-text-muted)}.text-mono{font-family:var(--font-mono)}.text-sm{font-size:12px}
+.text-success{color:var(--color-success)}.text-danger{color:var(--color-danger)}.text-warning{color:var(--color-warning)}
+.mb-24{margin-bottom:24px}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--color-text-muted);margin-bottom:16px}
+.breadcrumb a{color:var(--color-text-muted)}.breadcrumb a:hover{color:var(--color-primary)}
+.breadcrumb__current{color:var(--color-text);font-weight:500}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:24px}
+.page-header__left{display:flex;align-items:flex-start;gap:16px}
+.page-header__icon{width:48px;height:48px;background:var(--color-primary-bg);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.page-header__title{font-size:24px;font-weight:600;letter-spacing:-.02em;line-height:1.3}
+.page-header__meta{display:flex;align-items:center;gap:12px;margin-top:4px;flex-wrap:wrap}
+.page-header__actions{display:flex;gap:8px;flex-shrink:0}
+.avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;color:#fff;flex-shrink:0}
+
+/* Settings layout */
+.settings-layout{display:grid;grid-template-columns:220px 1fr;gap:24px}
+.settings-nav{display:flex;flex-direction:column;gap:2px;position:sticky;top:0}
+.settings-nav__item{padding:9px 14px;border-radius:var(--radius-md);font-size:13px;font-weight:500;color:var(--color-text-muted);cursor:pointer;transition:all var(--transition);display:flex;align-items:center;gap:8px}
+.settings-nav__item:hover{background:var(--color-bg);color:var(--color-text)}
+.settings-nav__item--active{background:var(--color-primary-bg);color:var(--color-primary)}
+.settings-nav__icon{font-size:15px}
+.settings-panel{display:none;animation:fadeIn .3s ease}.settings-panel--active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* Form */
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:500;color:var(--color-secondary);margin-bottom:6px}
+.form-group .form-hint{font-size:11px;color:var(--color-text-muted);margin-top:4px}
+.form-input,.form-select,.form-textarea{width:100%;padding:9px 12px;border:1px solid var(--color-border);border-radius:var(--radius-md);font-family:var(--font-sans);font-size:14px;outline:none;transition:all var(--transition);background:var(--color-surface)}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--color-primary-light);box-shadow:0 0 0 3px rgba(95,168,211,.15)}
+.form-textarea{resize:vertical;min-height:60px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-row--3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.form-section{font-size:13px;font-weight:600;color:var(--color-secondary);padding-bottom:8px;border-bottom:1px solid var(--color-border);margin-bottom:16px;margin-top:24px}
+.form-section:first-child{margin-top:0}
+
+/* Data table */
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--color-text-muted);font-weight:600;padding:8px 14px;border-bottom:2px solid var(--color-border);background:var(--color-bg)}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--color-border);font-size:13px;vertical-align:middle}
+.data-table tr{transition:background var(--transition)}.data-table tr:hover td{background:rgba(248,249,250,.5)}
+.data-table .mono{font-family:var(--font-mono);font-size:12px}
+
+/* Toggle */
+.toggle{display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+.toggle__track{width:36px;height:20px;border-radius:10px;background:var(--color-muted);position:relative;transition:background var(--transition)}
+.toggle__track--on{background:var(--color-success)}
+.toggle__thumb{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform var(--transition);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.toggle__track--on .toggle__thumb{transform:translateX(16px)}
+.toggle__label{font-size:13px}
+
+/* Permission matrix */
+.perm-matrix{width:100%;border-collapse:collapse;font-size:12px}
+.perm-matrix th{padding:6px 8px;text-align:center;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--color-text-muted);background:var(--color-bg);border-bottom:2px solid var(--color-border)}
+.perm-matrix th:first-child{text-align:left}
+.perm-matrix td{padding:6px 8px;text-align:center;border-bottom:1px solid var(--color-border)}
+.perm-matrix td:first-child{text-align:left;font-weight:500}
+.perm-check{width:16px;height:16px;cursor:pointer;accent-color:var(--color-primary)}
+
+/* Audit log */
+.audit-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--color-bg)}
+.audit-item__icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.audit-item__content{flex:1}
+.audit-item__action{font-size:13px}
+.audit-item__time{font-size:11px;color:var(--color-text-muted)}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:none;align-items:center;justify-content:center;opacity:0;transition:opacity .25s ease}
+.modal-overlay--visible{display:flex;opacity:1}
+.modal{background:var(--color-surface);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);width:90%;max-width:580px;max-height:85vh;overflow-y:auto;transform:scale(.95);transition:transform .25s ease}
+.modal-overlay--visible .modal{transform:scale(1)}
+.modal__header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--color-border)}
+.modal__title{font-size:17px;font-weight:600}
+.modal__close{width:32px;height:32px;border-radius:var(--radius-md);border:none;background:transparent;cursor:pointer;font-size:18px;color:var(--color-text-muted);display:flex;align-items:center;justify-content:center}
+.modal__close:hover{background:var(--color-bg);color:var(--color-text)}
+.modal__body{padding:24px}
+.modal__footer{padding:16px 24px;border-top:1px solid var(--color-border);display:flex;justify-content:flex-end;gap:8px}
+
+/* Toast */
+.toast-container{position:fixed;top:16px;right:16px;z-index:2000;display:flex;flex-direction:column;gap:8px}
+.toast{padding:12px 16px;border-radius:var(--radius-md);background:var(--color-surface);border:1px solid var(--color-border);box-shadow:var(--shadow-md);display:flex;align-items:center;gap:10px;font-size:13px;animation:slideIn .3s ease,fadeOut .3s ease 2.5s forwards;min-width:280px}
+.toast--success{border-left:3px solid var(--color-success)}.toast--info{border-left:3px solid var(--color-primary-light)}
+@keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes fadeOut{to{opacity:0;transform:translateX(40px)}}
+
+@media(max-width:1023px){.settings-layout{grid-template-columns:1fr}.settings-nav{flex-direction:row;overflow-x:auto;gap:4px}}
+@media(max-width:767px){.page{padding:16px}.form-row,.form-row--3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="main">
+  <main class="page">
+    <nav class="breadcrumb"><a href="#">Accueil</a><span style="font-size:10px">›</span><span class="breadcrumb__current">Paramétrage & Administration</span></nav>
+    <div class="page-header">
+      <div class="page-header__left">
+        <div class="page-header__icon">⚙️</div>
+        <div><h1 class="page-header__title">Paramétrage & Administration</h1><div class="page-header__meta"><span class="badge badge--muted">Agence Atelier Mercier · Paris</span><span class="badge badge--primary">Plan Pro · 8 utilisateurs</span></div></div>
+      </div>
+    </div>
+
+    <div class="settings-layout">
+      <!-- Nav -->
+      <nav class="settings-nav">
+        <div class="settings-nav__item settings-nav__item--active" data-panel="agence" onclick="switchPanel('agence')"><span class="settings-nav__icon">🏢</span> Agence</div>
+        <div class="settings-nav__item" data-panel="users" onclick="switchPanel('users')"><span class="settings-nav__icon">👤</span> Utilisateurs</div>
+        <div class="settings-nav__item" data-panel="roles" onclick="switchPanel('roles')"><span class="settings-nav__icon">🔐</span> Rôles & Permissions</div>
+        <div class="settings-nav__item" data-panel="phases" onclick="switchPanel('phases')"><span class="settings-nav__icon">📐</span> Phases projet</div>
+        <div class="settings-nav__item" data-panel="taux" onclick="switchPanel('taux')"><span class="settings-nav__icon">💶</span> Taux horaires</div>
+        <div class="settings-nav__item" data-panel="numerotation" onclick="switchPanel('numerotation')"><span class="settings-nav__icon">🔢</span> Numérotation</div>
+        <div class="settings-nav__item" data-panel="audit" onclick="switchPanel('audit')"><span class="settings-nav__icon">📋</span> Journal d'audit</div>
+        <div class="settings-nav__item" data-panel="abonnement" onclick="switchPanel('abonnement')"><span class="settings-nav__icon">💳</span> Abonnement</div>
+      </nav>
+      <div>
+        <!-- PANEL: Agence -->
+        <div class="settings-panel settings-panel--active" id="panel-agence">
+          <div class="card mb-24">
+            <div class="card__header"><span class="card__title">Informations de l'agence</span><button class="btn btn--primary btn--sm" onclick="showToast('Modifications enregistrées','success')">Enregistrer</button></div>
+            <div class="card__body">
+              <div class="form-section">Identité</div>
+              <div class="form-row">
+                <div class="form-group"><label>Raison sociale</label><input type="text" class="form-input" value="Atelier Mercier Architecture"></div>
+                <div class="form-group"><label>SIRET</label><input type="text" class="form-input" value="823 456 789 00012" style="font-family:var(--font-mono)"></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Adresse</label><input type="text" class="form-input" value="15 rue de l'Architecture, 75004 Paris"></div>
+                <div class="form-group"><label>N° Ordre des architectes</label><input type="text" class="form-input" value="S12345" style="font-family:var(--font-mono)"></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Email</label><input type="email" class="form-input" value="contact@atelier-mercier.fr"></div>
+                <div class="form-group"><label>Téléphone</label><input type="tel" class="form-input" value="01 42 78 90 00"></div>
+              </div>
+              <div class="form-section">Apparence & Documents</div>
+              <div class="form-row">
+                <div class="form-group"><label>Logo de l'agence</label><div style="display:flex;align-items:center;gap:12px"><div style="width:64px;height:64px;background:var(--color-primary);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:24px">AM</div><button class="btn btn--secondary btn--sm">Changer le logo</button></div></div>
+                <div class="form-group"><label>Couleur principale</label><div style="display:flex;align-items:center;gap:8px"><input type="color" value="#1B4965" style="width:36px;height:36px;border:1px solid var(--color-border);border-radius:var(--radius-sm);cursor:pointer"><span class="text-mono text-sm">#1B4965</span></div></div>
+              </div>
+              <div class="form-section">Coordonnées bancaires</div>
+              <div class="form-row">
+                <div class="form-group"><label>IBAN</label><input type="text" class="form-input" value="FR76 3000 4028 3700 0100 0581 231" style="font-family:var(--font-mono)"></div>
+                <div class="form-group"><label>BIC</label><input type="text" class="form-input" value="BNPAFRPP" style="font-family:var(--font-mono)"></div>
+              </div>
+              <div class="form-section">Données & Conformité</div>
+              <div style="display:flex;gap:8px"><button class="btn btn--secondary">📥 Exporter toutes les données (RGPD)</button><button class="btn btn--danger-outline">🗑️ Supprimer le compte agence</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANEL: Utilisateurs -->
+        <div class="settings-panel" id="panel-users">
+          <div class="card mb-24">
+            <div class="card__header"><span class="card__title">Utilisateurs (8)</span><button class="btn btn--primary btn--sm" onclick="openModal()">+ Inviter</button></div>
+            <div class="card__body card__body--flush">
+              <table class="data-table">
+                <thead><tr><th>Utilisateur</th><th>Email</th><th>Rôle</th><th>2FA</th><th>Dernière connexion</th><th>Statut</th><th></th></tr></thead>
+                <tbody>
+                  <tr><td><div style="display:flex;align-items:center;gap:8px"><div class="avatar" style="width:28px;height:28px;font-size:10px;background:var(--color-accent);color:var(--color-primary)">AM</div><span style="font-weight:500">Antoine Mercier</span></div></td><td class="text-sm"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f899d6959d8a9b919d8ab8998c9d94919d8ad5959d8a9b919d8ad69e8a">[email&#160;protected]</a></td><td><span class="badge badge--primary" style="font-size:10px">Dirigeant</span></td><td>✅</td><td class="mono text-sm">Aujourd'hui 08:42</td><td><span class="badge badge--success" style="font-size:10px">Actif</span></td><td><button class="btn btn--ghost btn--sm">⋯</button></td></tr>
+                  <tr><td><div style="display:flex;align-items:center;gap:8px"><div class="avatar" style="width:28px;height:28px;font-size:10px;background:#1B4965">ML</div><span style="font-weight:500">Marie Lefort</span></div></td><td class="text-sm"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="167b387a7370796462567762737a7f73643b7b7364757f7364387064">[email&#160;protected]</a></td><td><span class="badge badge--accent" style="font-size:10px">Chef de projet</span></td><td>✅</td><td class="mono text-sm">Aujourd'hui 09:15</td><td><span class="badge badge--success" style="font-size:10px">Actif</span></td><td><button class="btn btn--ghost btn--sm">⋯</button></td></tr>
+                  <tr><td><div style="display:flex;align-items:center;gap:8px"><div class="avatar" style="width:28px;height:28px;font-size:10px;background:#2D6A4F">TD</div><span style="font-weight:500">Thomas Durand</span></div></td><td class="text-sm"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="ef9bc18b9a9d8e818baf8e9b8a83868a9dc2828a9d8c868a9dc1899d">[email&#160;protected]</a></td><td><span class="badge badge--muted" style="font-size:10px">Dessinateur</span></td><td>✅</td><td class="mono text-sm">Hier 17:30</td><td><span class="badge badge--success" style="font-size:10px">Actif</span></td><td><button class="btn btn--ghost btn--sm">⋯</button></td></tr>
+                  <tr><td><div style="display:flex;align-items:center;gap:8px"><div class="avatar" style="width:28px;height:28px;font-size:10px;background:#E76F51">SC</div><span style="font-weight:500">Sophie Caron</span></div></td><td class="text-sm"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="24570a4745564b4a64455041484d415609494156474d41560a4256">[email&#160;protected]</a></td><td><span class="badge badge--accent" style="font-size:10px">Chef de projet</span></td><td>❌</td><td class="mono text-sm">20/02 14:22</td><td><span class="badge badge--success" style="font-size:10px">Actif</span></td><td><button class="btn btn--ghost btn--sm">⋯</button></td></tr>
+                  <tr><td><div style="display:flex;align-items:center;gap:8px"><div class="avatar" style="width:28px;height:28px;font-size:10px;background:#5FA8D3">JB</div><span style="font-weight:500">Julien Bernard</span></div></td><td class="text-sm"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d5bffbb7b0a7bbb4a7b195b4a1b0b9bcb0a7f8b8b0a7b6bcb0a7fbb3a7">[email&#160;protected]</a></td><td><span class="badge badge--muted" style="font-size:10px">Dessinateur</span></td><td>✅</td><td class="mono text-sm">20/02 18:05</td><td><span class="badge badge--success" style="font-size:10px">Actif</span></td><td><button class="btn btn--ghost btn--sm">⋯</button></td></tr>
+                  <tr><td><div style="display:flex;align-items:center;gap:8px"><div class="avatar" style="width:28px;height:28px;font-size:10px;background:#7c3aed">LM</div><span style="font-weight:500">Lucie Martin</span></div></td><td class="text-sm"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e68ac88b8794928f88a68792838a8f8394cb8b8394858f8394c88094">[email&#160;protected]</a></td><td><span class="badge badge--muted" style="font-size:10px">Administratif</span></td><td>✅</td><td class="mono text-sm">Aujourd'hui 08:55</td><td><span class="badge badge--success" style="font-size:10px">Actif</span></td><td><button class="btn btn--ghost btn--sm">⋯</button></td></tr>
+                  <tr><td><div style="display:flex;align-items:center;gap:8px"><div class="avatar" style="width:28px;height:28px;font-size:10px;background:#059669">PR</div><span style="font-weight:500">Pierre Roussel</span></div></td><td class="text-sm"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="5d2d732f32282e2e38311d3c29383134382f7030382f3e34382f733b2f">[email&#160;protected]</a></td><td><span class="badge badge--muted" style="font-size:10px">Stagiaire</span></td><td>❌</td><td class="mono text-sm">19/02 16:40</td><td><span class="badge badge--success" style="font-size:10px">Actif</span></td><td><button class="btn btn--ghost btn--sm">⋯</button></td></tr>
+                  <tr style="opacity:.5"><td><div style="display:flex;align-items:center;gap:8px"><div class="avatar" style="width:28px;height:28px;font-size:10px;background:var(--color-muted)">CL</div><span style="font-weight:500">Claire Lefèvre</span></div></td><td class="text-sm"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="c0a3eeaca5a6a5b6b2a580a1b4a5aca9a5b2edada5b2a3a9a5b2eea6b2">[email&#160;protected]</a></td><td><span class="badge badge--muted" style="font-size:10px">Dessinateur</span></td><td>—</td><td class="mono text-sm">12/12/2024</td><td><span class="badge badge--danger" style="font-size:10px">Désactivé</span></td><td><button class="btn btn--ghost btn--sm">⋯</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card__header"><span class="card__title">Sécurité</span></div>
+            <div class="card__body">
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div class="toggle" onclick="this.querySelector('.toggle__track').classList.toggle('toggle__track--on')"><div class="toggle__track toggle__track--on"><div class="toggle__thumb"></div></div><span class="toggle__label">2FA obligatoire pour tous les utilisateurs</span></div>
+                <div class="toggle" onclick="this.querySelector('.toggle__track').classList.toggle('toggle__track--on')"><div class="toggle__track"><div class="toggle__thumb"></div></div><span class="toggle__label">Expiration de session après 8h d'inactivité</span></div>
+                <div class="toggle" onclick="this.querySelector('.toggle__track').classList.toggle('toggle__track--on')"><div class="toggle__track toggle__track--on"><div class="toggle__thumb"></div></div><span class="toggle__label">Politique de mot de passe renforcée (12 car. min.)</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- PANEL: Rôles & Permissions -->
+        <div class="settings-panel" id="panel-roles">
+          <div class="card mb-24">
+            <div class="card__header"><span class="card__title">Rôles prédéfinis</span><button class="btn btn--primary btn--sm" onclick="showToast('Nouveau rôle créé','success')">+ Nouveau rôle</button></div>
+            <div class="card__body card__body--flush">
+              <table class="data-table">
+                <thead><tr><th>Rôle</th><th>Utilisateurs</th><th>Hérite de</th><th>Description</th><th></th></tr></thead>
+                <tbody>
+                  <tr><td style="font-weight:500">Dirigeant</td><td class="mono">1</td><td class="text-sm text-muted">—</td><td class="text-sm">Accès complet à tous les modules</td><td><button class="btn btn--ghost btn--sm">Modifier</button></td></tr>
+                  <tr><td style="font-weight:500">Chef de projet</td><td class="mono">2</td><td class="text-sm text-muted">—</td><td class="text-sm">Gestion projets, phases, tâches, documents, validation</td><td><button class="btn btn--ghost btn--sm">Modifier</button></td></tr>
+                  <tr><td style="font-weight:500">Dessinateur</td><td class="mono">2</td><td class="text-sm text-muted">—</td><td class="text-sm">Saisie temps, consultation docs, tâches assignées</td><td><button class="btn btn--ghost btn--sm">Modifier</button></td></tr>
+                  <tr><td style="font-weight:500">Administratif</td><td class="mono">1</td><td class="text-sm text-muted">—</td><td class="text-sm">Facturation, CRM, documents, courrier</td><td><button class="btn btn--ghost btn--sm">Modifier</button></td></tr>
+                  <tr><td style="font-weight:500">Stagiaire</td><td class="mono">1</td><td class="text-sm text-muted">Dessinateur</td><td class="text-sm">Temps + docs projet assigné uniquement</td><td><button class="btn btn--ghost btn--sm">Modifier</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card__header"><span class="card__title">Matrice de permissions — Chef de projet</span><select class="form-select" style="width:180px;padding:5px 10px;font-size:12px"><option>Chef de projet</option><option>Dirigeant</option><option>Dessinateur</option><option>Administratif</option><option>Stagiaire</option></select></div>
+            <div class="card__body card__body--flush" style="overflow-x:auto">
+              <table class="perm-matrix">
+                <thead><tr><th>Module</th><th>Lecture</th><th>Écriture</th><th>Suppression</th><th>Export</th><th>Validation</th></tr></thead>
+                <tbody>
+                  <tr><td>Projets</td><td><input type="checkbox" checked class="perm-check"></td><td><input type="checkbox" checked class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" checked class="perm-check"></td><td><input type="checkbox" checked class="perm-check"></td></tr>
+                  <tr><td>Phases</td><td><input type="checkbox" checked class="perm-check"></td><td><input type="checkbox" checked class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" checked class="perm-check"></td></tr>
+                  <tr><td>Temps</td><td><input type="checkbox" checked class="perm-check"></td><td><input type="checkbox" checked class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" checked class="perm-check"></td><td><input type="checkbox" checked class="perm-check"></td></tr>
+                  <tr><td>Documents</td><td><input type="checkbox" checked class="perm-check"></td><td><input type="checkbox" checked class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" checked class="perm-check"></td><td><input type="checkbox" checked class="perm-check"></td></tr>
+                  <tr><td>Finances</td><td><input type="checkbox" checked class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td></tr>
+                  <tr><td>CRM</td><td><input type="checkbox" checked class="perm-check"></td><td><input type="checkbox" checked class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td></tr>
+                  <tr><td>Administration</td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANEL: Phases -->
+        <div class="settings-panel" id="panel-phases">
+          <div class="card mb-24">
+            <div class="card__header"><span class="card__title">Phases projet par défaut</span><button class="btn btn--primary btn--sm" onclick="showToast('Phase ajoutée','success')">+ Ajouter une phase</button></div>
+            <div class="card__body card__body--flush">
+              <table class="data-table">
+                <thead><tr><th style="width:50px">Ordre</th><th>Code</th><th>Libellé</th><th>Ratio par défaut</th><th>Type</th><th>Actif</th><th></th></tr></thead>
+                <tbody>
+                  <tr><td class="mono text-muted">1</td><td class="mono" style="font-weight:600">ESQ</td><td>Esquisse</td><td class="mono">8%</td><td><span class="badge badge--primary" style="font-size:10px">Base</span></td><td>✅</td><td><button class="btn btn--ghost btn--sm">✏️</button></td></tr>
+                  <tr><td class="mono text-muted">2</td><td class="mono" style="font-weight:600">APS</td><td>Avant-Projet Sommaire</td><td class="mono">12%</td><td><span class="badge badge--primary" style="font-size:10px">Base</span></td><td>✅</td><td><button class="btn btn--ghost btn--sm">✏️</button></td></tr>
+                  <tr><td class="mono text-muted">3</td><td class="mono" style="font-weight:600">APD</td><td>Avant-Projet Définitif</td><td class="mono">18%</td><td><span class="badge badge--primary" style="font-size:10px">Base</span></td><td>✅</td><td><button class="btn btn--ghost btn--sm">✏️</button></td></tr>
+                  <tr><td class="mono text-muted">4</td><td class="mono" style="font-weight:600">PRO</td><td>Études de projet</td><td class="mono">22%</td><td><span class="badge badge--primary" style="font-size:10px">Base</span></td><td>✅</td><td><button class="btn btn--ghost btn--sm">✏️</button></td></tr>
+                  <tr><td class="mono text-muted">5</td><td class="mono" style="font-weight:600">DCE</td><td>Consultation des Entreprises</td><td class="mono">10%</td><td><span class="badge badge--primary" style="font-size:10px">Base</span></td><td>✅</td><td><button class="btn btn--ghost btn--sm">✏️</button></td></tr>
+                  <tr><td class="mono text-muted">6</td><td class="mono" style="font-weight:600">ACT</td><td>Assistance Contrats Travaux</td><td class="mono">3%</td><td><span class="badge badge--primary" style="font-size:10px">Base</span></td><td>✅</td><td><button class="btn btn--ghost btn--sm">✏️</button></td></tr>
+                  <tr><td class="mono text-muted">7</td><td class="mono" style="font-weight:600">VISA</td><td>Visa des études d'exécution</td><td class="mono">3%</td><td><span class="badge badge--primary" style="font-size:10px">Base</span></td><td>✅</td><td><button class="btn btn--ghost btn--sm">✏️</button></td></tr>
+                  <tr><td class="mono text-muted">8</td><td class="mono" style="font-weight:600">DET</td><td>Direction Exécution Travaux</td><td class="mono">18%</td><td><span class="badge badge--primary" style="font-size:10px">Base</span></td><td>✅</td><td><button class="btn btn--ghost btn--sm">✏️</button></td></tr>
+                  <tr><td class="mono text-muted">9</td><td class="mono" style="font-weight:600">AOR</td><td>Assistance Opérations Réception</td><td class="mono">6%</td><td><span class="badge badge--primary" style="font-size:10px">Base</span></td><td>✅</td><td><button class="btn btn--ghost btn--sm">✏️</button></td></tr>
+                  <tr style="background:var(--color-accent-bg)"><td class="mono text-muted">—</td><td class="mono" style="font-weight:600">OPC</td><td>Ordonnancement Pilotage Coordination</td><td class="mono">—</td><td><span class="badge badge--accent" style="font-size:10px">Complémentaire</span></td><td>✅</td><td><button class="btn btn--ghost btn--sm">✏️</button></td></tr>
+                  <tr style="background:var(--color-accent-bg)"><td class="mono text-muted">—</td><td class="mono" style="font-weight:600">SYN</td><td>Synthèse</td><td class="mono">—</td><td><span class="badge badge--accent" style="font-size:10px">Complémentaire</span></td><td>✅</td><td><button class="btn btn--ghost btn--sm">✏️</button></td></tr>
+                  <tr style="background:var(--color-accent-bg)"><td class="mono text-muted">—</td><td class="mono" style="font-weight:600">DIAG</td><td>Diagnostics</td><td class="mono">—</td><td><span class="badge badge--accent" style="font-size:10px">Complémentaire</span></td><td>❌</td><td><button class="btn btn--ghost btn--sm">✏️</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card"><div class="card__body"><div class="text-sm text-muted" style="display:flex;align-items:center;gap:6px">ℹ️ Les ratios doivent totaliser 100% pour les phases de base. Total actuel : <span class="text-mono text-success" style="font-weight:600">100%</span></div></div></div>
+        </div>
+        <!-- PANEL: Taux horaires -->
+        <div class="settings-panel" id="panel-taux">
+          <div class="card mb-24">
+            <div class="card__header"><span class="card__title">Taux horaires par profil — 2025</span><div style="display:flex;gap:8px"><select class="form-select" style="width:100px;padding:5px 10px;font-size:12px"><option>2025</option><option>2024</option><option>2023</option></select><button class="btn btn--primary btn--sm" onclick="showToast('Taux enregistrés','success')">Enregistrer</button></div></div>
+            <div class="card__body card__body--flush">
+              <table class="data-table">
+                <thead><tr><th>Profil</th><th>Taux horaire interne</th><th>Taux facturable</th><th>Capacité hebdo</th><th>Variation N-1</th></tr></thead>
+                <tbody>
+                  <tr><td style="font-weight:500">Dirigeant / Associé</td><td><input type="text" class="form-input" value="105" style="width:80px;font-family:var(--font-mono);padding:5px 8px;font-size:13px;text-align:right"> €/h</td><td><input type="text" class="form-input" value="130" style="width:80px;font-family:var(--font-mono);padding:5px 8px;font-size:13px;text-align:right"> €/h</td><td class="mono">35h</td><td class="text-success text-sm">↗ +3%</td></tr>
+                  <tr><td style="font-weight:500">Chef de projet</td><td><input type="text" class="form-input" value="85" style="width:80px;font-family:var(--font-mono);padding:5px 8px;font-size:13px;text-align:right"> €/h</td><td><input type="text" class="form-input" value="105" style="width:80px;font-family:var(--font-mono);padding:5px 8px;font-size:13px;text-align:right"> €/h</td><td class="mono">37h</td><td class="text-success text-sm">↗ +3%</td></tr>
+                  <tr><td style="font-weight:500">Architecte</td><td><input type="text" class="form-input" value="72" style="width:80px;font-family:var(--font-mono);padding:5px 8px;font-size:13px;text-align:right"> €/h</td><td><input type="text" class="form-input" value="90" style="width:80px;font-family:var(--font-mono);padding:5px 8px;font-size:13px;text-align:right"> €/h</td><td class="mono">37h</td><td class="text-success text-sm">↗ +4%</td></tr>
+                  <tr><td style="font-weight:500">Dessinateur / Projeteur</td><td><input type="text" class="form-input" value="58" style="width:80px;font-family:var(--font-mono);padding:5px 8px;font-size:13px;text-align:right"> €/h</td><td><input type="text" class="form-input" value="72" style="width:80px;font-family:var(--font-mono);padding:5px 8px;font-size:13px;text-align:right"> €/h</td><td class="mono">37h</td><td class="text-success text-sm">↗ +2%</td></tr>
+                  <tr><td style="font-weight:500">Stagiaire</td><td><input type="text" class="form-input" value="25" style="width:80px;font-family:var(--font-mono);padding:5px 8px;font-size:13px;text-align:right"> €/h</td><td><input type="text" class="form-input" value="0" style="width:80px;font-family:var(--font-mono);padding:5px 8px;font-size:13px;text-align:right"> €/h</td><td class="mono">35h</td><td class="text-muted text-sm">—</td></tr>
+                  <tr><td style="font-weight:500">Administratif</td><td><input type="text" class="form-input" value="48" style="width:80px;font-family:var(--font-mono);padding:5px 8px;font-size:13px;text-align:right"> €/h</td><td><input type="text" class="form-input" value="0" style="width:80px;font-family:var(--font-mono);padding:5px 8px;font-size:13px;text-align:right"> €/h</td><td class="mono">35h</td><td class="text-success text-sm">↗ +2%</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card"><div class="card__body"><div class="text-sm text-muted" style="display:flex;align-items:center;gap:6px">ℹ️ Le taux interne inclut salaire chargé + quote-part frais de structure. Le taux facturable est utilisé pour la valorisation du temps passé. Les changements ne s'appliquent qu'aux saisies futures.</div></div></div>
+        </div>
+
+        <!-- PANEL: Numérotation -->
+        <div class="settings-panel" id="panel-numerotation">
+          <div class="card mb-24">
+            <div class="card__header"><span class="card__title">Schémas de numérotation automatique</span><button class="btn btn--primary btn--sm" onclick="showToast('Numérotation mise à jour','success')">Enregistrer</button></div>
+            <div class="card__body">
+              <div style="display:flex;flex-direction:column;gap:20px">
+                <div><div class="form-section" style="margin-top:0">Factures</div><div class="form-row"><div class="form-group"><label>Préfixe</label><input type="text" class="form-input" value="FA-" style="font-family:var(--font-mono)"></div><div class="form-group"><label>Format</label><select class="form-select"><option selected>AAAA-NNN (FA-2025-001)</option><option>AAMM-NNN (FA-2502-001)</option><option>NNN séquentiel (FA-001)</option></select></div></div><div class="text-sm text-muted" style="margin-top:4px">Prochain numéro : <span class="text-mono" style="font-weight:500">FA-2025-048</span></div></div>
+                <div><div class="form-section">Devis</div><div class="form-row"><div class="form-group"><label>Préfixe</label><input type="text" class="form-input" value="DV-" style="font-family:var(--font-mono)"></div><div class="form-group"><label>Format</label><select class="form-select"><option selected>AAAA-NNN (DV-2025-001)</option><option>AAMM-NNN</option><option>NNN séquentiel</option></select></div></div><div class="text-sm text-muted" style="margin-top:4px">Prochain numéro : <span class="text-mono" style="font-weight:500">DV-2025-009</span></div></div>
+                <div><div class="form-section">Projets</div><div class="form-row"><div class="form-group"><label>Préfixe</label><input type="text" class="form-input" value="PRJ-" style="font-family:var(--font-mono)"></div><div class="form-group"><label>Format</label><select class="form-select"><option selected>AAAA-NNN (PRJ-2025-001)</option><option>NNN séquentiel</option></select></div></div><div class="text-sm text-muted" style="margin-top:4px">Prochain numéro : <span class="text-mono" style="font-weight:500">PRJ-2025-013</span></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANEL: Journal d'audit -->
+        <div class="settings-panel" id="panel-audit">
+          <div class="card mb-24">
+            <div class="card__header"><span class="card__title">Journal d'audit</span><div style="display:flex;gap:8px"><input type="text" class="form-input" placeholder="Filtrer…" style="width:200px;padding:6px 10px;font-size:12px"><select class="form-select" style="width:140px;padding:6px 10px;font-size:12px"><option>Tous types</option><option>Connexion</option><option>Modification</option><option>Suppression</option><option>Export</option></select><button class="btn btn--secondary btn--sm">📥 Exporter</button></div></div>
+            <div class="card__body">
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <div class="audit-item"><div class="audit-item__icon" style="background:var(--color-primary-bg)">🔑</div><div class="audit-item__content"><div class="audit-item__action"><strong>Antoine Mercier</strong> s'est connecté</div><div class="audit-item__time">Aujourd'hui 08:42 · IP 92.184.xxx.xxx</div></div></div>
+                <div class="audit-item"><div class="audit-item__icon" style="background:var(--color-primary-bg)">🔑</div><div class="audit-item__content"><div class="audit-item__action"><strong>Lucie Martin</strong> s'est connectée</div><div class="audit-item__time">Aujourd'hui 08:55 · IP 92.184.xxx.xxx</div></div></div>
+                <div class="audit-item"><div class="audit-item__icon" style="background:var(--color-primary-bg)">🔑</div><div class="audit-item__content"><div class="audit-item__action"><strong>Marie Lefort</strong> s'est connectée</div><div class="audit-item__time">Aujourd'hui 09:15 · IP 86.210.xxx.xxx</div></div></div>
+                <div class="audit-item"><div class="audit-item__icon" style="background:var(--color-accent-bg)">✏️</div><div class="audit-item__content"><div class="audit-item__action"><strong>Antoine Mercier</strong> a modifié le taux horaire du profil <em>Dessinateur</em> (56 → 58 €/h)</div><div class="audit-item__time">Aujourd'hui 09:30 · Module : Administration</div></div></div>
+                <div class="audit-item"><div class="audit-item__icon" style="background:var(--color-success-bg)">📄</div><div class="audit-item__content"><div class="audit-item__action"><strong>Marie Lefort</strong> a validé le document <em>Notice descriptive PRO — Grp. scolaire</em></div><div class="audit-item__time">Hier 16:45 · Module : Documents</div></div></div>
+                <div class="audit-item"><div class="audit-item__icon" style="background:var(--color-warning-bg)">💰</div><div class="audit-item__content"><div class="audit-item__action"><strong>Lucie Martin</strong> a généré la facture <em>FA-2025-041</em> (31 500 €)</div><div class="audit-item__time">Hier 14:20 · Module : Finances</div></div></div>
+                <div class="audit-item"><div class="audit-item__icon" style="background:var(--color-danger-bg)">🗑️</div><div class="audit-item__content"><div class="audit-item__action"><strong>Antoine Mercier</strong> a désactivé l'utilisateur <em>Claire Lefèvre</em></div><div class="audit-item__time">12/12/2024 10:15 · Module : Administration</div></div></div>
+                <div class="audit-item"><div class="audit-item__icon" style="background:var(--color-primary-bg)">📥</div><div class="audit-item__content"><div class="audit-item__action"><strong>Lucie Martin</strong> a exporté les écritures FEC (novembre 2024)</div><div class="audit-item__time">02/12/2024 09:00 · Module : Finances</div></div></div>
+                <div class="audit-item"><div class="audit-item__icon" style="background:var(--color-accent-bg)">🔐</div><div class="audit-item__content"><div class="audit-item__action"><strong>Antoine Mercier</strong> a modifié les permissions du rôle <em>Stagiaire</em></div><div class="audit-item__time">28/11/2024 11:30 · Module : Administration</div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANEL: Abonnement -->
+        <div class="settings-panel" id="panel-abonnement">
+          <div class="card mb-24">
+            <div class="card__header"><span class="card__title">Abonnement actuel</span></div>
+            <div class="card__body">
+              <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
+                <div style="flex:1;min-width:200px;padding:20px;background:var(--color-primary-bg);border-radius:var(--radius-lg);border:2px solid var(--color-primary)">
+                  <div style="font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--color-primary);font-weight:600;margin-bottom:4px">Plan Pro</div>
+                  <div style="font-family:var(--font-mono);font-size:28px;font-weight:600;color:var(--color-primary)">49€ <span style="font-size:14px;font-weight:400;color:var(--color-text-muted)">/utilisateur/mois</span></div>
+                  <div class="text-sm text-muted" style="margin-top:8px">8 utilisateurs × 49€ = <strong>392€/mois HT</strong></div>
+                  <div class="text-sm text-muted" style="margin-top:4px">Prochain renouvellement : <span class="text-mono">01/03/2025</span></div>
+                  <div style="margin-top:12px;display:flex;flex-direction:column;gap:4px">
+                    <span class="text-sm" style="display:flex;align-items:center;gap:4px">✅ Tous les modules cœur métier</span>
+                    <span class="text-sm" style="display:flex;align-items:center;gap:4px">✅ GED 50 Go / utilisateur</span>
+                    <span class="text-sm" style="display:flex;align-items:center;gap:4px">✅ API & intégrations</span>
+                    <span class="text-sm" style="display:flex;align-items:center;gap:4px">✅ Portail externe</span>
+                    <span class="text-sm" style="display:flex;align-items:center;gap:4px">✅ Support prioritaire</span>
+                  </div>
+                </div>
+                <div style="flex:1;min-width:200px">
+                  <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Utilisation</div>
+                  <div style="display:flex;flex-direction:column;gap:10px">
+                    <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>Utilisateurs</span><span class="text-mono">8 / 15</span></div><div style="height:6px;background:var(--color-bg);border-radius:3px;overflow:hidden"><div style="height:100%;width:53%;background:var(--color-primary-light);border-radius:3px"></div></div></div>
+                    <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>Stockage</span><span class="text-mono">124 Go / 400 Go</span></div><div style="height:6px;background:var(--color-bg);border-radius:3px;overflow:hidden"><div style="height:100%;width:31%;background:var(--color-success);border-radius:3px"></div></div></div>
+                    <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>Projets actifs</span><span class="text-mono">12 / illimité</span></div><div style="height:6px;background:var(--color-bg);border-radius:3px;overflow:hidden"><div style="height:100%;width:100%;background:var(--color-success);border-radius:3px"></div></div></div>
+                  </div>
+                  <div style="margin-top:16px;display:flex;gap:8px"><button class="btn btn--secondary btn--sm">Changer de plan</button><button class="btn btn--ghost btn--sm">📄 Factures SaaS</button></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: Inviter utilisateur -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal__header"><h2 class="modal__title">Inviter un utilisateur</h2><button class="modal__close" onclick="closeModal()">✕</button></div>
+    <div class="modal__body">
+      <div class="form-row"><div class="form-group"><label>Prénom</label><input type="text" class="form-input" placeholder="Jean"></div><div class="form-group"><label>Nom</label><input type="text" class="form-input" placeholder="Dupont"></div></div>
+      <div class="form-group"><label>Email</label><input type="email" class="form-input" placeholder="j.dupont@atelier-mercier.fr"></div>
+      <div class="form-row"><div class="form-group"><label>Rôle</label><select class="form-select"><option>Dessinateur</option><option>Chef de projet</option><option>Administratif</option><option>Stagiaire</option></select></div><div class="form-group"><label>Profil horaire</label><select class="form-select"><option>Dessinateur / Projeteur</option><option>Architecte</option><option>Chef de projet</option><option>Stagiaire</option></select></div></div>
+      <div class="form-group"><label>Projets assignés</label><select class="form-select" multiple style="min-height:80px"><option>Groupe scolaire Victor Hugo</option><option>Résidence Les Oliviers</option><option>Médiathèque de Brest</option><option>Campus Numérique</option><option>EHPAD Les Magnolias</option></select><div class="form-hint">Ctrl+clic pour sélection multiple</div></div>
+    </div>
+    <div class="modal__footer"><button class="btn btn--secondary" onclick="closeModal()">Annuler</button><button class="btn btn--primary" onclick="closeModal();showToast('Invitation envoyée par email','success')">Envoyer l\'invitation</button></div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+function switchPanel(p){document.querySelectorAll('.settings-nav__item').f

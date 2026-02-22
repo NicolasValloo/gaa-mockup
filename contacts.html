@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAA — CRM & Contacts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+.sidebar,.topbar{display:none!important;}
+:root{--color-primary:#1B4965;--color-primary-light:#5FA8D3;--color-primary-hover:#153a52;--color-primary-bg:#e8f1f8;--color-secondary:#3C4858;--color-accent:#E6A817;--color-accent-bg:#fdf5e0;--color-success:#2D6A4F;--color-success-bg:#e6f3ed;--color-danger:#C1292E;--color-danger-bg:#fbe8e8;--color-warning:#E76F51;--color-warning-bg:#fdf0ec;--color-bg:#F8F9FA;--color-surface:#FFFFFF;--color-border:#DEE2E6;--color-text:#212529;--color-text-muted:#6C757D;--color-muted:#ADB5BD;--font-sans:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;--font-mono:'JetBrains Mono',monospace;--radius-sm:4px;--radius-md:8px;--radius-lg:12px;--shadow-sm:0 1px 3px rgba(0,0,0,.06);--shadow-md:0 4px 12px rgba(0,0,0,.08);--shadow-lg:0 8px 32px rgba(0,0,0,.12);--transition:.2s ease;--sidebar-width:260px;--sidebar-collapsed:64px;--header-height:56px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);font-size:14px;line-height:1.5;color:var(--color-text);background:var(--color-bg);overflow-x:hidden}
+a{color:var(--color-primary);text-decoration:none}a:hover{color:var(--color-primary-light)}
+
+/* Layout */
+.layout{display:flex;min-height:100vh}
+
+/* Sidebar */
+.sidebar{width:var(--sidebar-width);background:var(--color-primary);color:#fff;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:width .25s ease;overflow:hidden}
+.sidebar.sidebar--collapsed{width:var(--sidebar-collapsed)}
+.sidebar__logo{height:var(--header-height);display:flex;align-items:center;padding:0 16px;border-bottom:1px solid rgba(255,255,255,.1);gap:12px;flex-shrink:0}
+.sidebar__logo-icon{width:32px;height:32px;background:var(--color-accent);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:var(--color-primary);flex-shrink:0}
+.sidebar__logo-text{font-size:18px;font-weight:700;letter-spacing:-.02em;white-space:nowrap;transition:opacity var(--transition)}
+.sidebar--collapsed .sidebar__logo-text{opacity:0}
+.sidebar__nav{flex:1;padding:8px;overflow-y:auto}
+.sidebar__section-title{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.45);padding:16px 12px 6px;white-space:nowrap}
+.sidebar--collapsed .sidebar__section-title{opacity:0;height:0;padding:0}
+.sidebar__item{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:var(--radius-md);color:rgba(255,255,255,.7);cursor:pointer;transition:all var(--transition);white-space:nowrap;font-size:13.5px}
+.sidebar__item:hover{background:rgba(255,255,255,.1);color:#fff}
+.sidebar__item--active{background:rgba(255,255,255,.15);color:#fff;font-weight:500}
+.sidebar__item-icon{width:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px}
+.sidebar__item-label{transition:opacity var(--transition)}
+.sidebar--collapsed .sidebar__item-label{opacity:0}
+.sidebar__badge{margin-left:auto;background:var(--color-danger);color:#fff;font-size:11px;font-weight:600;padding:1px 7px;border-radius:10px}
+.sidebar--collapsed .sidebar__badge{display:none}
+.sidebar__toggle{padding:12px;border-top:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.5);flex-shrink:0}
+.sidebar__toggle:hover{color:#fff}
+
+/* Main */
+.main{flex:1;margin-left:var(--sidebar-width);transition:margin-left .25s ease;display:flex;flex-direction:column;min-height:100vh}
+.sidebar--collapsed ~ .main{margin-left:var(--sidebar-collapsed)}
+
+/* Topbar */
+.topbar{height:var(--header-height);background:var(--color-surface);border-bottom:1px solid var(--color-border);display:flex;align-items:center;padding:0 24px;gap:16px;position:sticky;top:0;z-index:50}
+.topbar__search{flex:1;max-width:480px;position:relative}
+.topbar__search input{width:100%;padding:8px 12px 8px 36px;border:1px solid var(--color-border);border-radius:var(--radius-md);font-family:var(--font-sans);font-size:13px;background:var(--color-bg);outline:none;transition:all var(--transition)}
+.topbar__search input:focus{border-color:var(--color-primary-light);box-shadow:0 0 0 3px rgba(95,168,211,.15);background:var(--color-surface)}
+.topbar__search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--color-text-muted);font-size:14px}
+.topbar__actions{display:flex;align-items:center;gap:8px;margin-left:auto}
+.topbar__btn{width:36px;height:36px;border-radius:var(--radius-md);border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--color-text-muted);font-size:18px;transition:all var(--transition);position:relative}
+.topbar__btn:hover{background:var(--color-bg);color:var(--color-text)}
+.topbar__btn .notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;background:var(--color-danger);border-radius:50%;border:2px solid var(--color-surface)}
+.topbar__avatar{width:34px;height:34px;border-radius:50%;background:var(--color-accent);color:var(--color-primary);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+
+.page{flex:1;padding:24px;max-width:1360px;width:100%;margin:0 auto}
+
+/* Common */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius-md);font-family:var(--font-sans);font-size:13px;font-weight:500;border:1px solid transparent;cursor:pointer;transition:all var(--transition);white-space:nowrap}
+.btn--primary{background:var(--color-primary);color:#fff;border-color:var(--color-primary)}.btn--primary:hover{background:var(--color-primary-hover)}
+.btn--secondary{background:var(--color-surface);color:var(--color-text);border-color:var(--color-border)}.btn--secondary:hover{background:var(--color-bg)}
+.btn--ghost{background:transparent;color:var(--color-text-muted)}.btn--ghost:hover{background:var(--color-bg);color:var(--color-text)}
+.btn--sm{padding:5px 10px;font-size:12px}
+
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;white-space:nowrap}
+.badge--primary{background:var(--color-primary-bg);color:var(--color-primary)}
+.badge--success{background:var(--color-success-bg);color:var(--color-success)}
+.badge--danger{background:var(--color-danger-bg);color:var(--color-danger)}
+.badge--warning{background:var(--color-warning-bg);color:var(--color-warning)}
+.badge--muted{background:#EBEDEF;color:var(--color-text-muted)}
+.badge--accent{background:var(--color-accent-bg);color:#b8860b}
+
+.card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);overflow:hidden;transition:box-shadow var(--transition)}
+.card:hover{box-shadow:var(--shadow-sm)}
+.card__header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--color-border)}
+.card__title{font-size:14px;font-weight:600}
+.card__body{padding:16px 20px}
+.card__body--flush{padding:0}
+
+.text-muted{color:var(--color-text-muted)}.text-mono{font-family:var(--font-mono)}.text-sm{font-size:12px}
+.text-success{color:var(--color-success)}.text-danger{color:var(--color-danger)}.text-warning{color:var(--color-warning)}
+.mb-16{margin-bottom:16px}.mb-24{margin-bottom:24px}
+
+/* Breadcrumb */
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--color-text-muted);margin-bottom:16px}
+.breadcrumb a{color:var(--color-text-muted)}.breadcrumb a:hover{color:var(--color-primary)}
+.breadcrumb__current{color:var(--color-text);font-weight:500}
+
+/* Page Header */
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:24px}
+.page-header__left{display:flex;align-items:flex-start;gap:16px}
+.page-header__icon{width:48px;height:48px;background:var(--color-primary-bg);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.page-header__title{font-size:24px;font-weight:600;letter-spacing:-.02em;line-height:1.3}
+.page-header__meta{display:flex;align-items:center;gap:12px;margin-top:4px;flex-wrap:wrap}
+.page-header__actions{display:flex;gap:8px;flex-shrink:0}
+
+/* KPIs */
+.kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.kpi{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:14px 18px;transition:all var(--transition)}
+.kpi:hover{box-shadow:var(--shadow-sm);transform:translateY(-1px)}
+.kpi__label{font-size:12px;color:var(--color-text-muted);margin-bottom:4px}
+.kpi__value{font-family:var(--font-mono);font-size:22px;font-weight:500;letter-spacing:-.02em}
+.kpi__sub{font-size:12px;color:var(--color-text-muted);margin-top:2px}
+
+/* Tabs */
+.tabs{display:flex;border-bottom:2px solid var(--color-border);gap:0;margin-bottom:24px;overflow-x:auto}
+.tabs__item{padding:10px 20px;font-size:13.5px;font-weight:500;color:var(--color-text-muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all var(--transition);white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font-sans)}
+.tabs__item:hover{color:var(--color-text)}
+.tabs__item--active{color:var(--color-primary);border-bottom-color:var(--color-primary)}
+.tabs__count{background:var(--color-bg);padding:1px 7px;border-radius:10px;font-size:11px;font-weight:600;margin-left:6px;color:var(--color-text-muted)}
+
+.tab-panel{display:none;animation:fadeIn .3s ease}
+.tab-panel--active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* Filter bar */
+.filter-bar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.filter-bar__search{position:relative;flex:1;min-width:200px;max-width:320px}
+.filter-bar__search input{width:100%;padding:7px 10px 7px 32px;border:1px solid var(--color-border);border-radius:var(--radius-md);font-family:var(--font-sans);font-size:13px;outline:none;transition:all var(--transition)}
+.filter-bar__search input:focus{border-color:var(--color-primary-light);box-shadow:0 0 0 3px rgba(95,168,211,.15)}
+.filter-bar__search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--color-text-muted);font-size:13px}
+.filter-chip{display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--color-border);background:var(--color-surface);cursor:pointer;transition:all var(--transition);color:var(--color-text-muted)}
+.filter-chip:hover{border-color:var(--color-primary-light);color:var(--color-text)}
+.filter-chip--active{background:var(--color-primary-bg);border-color:var(--color-primary);color:var(--color-primary)}
+
+/* Data table */
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--color-text-muted);font-weight:600;padding:8px 14px;border-bottom:2px solid var(--color-border);background:var(--color-bg);position:sticky;top:0;z-index:5}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--color-border);font-size:13px;vertical-align:middle}
+.data-table tr{cursor:pointer;transition:background var(--transition)}
+.data-table tr:hover td{background:rgba(248,249,250,.5)}
+.data-table .mono{font-family:var(--font-mono);font-size:12px}
+
+/* Contact avatar */
+.contact-cell{display:flex;align-items:center;gap:10px}
+.avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;color:#fff;flex-shrink:0}
+.avatar--org{border-radius:var(--radius-md);font-size:11px}
+.contact-cell__info{min-width:0}
+.contact-cell__name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.contact-cell__sub{font-size:11px;color:var(--color-text-muted)}
+
+/* Tag */
+.tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500;margin-right:4px}
+.tag--moa{background:#dbeafe;color:#1e40af}
+.tag--bet{background:#f3e8ff;color:#6b21a8}
+.tag--ent{background:#fef3c7;color:#92400e}
+.tag--inst{background:#d1fae5;color:#065f46}
+.tag--four{background:#ffe4e6;color:#9f1239}
+
+/* Pipeline kanban */
+.pipeline{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;min-height:400px}
+.pipeline__col{background:var(--color-bg);border-radius:var(--radius-lg);padding:12px;display:flex;flex-direction:column;gap:8px}
+.pipeline__col-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;padding-bottom:8px;border-bottom:2px solid var(--color-border)}
+.pipeline__col-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.pipeline__col-count{font-size:11px;background:var(--color-surface);padding:1px 7px;border-radius:10px;color:var(--color-text-muted);font-weight:600}
+.pipeline__col-amount{font-family:var(--font-mono);font-size:11px;color:var(--color-text-muted);font-weight:500}
+
+.pipeline-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:12px;cursor:pointer;transition:all var(--transition)}
+.pipeline-card:hover{box-shadow:var(--shadow-sm);transform:translateY(-1px)}
+.pipeline-card__name{font-size:13px;font-weight:500;margin-bottom:4px}
+.pipeline-card__client{font-size:11px;color:var(--color-text-muted);margin-bottom:8px}
+.pipeline-card__footer{display:flex;align-items:center;justify-content:space-between}
+.pipeline-card__amount{font-family:var(--font-mono);font-size:13px;font-weight:600}
+.pipeline-card__prob{font-size:11px;font-weight:500;padding:2px 6px;border-radius:4px}
+
+/* Concours cards */
+.concours-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+.concours-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);overflow:hidden;transition:all var(--transition);cursor:pointer}
+.concours-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.concours-card__accent{height:4px}
+.concours-card__body{padding:16px 20px}
+.concours-card__title{font-size:15px;font-weight:600;margin-bottom:4px}
+.concours-card__client{font-size:12px;color:var(--color-text-muted);margin-bottom:12px}
+.concours-card__details{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.concours-card__detail-label{font-size:11px;color:var(--color-text-muted)}
+.concours-card__detail-value{font-size:13px;font-weight:500}
+.concours-card__detail-value--mono{font-family:var(--font-mono);font-size:12px}
+.concours-card__footer{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid var(--color-border);background:var(--color-bg)}
+
+/* Drawer */
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:900;display:none;opacity:0;transition:opacity .25s ease}
+.drawer-overlay--visible{display:block;opacity:1}
+.drawer{position:fixed;right:-520px;top:0;bottom:0;width:520px;background:var(--color-surface);box-shadow:var(--shadow-lg);z-index:910;transition:right .3s ease;display:flex;flex-direction:column}
+.drawer--open{right:0}
+.drawer__header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--color-border);flex-shrink:0}
+.drawer__title{font-size:16px;font-weight:600}
+.drawer__body{flex:1;overflow-y:auto;padding:20px}
+.drawer__close{width:32px;height:32px;border-radius:var(--radius-md);border:none;background:transparent;cursor:pointer;font-size:18px;color:var(--color-text-muted);display:flex;align-items:center;justify-content:center;transition:all var(--transition)}
+.drawer__close:hover{background:var(--color-bg);color:var(--color-text)}
+
+/* Info pairs */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.info-item{padding:8px 0;border-bottom:1px solid var(--color-bg);display:flex;flex-direction:column;gap:2px}
+.info-item:nth-child(odd){padding-right:12px}
+.info-item:nth-child(even){padding-left:12px;border-left:1px solid var(--color-bg)}
+.info-item__label{font-size:11px;color:var(--color-text-muted)}
+.info-item__value{font-size:13px;font-weight:450}
+
+/* Timeline */
+.timeline{position:relative;padding-left:20px}
+.timeline::before{content:'';position:absolute;left:5px;top:4px;bottom:4px;width:2px;background:var(--color-border)}
+.timeline__item{position:relative;padding-bottom:16px}
+.timeline__item:last-child{padding-bottom:0}
+.timeline__dot{position:absolute;left:-20px;top:3px;width:12px;height:12px;border-radius:50%;border:2px solid var(--color-surface)}
+.timeline__content{font-size:13px;line-height:1.5}
+.timeline__time{font-size:11px;color:var(--color-text-muted)}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:none;align-items:center;justify-content:center;opacity:0;transition:opacity .25s ease}
+.modal-overlay--visible{display:flex;opacity:1}
+.modal{background:var(--color-surface);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);width:90%;max-width:580px;max-height:85vh;overflow-y:auto;transform:scale(.95);transition:transform .25s ease}
+.modal-overlay--visible .modal{transform:scale(1)}
+.modal__header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--color-border)}
+.modal__title{font-size:17px;font-weight:600}
+.modal__close{width:32px;height:32px;border-radius:var(--radius-md);border:none;background:transparent;cursor:pointer;font-size:18px;color:var(--color-text-muted);display:flex;align-items:center;justify-content:center}
+.modal__close:hover{background:var(--color-bg);color:var(--color-text)}
+.modal__body{padding:24px}
+.modal__footer{padding:16px 24px;border-top:1px solid var(--color-border);display:flex;justify-content:flex-end;gap:8px}
+
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:500;color:var(--color-secondary);margin-bottom:6px}
+.form-input,.form-select,.form-textarea{width:100%;padding:9px 12px;border:1px solid var(--color-border);border-radius:var(--radius-md);font-family:var(--font-sans);font-size:14px;outline:none;transition:all var(--transition);background:var(--color-surface)}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--color-primary-light);box-shadow:0 0 0 3px rgba(95,168,211,.15)}
+.form-textarea{resize:vertical;min-height:80px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* Toast */
+.toast-container{position:fixed;top:16px;right:16px;z-index:2000;display:flex;flex-direction:column;gap:8px}
+.toast{padding:12px 16px;border-radius:var(--radius-md);background:var(--color-surface);border:1px solid var(--color-border);box-shadow:var(--shadow-md);display:flex;align-items:center;gap:10px;font-size:13px;animation:slideIn .3s ease,fadeOut .3s ease 2.5s forwards;min-width:280px}
+.toast--success{border-left:3px solid var(--color-success)}.toast--info{border-left:3px solid var(--color-primary-light)}.toast--warning{border-left:3px solid var(--color-warning)}
+@keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes fadeOut{to{opacity:0;transform:translateX(40px)}}
+
+/* Responsive */
+@media(max-width:1279px){.kpi-strip{grid-template-columns:repeat(2,1fr)}.pipeline{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:1023px){.sidebar{width:var(--sidebar-collapsed)}.sidebar .sidebar__logo-text,.sidebar .sidebar__item-label,.sidebar .sidebar__badge,.sidebar .sidebar__section-title{opacity:0}.main{margin-left:var(--sidebar-collapsed)}.pipeline{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:767px){.sidebar{display:none}.main{margin-left:0}.kpi-strip{grid-template-columns:1fr}.pipeline{grid-template-columns:1fr}.concours-grid{grid-template-columns:1fr}.page{padding:16px}.drawer{width:100%}}
+</style>
+
+<style>
+/* Embedded mode overrides */
+.sidebar { display: none !important; }
+.topbar { display: none !important; }
+.main { margin-left: 0 !important; }
+body { background: var(--color-bg); }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__logo"><div class="sidebar__logo-icon">G</div><span class="sidebar__logo-text">GAA</span></div>
+    <nav class="sidebar__nav">
+      <div class="sidebar__section-title">Cœur métier</div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">📊</span><span class="sidebar__item-label">Tableau de bord</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">📁</span><span class="sidebar__item-label">Projets</span><span class="sidebar__badge">12</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">⏱️</span><span class="sidebar__item-label">Temps</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">💰</span><span class="sidebar__item-label">Finances</span></div>
+      <div class="sidebar__item sidebar__item--active"><span class="sidebar__item-icon">👥</span><span class="sidebar__item-label">Contacts</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">📅</span><span class="sidebar__item-label">Planning</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">🏗️</span><span class="sidebar__item-label">Chantier</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">📄</span><span class="sidebar__item-label">Documents</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">✅</span><span class="sidebar__item-label">Tâches</span><span class="sidebar__badge">5</span></div>
+      <div class="sidebar__section-title">Outils</div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">📈</span><span class="sidebar__item-label">Reporting</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">🔔</span><span class="sidebar__item-label">Alertes</span><span class="sidebar__badge">3</span></div>
+      <div class="sidebar__item"><span class="sidebar__item-icon">⚙️</span><span class="sidebar__item-label">Paramètres</span></div>
+    </nav>
+    <div class="sidebar__toggle" ><span id="toggleIcon">◀</span></div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__search"><span class="topbar__search-icon">🔍</span><input type="text" placeholder="Rechercher un contact, une organisation…"/></div>
+      <div class="topbar__actions">
+        <button class="topbar__btn" title="Notifications">🔔<span class="notif-dot"></span></button>
+        <button class="topbar__btn">❓</button>
+        <div class="topbar__avatar">AM</div>
+      </div>
+    </header>
+
+    <main class="page">
+      <nav class="breadcrumb">
+        <a href="#">Accueil</a><span style="font-size:10px">›</span>
+        <span class="breadcrumb__current">CRM & Contacts</span>
+      </nav>
+
+      <div class="page-header">
+        <div class="page-header__left">
+          <div class="page-header__icon">👥</div>
+          <div>
+            <h1 class="page-header__title">CRM & Contacts</h1>
+            <div class="page-header__meta">
+              <span class="badge badge--muted">142 contacts</span>
+              <span class="badge badge--muted">38 organisations</span>
+            </div>
+          </div>
+        </div>
+        <div class="page-header__actions">
+          <button class="btn btn--secondary" onclick="showToast('Import CSV…','info')">📤 Importer</button>
+          <button class="btn btn--primary" onclick="openModal()">+ Nouveau contact</button>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpi-strip">
+        <div class="kpi">
+          <div class="kpi__label">🏗️ Clients actifs</div>
+          <div class="kpi__value">18</div>
+          <div class="kpi__sub">Projets en cours</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi__label">🎯 Pipeline</div>
+          <div class="kpi__value">1,2 M€</div>
+          <div class="kpi__sub">CA pondéré : 438 K€</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi__label">🏆 Concours</div>
+          <div class="kpi__value">3</div>
+          <div class="kpi__sub">En cours · 186h investies</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi__label">📊 Taux de conversion</div>
+          <div class="kpi__value" style="color:var(--color-success)">32%</div>
+          <div class="kpi__sub">Sur 12 derniers mois</div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs" id="mainTabs">
+        <button class="tabs__item tabs__item--active" data-tab="contacts">Contacts<span class="tabs__count">142</span></button>
+        <button class="tabs__item" data-tab="organisations">Organisations<span class="tabs__count">38</span></button>
+        <button class="tabs__item" data-tab="pipeline">Pipeline commercial</button>
+        <button class="tabs__item" data-tab="concours">Concours<span class="tabs__count">3</span></button>
+      </div>
+
+      <!-- ========== TAB: Contacts ========== -->
+      <div class="tab-panel tab-panel--active" id="tab-contacts">
+        <div class="filter-bar">
+          <div class="filter-bar__search">
+            <span class="filter-bar__search-icon">🔍</span>
+            <input type="text" placeholder="Rechercher un contact…">
+          </div>
+          <button class="filter-chip filter-chip--active" onclick="this.classList.toggle('filter-chip--active')">Tous</button>
+          <button class="filter-chip" onclick="this.classList.toggle('filter-chip--active')">🏛️ MOA</button>
+          <button class="filter-chip" onclick="this.classList.toggle('filter-chip--active')">🔧 BET</button>
+          <button class="filter-chip" onclick="this.classList.toggle('filter-chip--active')">🏗️ Entreprises</button>
+          <button class="filter-chip" onclick="this.classList.toggle('filter-chip--active')">🏢 Institutionnels</button>
+          <button class="filter-chip" onclick="this.classList.toggle('filter-chip--active')">📦 Fournisseurs</button>
+        </div>
+
+        <div class="card">
+          <div class="card__body card__body--flush">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Contact</th>
+                  <th>Organisation</th>
+                  <th>Type</th>
+                  <th>Projets</th>
+                  <th>Dernière interaction</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr onclick="openDrawer('contact')">
+                  <td><div class="contact-cell"><div class="avatar" style="background:#1B4965">JD</div><div class="contact-cell__info"><div class="contact-cell__name">Jacques Dupont</div><div class="contact-cell__sub">Directeur des services techniques</div></div></div></td>
+                  <td>Ville de Nantes</td>
+                  <td><span class="tag tag--moa">MOA</span></td>
+                  <td class="mono">3</td>
+                  <td class="text-sm text-muted">Réunion · 18/02/2025</td>
+                  <td><span class="badge badge--success" style="font-size:11px">Client actif</span></td>
+                </tr>
+                <tr onclick="openDrawer('contact')">
+                  <td><div class="contact-cell"><div class="avatar" style="background:#2D6A4F">PM</div><div class="contact-cell__info"><div class="contact-cell__name">Pierre Martin</div><div class="contact-cell__sub">Directeur technique</div></div></div></td>
+                  <td>BET Structura</td>
+                  <td><span class="tag tag--bet">BET</span></td>
+                  <td class="mono">5</td>
+                  <td class="text-sm text-muted">Email · 20/02/2025</td>
+                  <td><span class="badge badge--primary" style="font-size:11px">Partenaire</span></td>
+                </tr>
+                <tr onclick="openDrawer('contact')">
+                  <td><div class="contact-cell"><div class="avatar" style="background:#E76F51">AD</div><div class="contact-cell__info"><div class="contact-cell__name">Anne Dupont</div><div class="contact-cell__sub">Ingénieure CVC</div></div></div></td>
+                  <td>Thermex Ingénierie</td>
+                  <td><span class="tag tag--bet">BET</span></td>
+                  <td class="mono">4</td>
+                  <td class="text-sm text-muted">Réunion · 15/02/2025</td>
+                  <td><span class="badge badge--primary" style="font-size:11px">Partenaire</span></td>
+                </tr>
+                <tr onclick="openDrawer('contact')">
+                  <td><div class="contact-cell"><div class="avatar" style="background:#5FA8D3">FB</div><div class="contact-cell__info"><div class="contact-cell__name">François Bertrand</div><div class="contact-cell__sub">Directeur général</div></div></div></td>
+                  <td>SCI Les Oliviers</td>
+                  <td><span class="tag tag--moa">MOA</span></td>
+                  <td class="mono">1</td>
+                  <td class="text-sm text-muted">Email · 12/02/2025</td>
+                  <td><span class="badge badge--success" style="font-size:11px">Client actif</span></td>
+                </tr>
+                <tr onclick="openDrawer('contact')">
+                  <td><div class="contact-cell"><div class="avatar" style="background:#E6A817;color:var(--color-primary)">LR</div><div class="contact-cell__info"><div class="contact-cell__name">Laurent Rousseau</div><div class="contact-cell__sub">Dirigeant</div></div></div></td>
+                  <td>Rousseau Construction</td>
+                  <td><span class="tag tag--ent">Entreprise</span></td>
+                  <td class="mono">2</td>
+                  <td class="text-sm text-muted">Chantier · 10/02/2025</td>
+                  <td><span class="badge badge--muted" style="font-size:11px">Inactif</span></td>
+                </tr>
+                <tr onclick="openDrawer('contact')">
+                  <td><div class="contact-cell"><div class="avatar" style="background:#7c3aed">CM</div><div class="contact-cell__info"><div class="contact-cell__name">Catherine Morel</div><div class="contact-cell__sub">Chef de division aménagement</div></div></div></td>
+                  <td>Ville de Rennes</td>
+                  <td><span class="tag tag--moa">MOA</span></td>
+                  <td class="mono">2</td>
+                  <td class="text-sm text-muted">Appel · 08/02/2025</td>
+                  <td><span class="badge badge--success" style="font-size:11px">Client actif</span></td>
+                </tr>
+                <tr onclick="openDrawer('contact')">
+                  <td><div class="contact-cell"><div class="avatar" style="background:#0284c7">ML</div><div class="contact-cell__info"><div class="contact-cell__name">Marc Lefèvre</div><div class="contact-cell__sub">Acousticien</div></div></div></td>
+                  <td>Acoustibel</td>
+                  <td><span class="tag tag--bet">BET</span></td>
+                  <td class="mono">3</td>
+                  <td class="text-sm text-muted">Email · 05/02/2025</td>
+                  <td><span class="badge badge--primary" style="font-size:11px">Partenaire</span></td>
+                </tr>
+                <tr onclick="openDrawer('contact')">
+                  <td><div class="contact-cell"><div class="avatar" style="background:#059669">SV</div><div class="contact-cell__info"><div class="contact-cell__name">Sophie Vidal</div><div class="contact-cell__sub">Responsable patrimoine</div></div></div></td>
+                  <td>Région Bretagne</td>
+                  <td><span class="tag tag--inst">Institutionnel</span></td>
+                  <td class="mono">1</td>
+                  <td class="text-sm text-muted">Courrier · 01/02/2025</td>
+                  <td><span class="badge badge--accent" style="font-size:11px">Prospect</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== TAB: Organisations ========== -->
+      <div class="tab-panel" id="tab-organisations">
+        <div class="filter-bar">
+          <div class="filter-bar__search">
+            <span class="filter-bar__search-icon">🔍</span>
+            <input type="text" placeholder="Rechercher une organisation…">
+          </div>
+          <button class="filter-chip filter-chip--active">Tous</button>
+          <button class="filter-chip">MOA public</button>
+          <button class="filter-chip">MOA privé</button>
+          <button class="filter-chip">BET</button>
+          <button class="filter-chip">Entreprises</button>
+        </div>
+        <div class="card">
+          <div class="card__body card__body--flush">
+            <table class="data-table">
+              <thead><tr><th>Organisation</th><th>Type</th><th>Contacts</th><th>Projets</th><th>CA cumulé</th><th>Dernière activité</th></tr></thead>
+              <tbody>
+                <tr onclick="openDrawer('org')">
+                  <td><div class="contact-cell"><div class="avatar avatar--org" style="background:var(--color-primary-bg);color:var(--color-primary)">VN</div><div class="contact-cell__info"><div class="contact-cell__name">Ville de Nantes</div><div class="contact-cell__sub">Collectivité territoriale</div></div></div></td>
+                  <td><span class="tag tag--moa">MOA public</span></td>
+                  <td class="mono">4</td><td class="mono">3</td>
+                  <td class="mono">487 K€</td>
+                  <td class="text-sm text-muted">18/02/2025</td>
+                </tr>
+                <tr onclick="openDrawer('org')">
+                  <td><div class="contact-cell"><div class="avatar avatar--org" style="background:#f3e8ff;color:#6b21a8">BS</div><div class="contact-cell__info"><div class="contact-cell__name">BET Structura</div><div class="contact-cell__sub">Bureau d'études structure</div></div></div></td>
+                  <td><span class="tag tag--bet">BET</span></td>
+                  <td class="mono">2</td><td class="mono">5</td>
+                  <td class="mono">—</td>
+                  <td class="text-sm text-muted">20/02/2025</td>
+                </tr>
+                <tr onclick="openDrawer('org')">
+                  <td><div class="contact-cell"><div class="avatar avatar--org" style="background:#f3e8ff;color:#6b21a8">TI</div><div class="contact-cell__info"><div class="contact-cell__name">Thermex Ingénierie</div><div class="contact-cell__sub">BET Fluides CVC</div></div></div></td>
+                  <td><span class="tag tag--bet">BET</span></td>
+                  <td class="mono">2</td><td class="mono">4</td>
+                  <td class="mono">—</td>
+                  <td class="text-sm text-muted">15/02/2025</td>
+                </tr>
+                <tr onclick="openDrawer('org')">
+                  <td><div class="contact-cell"><div class="avatar avatar--org" style="background:var(--color-primary-bg);color:var(--color-primary)">VR</div><div class="contact-cell__info"><div class="contact-cell__name">Ville de Rennes</div><div class="contact-cell__sub">Collectivité territoriale</div></div></div></td>
+                  <td><span class="tag tag--moa">MOA public</span></td>
+                  <td class="mono">3</td><td class="mono">2</td>
+                  <td class="mono">312 K€</td>
+                  <td class="text-sm text-muted">08/02/2025</td>
+                </tr>
+                <tr onclick="openDrawer('org')">
+                  <td><div class="contact-cell"><div class="avatar avatar--org" style="background:#fef3c7;color:#92400e">RC</div><div class="contact-cell__info"><div class="contact-cell__name">Rousseau Construction</div><div class="contact-cell__sub">Entreprise gros œuvre</div></div></div></td>
+                  <td><span class="tag tag--ent">Entreprise</span></td>
+                  <td class="mono">1</td><td class="mono">2</td>
+                  <td class="mono">—</td>
+                  <td class="text-sm text-muted">10/02/2025</td>
+                </tr>
+                <tr onclick="openDrawer('org')">
+                  <td><div class="contact-cell"><div class="avatar avatar--org" style="background:var(--color-primary-bg);color:var(--color-primary)">SO</div><div class="contact-cell__info"><div class="contact-cell__name">SCI Les Oliviers</div><div class="contact-cell__sub">Promoteur privé</div></div></div></td>
+                  <td><span class="tag tag--moa">MOA privé</span></td>
+                  <td class="mono">2</td><td class="mono">1</td>
+                  <td class="mono">156 K€</td>
+                  <td class="text-sm text-muted">12/02/2025</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== TAB: Pipeline ========== -->
+      <div class="tab-panel" id="tab-pipeline">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div style="display:flex;gap:12px;align-items:center">
+            <span class="text-sm text-muted">Valeur totale :</span>
+            <span class="text-mono" style="font-size:16px;font-weight:600">1 195 000 €</span>
+            <span class="text-sm text-muted">·</span>
+            <span class="text-sm text-muted">Pondéré :</span>
+            <span class="text-mono" style="font-size:16px;font-weight:600;color:var(--color-success)">438 000 €</span>
+          </div>
+          <button class="btn btn--primary btn--sm" onclick="showToast('Nouvelle opportunité créée','success')">+ Opportunité</button>
+        </div>
+
+        <div class="pipeline">
+          <!-- Prospect -->
+          <div class="pipeline__col">
+            <div class="pipeline__col-header">
+              <span class="pipeline__col-title" style="color:var(--color-text-muted)">Prospect</span>
+              <span class="pipeline__col-count">2</span>
+            </div>
+            <div class="pipeline__col-amount">310 K€</div>
+            <div class="pipeline-card" onclick="openDrawer('opp')">
+              <div class="pipeline-card__name">Bureaux La Défense</div>
+              <div class="pipeline-card__client">Foncière Horizon</div>
+              <div class="pipeline-card__footer">
+                <span class="pipeline-card__amount">210 K€</span>
+                <span class="pipeline-card__prob" style="background:var(--color-bg);color:var(--color-text-muted)">20%</span>
+              </div>
+            </div>
+            <div class="pipeline-card">
+              <div class="pipeline-card__name">Crèche municipale Brest</div>
+              <div class="pipeline-card__client">Ville de Brest</div>
+              <div class="pipeline-card__footer">
+                <span class="pipeline-card__amount">100 K€</span>
+                <span class="pipeline-card__prob" style="background:var(--color-bg);color:var(--color-text-muted)">15%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Qualifié -->
+          <div class="pipeline__col">
+            <div class="pipeline__col-header">
+              <span class="pipeline__col-title" style="color:var(--color-primary-light)">Qualifié</span>
+              <span class="pipeline__col-count">1</span>
+            </div>
+            <div class="pipeline__col-amount">480 K€</div>
+            <div class="pipeline-card" style="border-left:3px solid var(--color-primary-light)">
+              <div class="pipeline-card__name">Pôle santé Vannes</div>
+              <div class="pipeline-card__client">CHU Vannes</div>
+              <div class="pipeline-card__footer">
+                <span class="pipeline-card__amount">480 K€</span>
+                <span class="pipeline-card__prob" style="background:var(--color-primary-bg);color:var(--color-primary)">40%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Devis envoyé -->
+          <div class="pipeline__col">
+            <div class="pipeline__col-header">
+              <span class="pipeline__col-title" style="color:var(--color-accent)">Devis envoyé</span>
+              <span class="pipeline__col-count">1</span>
+            </div>
+            <div class="pipeline__col-amount">185 K€</div>
+            <div class="pipeline-card" style="border-left:3px solid var(--color-accent)">
+              <div class="pipeline-card__name">Résidence sénior Quimper</div>
+              <div class="pipeline-card__client">Groupe Domitys</div>
+              <div class="pipeline-card__footer">
+                <span class="pipeline-card__amount">185 K€</span>
+                <span class="pipeline-card__prob" style="background:var(--color-accent-bg);color:#b8860b">55%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Négociation -->
+          <div class="pipeline__col">
+            <div class="pipeline__col-header">
+              <span class="pipeline__col-title" style="color:var(--color-warning)">Négociation</span>
+              <span class="pipeline__col-count">1</span>
+            </div>
+            <div class="pipeline__col-amount">220 K€</div>
+            <div class="pipeline-card" style="border-left:3px solid var(--color-warning)">
+              <div class="pipeline-card__name">Gymnase intercommunal</div>
+              <div class="pipeline-card__client">CC Pays de Loire</div>
+              <div class="pipeline-card__footer">
+                <span class="pipeline-card__amount">220 K€</span>
+                <span class="pipeline-card__prob" style="background:var(--color-warning-bg);color:var(--color-warning)">70%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gagné -->
+          <div class="pipeline__col" style="background:var(--color-success-bg)">
+            <div class="pipeline__col-header" style="border-color:rgba(45,106,79,.2)">
+              <span class="pipeline__col-title" style="color:var(--color-success)">Gagné ✓</span>
+              <span class="pipeline__col-count">2</span>
+            </div>
+            <div class="pipeline__col-amount" style="color:var(--color-success)">546 K€ (2025)</div>
+            <div class="pipeline-card" style="border-left:3px solid var(--color-success)">
+              <div class="pipeline-card__name">EHPAD Les Magnolias</div>
+              <div class="pipeline-card__client">Groupe Korian</div>
+              <div class="pipeline-card__footer">
+                <span class="pipeline-card__amount text-success">275 K€</span>
+                <span class="pipeline-card__prob" style="background:var(--color-success-bg);color:var(--color-success)">100%</span>
+              </div>
+            </div>
+            <div class="pipeline-card" style="border-left:3px solid var(--color-success)">
+              <div class="pipeline-card__name">Campus Numérique</div>
+              <div class="pipeline-card__client">Université de Nantes</div>
+              <div class="pipeline-card__footer">
+                <span class="pipeline-card__amount text-success">271 K€</span>
+                <span class="pipeline-card__prob" style="background:var(--color-success-bg);color:var(--color-success)">100%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== TAB: Concours ========== -->
+      <div class="tab-panel" id="tab-concours">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div style="display:flex;gap:12px;align-items:center">
+            <span class="badge badge--accent">3 concours actifs</span>
+            <span class="text-sm text-muted">Investissement total : <strong class="text-mono">186h</strong></span>
+          </div>
+          <button class="btn btn--primary btn--sm" onclick="showToast('Nouveau concours ajouté','success')">+ Nouveau concours</button>
+        </div>
+
+        <div class="concours-grid">
+          <!-- Concours 1 -->
+          <div class="concours-card" onclick="openDrawer('concours')">
+            <div class="concours-card__accent" style="background:var(--color-success)"></div>
+            <div class="concours-card__body">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+                <div class="concours-card__title">École élémentaire Montreuil</div>
+                <span class="badge badge--success" style="font-size:11px">Esquisse remise</span>
+              </div>
+              <div class="concours-card__client">Ville de Montreuil · Marché public</div>
+              <div class="concours-card__details">
+                <div><div class="concours-card__detail-label">Montant travaux</div><div class="concours-card__detail-value concours-card__detail-value--mono">4,2 M€</div></div>
+                <div><div class="concours-card__detail-label">Honoraires estimés</div><div class="concours-card__detail-value concours-card__detail-value--mono">320 K€</div></div>
+                <div><div class="concours-card__detail-label">Date de jury</div><div class="concours-card__detail-value concours-card__detail-value--mono">15/03/2025</div></div>
+                <div><div class="concours-card__detail-label">Probabilité</div><div class="concours-card__detail-value" style="color:var(--color-success)">70%</div></div>
+              </div>
+            </div>
+            <div class="concours-card__footer">
+              <div><span class="text-sm text-muted">Heures investies</span><br><span class="text-mono" style="font-weight:600">94h</span></div>
+              <div style="text-align:right"><span class="text-sm text-muted">Équipe</span><br><span style="display:flex;gap:-4px">
+                <span class="avatar" style="width:24px;height:24px;font-size:9px;background:#1B4965;border:2px solid #fff">AM</span>
+                <span class="avatar" style="width:24px;height:24px;font-size:9px;background:#2D6A4F;border:2px solid #fff;margin-left:-6px">TD</span>
+                <span class="avatar" style="width:24px;height:24px;font-size:9px;background:#E76F51;border:2px solid #fff;margin-left:-6px">SC</span>
+              </span></div>
+            </div>
+          </div>
+
+          <!-- Concours 2 -->
+          <div class="concours-card">
+            <div class="concours-card__accent" style="background:var(--color-primary-light)"></div>
+            <div class="concours-card__body">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+                <div class="concours-card__title">Médiathèque intercommunale Brest</div>
+                <span class="badge badge--primary" style="font-size:11px">Candidature envoyée</span>
+              </div>
+              <div class="concours-card__client">Brest Métropole · Marché public</div>
+              <div class="concours-card__details">
+                <div><div class="concours-card__detail-label">Montant travaux</div><div class="concours-card__detail-value concours-card__detail-value--mono">6,8 M€</div></div>
+                <div><div class="concours-card__detail-label">Honoraires estimés</div><div class="concours-card__detail-value concours-card__detail-value--mono">480 K€</div></div>
+                <div><div class="concours-card__detail-label">Présélection</div><div class="concours-card__detail-value concours-card__detail-value--mono">05/03/2025</div></div>
+                <div><div class="concours-card__detail-label">Probabilité</div><div class="concours-card__detail-value">35%</div></div>
+              </div>
+            </div>
+            <div class="concours-card__footer">
+              <div><span class="text-sm text-muted">Heures investies</span><br><span class="text-mono" style="font-weight:600">32h</span></div>
+              <div style="text-align:right"><span class="text-sm text-muted">Équipe</span><br><span style="display:flex">
+                <span class="avatar" style="width:24px;height:24px;font-size:9px;background:#1B4965;border:2px solid #fff">AM</span>
+                <span class="avatar" style="width:24px;height:24px;font-size:9px;background:#5FA8D3;border:2px solid #fff;margin-left:-6px">JB</span>
+              </span></div>
+            </div>
+          </div>
+
+          <!-- Concours 3 -->
+          <div class="concours-card">
+            <div class="concours-card__accent" style="background:var(--color-warning)"></div>
+            <div class="concours-card__body">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+                <div class="concours-card__title">EHPAD Le Clos des Ajoncs</div>
+                <span class="badge badge--warning" style="font-size:11px">Esquisse en cours</span>
+              </div>
+              <div class="concours-card__client">Ville de Rennes · Marché public</div>
+              <div class="concours-card__details">
+                <div><div class="concours-card__detail-label">Montant travaux</div><div class="concours-card__detail-value concours-card__detail-value--mono">3,5 M€</div></div>
+                <div><div class="concours-card__detail-label">Honoraires estimés</div><div class="concours-card__detail-value concours-card__detail-value--mono">260 K€</div></div>
+                <div><div class="concours-card__detail-label">Remise esquisse</div><div class="concours-card__detail-value concours-card__detail-value--mono">28/02/2025</div></div>
+                <div><div class="concours-card__detail-label">Probabilité</div><div class="concours-card__detail-value" style="color:var(--color-warning)">45%</div></div>
+              </div>
+            </div>
+            <div class="concours-card__footer">
+              <div><span class="text-sm text-muted">Heures investies</span><br><span class="text-mono" style="font-weight:600">60h</span></div>
+              <div style="text-align:right"><span class="text-sm text-muted">Équipe</span><br><span style="display:flex">
+                <span class="avatar" style="width:24px;height:24px;font-size:9px;background:#1B4965;border:2px solid #fff">AM</span>
+                <span class="avatar" style="width:24px;height:24px;font-size:9px;background:#2D6A4F;border:2px solid #fff;margin-left:-6px">TD</span>
+              </span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ========== DRAWER: Fiche contact ========== -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer__header">
+    <h3 class="drawer__title" id="drawerTitle">Jacques Dupont</h3>
+    <button class="drawer__close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer__body">
+    <!-- Contact header -->
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+      <div class="avatar" style="width:56px;height:56px;font-size:20px;background:#1B4965">JD</div>
+      <div>
+        <div style="font-size:16px;font-weight:600">Jacques Dupont</div>
+        <div class="text-sm text-muted">Directeur des services techniques</div>
+        <div style="margin-top:4px"><span class="tag tag--moa">MOA</span><span class="badge badge--success" style="font-size:11px">Client actif</span></div>
+      </div>
+    </div>
+
+    <!-- Contact info -->
+    <div class="info-grid" style="margin-bottom:20px;">
+      <div class="info-item"><span class="info-item__label">Organisation</span><span class="info-item__value">Ville de Nantes</span></div>
+      <div class="info-item"><span class="info-item__label">Fonction</span><span class="info-item__value">DST</span></div>
+      <div class="info-item"><span class="info-item__label">Email</span><span class="info-item__value" style="color:var(--color-primary)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="03692d6776736c6d77436d626d7766702d6571">[email&#160;protected]</a></span></div>
+      <div class="info-item"><span class="info-item__label">Téléphone</span><span class="info-item__value text-mono" style="font-size:12px">02 40 41 90 00</span></div>
+    </div>
+
+    <!-- Tags -->
+    <div style="margin-bottom:20px;">
+      <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">Tags</div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;">
+        <span class="badge badge--primary" style="font-size:11px">Collectivité</span>
+        <span class="badge badge--muted" style="font-size:11px">Décisionnaire</span>
+        <span class="badge badge--muted" style="font-size:11px">Nantes</span>
+        <span class="badge badge--muted" style="font-size:11px;cursor:pointer;border:1px dashed var(--color-border)">+ Ajouter</span>
+      </div>
+    </div>
+
+    <!-- Projets liés -->
+    <div style="margin-bottom:20px;">
+      <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em">Projets communs (3)</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:var(--radius-md);background:var(--color-bg);">
+          <span style="width:4px;height:28px;border-radius:2px;background:var(--color-primary);flex-shrink:0"></span>
+          <div style="flex:1"><div style="font-size:13px;font-weight:500">Groupe scolaire Victor Hugo</div><div class="text-sm text-muted">PRO en cours · MOA</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:var(--radius-md);background:var(--color-bg);">
+          <span style="width:4px;height:28px;border-radius:2px;background:var(--color-success);flex-shrink:0"></span>
+          <div style="flex:1"><div style="font-size:13px;font-weight:500">Campus Numérique</div><div class="text-sm text-muted">APS en cours · MOA</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:var(--radius-md);background:var(--color-bg);">
+          <span style="width:4px;height:28px;border-radius:2px;background:var(--color-muted);flex-shrink:0"></span>
+          <div style="flex:1"><div style="font-size:13px;font-weight:500">Médiathèque Erdre</div><div class="text-sm text-muted">Archivé · MOA</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Historique interactions -->
+    <div>
+      <div style="font-size:12px;font-weight:600;color:var(--color-text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em">Historique des interactions</div>
+      <div class="timeline">
+        <div class="timeline__item">
+          <div class="timeline__dot" style="background:var(--color-primary-light);border-color:var(--color-surface)"></div>
+          <div class="timeline__content"><strong>Réunion MOA n°12</strong> — Groupe scolaire Victor Hugo<br><span class="timeline__time">18/02/2025 · Présentiel</span></div>
+        </div>
+        <div class="timeline__item">
+          <div class="timeline__dot" style="background:var(--color-success);border-color:var(--color-surface)"></div>
+          <div class="timeline__content"><strong>Email</strong> — Validation notice descriptive PRO<br><span class="timeline__time">14/02/2025</span></div>
+        </div>
+        <div class="timeline__item">
+          <div class="timeline__dot" style="background:var(--color-accent);border-color:var(--color-surface)"></div>
+          <div class="timeline__content"><strong>Appel téléphonique</strong> — Point d'avancement Campus Numérique<br><span class="timeline__time">08/02/2025 · 15 min</span></div>
+        </div>
+        <div class="timeline__item">
+          <div class="timeline__dot" style="background:var(--color-primary-light);border-color:var(--color-surface)"></div>
+          <div class="timeline__content"><strong>Réunion MOA n°11</strong> — Groupe scolaire Victor Hugo<br><span class="timeline__time">04/02/2025 · Présentiel</span></div>
+        </div>
+        <div class="timeline__item">
+          <div class="timeline__dot" style="background:var(--color-muted);border-color:var(--color-surface)"></div>
+          <div class="timeline__content"><strong>Courrier</strong> — Notification de marché complémentaire<br><span class="timeline__time">20/01/2025</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;display:flex;gap:8px;">
+      <button class="btn btn--primary btn--sm">✉️ Email</button>
+      <button class="btn btn--secondary btn--sm">📞 Appeler</button>
+      <button class="btn btn--secondary btn--sm">📝 Note</button>
+      <button class="btn btn--ghost btn--sm" onclick="showToast('Relance programmée','success')">⏰ Relance</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MODAL: Nouveau contact ========== -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal__header">
+      <h2 class="modal__title">Nouveau contact</h2>
+      <button class="modal__close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="form-row">
+        <div class="form-group"><label>Prénom</label><input type="text" class="form-input" placeholder="Prénom"></div>
+        <div class="form-group"><label>Nom</label><input type="text" class="form-input" placeholder="Nom"></div>
+      </div>
+      <div class="form-group"><label>Organisation</label><select class="form-select"><option value="">Sélectionner ou créer…</option><option>Ville de Nantes</option><option>BET Structura</option><option>Thermex Ingénierie</option><option>Ville de Rennes</option><option>+ Nouvelle organisation</option></select></div>
+      <div class="form-row">
+        <div class="form-group"><label>Fonction</label><input type="text" class="form-input" placeholder="Ex: Directeur technique"></div>
+        <div class="form-group"><label>Type</label><select class="form-select"><option>MOA</option><option>BET / Partenaire</option><option>Entreprise de travaux</option><option>Institutionnel</option><option>Fournisseur</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Email</label><input type="email" class="form-input" placeholder="email@example.com"></div>
+        <div class="form-group"><label>Téléphone</label><input type="tel" class="form-input" placeholder="02 XX XX XX XX"></div>
+      </div>
+      <div class="form-group"><label>Tags</label><input type="text" class="form-input" placeholder="Ex: Nantes, Décisionnaire, Structure…"></div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--secondary" onclick="closeModal()">Annuler</button>
+      <button class="btn btn--primary" onclick="closeModal();showToast('Contact créé avec succès','success')">Créer le contact</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// Sidebar
+function toggleSidebar(){const s=document.getElementById('sidebar'),i=document.getElementById('toggleIcon');s.classList.toggle('sidebar--collapsed');i.textContent=s.classList.contains('sidebar--collapsed')?'▶':'◀'}
+
+// Tabs
+document.querySelectorAll('.tabs__item').forEach(tab=>{tab.addEventListener('click',()=>{document.querySelectorAll('.tabs__item').forEach(t=>t.classList.remove('tabs__item--active'));document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('tab-panel--active'));tab.classList.add('tabs__item--active');const panel=document.getElementById('tab-'+tab.dataset.tab);if(panel)panel.classList.add('tab-panel--active')})})
+
+// Modal
+function openModal(){const o=document.getElementById('modalOverlay');o.style.display='flex';requestAnimationFrame(()=>o.classList.add('modal-overlay--visible'));document.body.style.overflow='hidden'}
+function closeModal(e){if(e&&e.target!==e.currentTarget)return;const o=document.getElementById('modalOverlay');o.classList.remove('modal-overlay--visible');setTimeout(()=>{o.style.display='none';document.body.style.overflow=''},250)}
+
+// Drawer
+function openDrawer(type){document.getElementById('drawerOverlay').classList.add('drawer-overlay--visible');document.getElementById('drawer').classList.add('drawer--open');document.body.style.overflow='hidden'}
+function closeDrawer(){document.getElementById('drawerOverlay').classList.remove('drawer-overlay--visible');document.getElementById('drawer').classList.remove('drawer--open');document.body.style.overflow=''}
+
+// Toast
+function showToast(msg,type='info'){const c=document.getElementById('toastContainer'),t=document.createElement('div');t.className=`toast toast--${type}`;const icons={success:'✅',info:'ℹ️',warning:'⚠️'};t.innerHTML=`<span>${
