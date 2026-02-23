@@ -193,7 +193,7 @@ a{color:var(--color-primary);text-decoration:none}a:hover{color:var(--color-prim
 /* Modal */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:none;align-items:center;justify-content:center;opacity:0;transition:opacity .25s ease}
 .modal-overlay--visible{display:flex;opacity:1}
-.modal{background:var(--color-surface);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);width:90%;max-width:640px;max-height:85vh;overflow-y:auto;transform:scale(.95);transition:transform .25s ease}
+.modal{background:var(--color-surface);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);width:90%;max-width:720px;max-height:85vh;overflow-y:auto;transform:scale(.95);transition:transform .25s ease}
 .modal-overlay--visible .modal{transform:scale(1)}
 .modal__header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--color-border)}
 .modal__title{font-size:17px;font-weight:600}
@@ -209,6 +209,30 @@ a{color:var(--color-primary);text-decoration:none}a:hover{color:var(--color-prim
 .form-textarea{resize:vertical;min-height:60px}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .form-row--3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+/* Radio group */
+.radio-group{display:flex;gap:0;border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden}
+.radio-group__item{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;cursor:pointer;font-size:13px;font-weight:500;color:var(--color-text-muted);background:var(--color-surface);transition:all var(--transition);border-right:1px solid var(--color-border)}
+.radio-group__item:last-child{border-right:none}
+.radio-group__item:hover{background:var(--color-bg)}
+.radio-group__item--active{background:var(--color-primary-bg);color:var(--color-primary);font-weight:600}
+.radio-group__item input{display:none}
+/* Member tags */
+.member-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.member-tag{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500;background:var(--color-primary-bg);color:var(--color-primary)}
+.member-tag__remove{width:14px;height:14px;border-radius:50%;border:none;background:rgba(27,73,101,.15);color:var(--color-primary);font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1}
+.member-tag__remove:hover{background:rgba(27,73,101,.3)}
+/* Mission checkboxes */
+.mission-grid{display:flex;flex-direction:column;gap:6px}
+.mission-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--color-border);border-radius:var(--radius-md);cursor:pointer;transition:all var(--transition);font-size:13px}
+.mission-item:hover{border-color:var(--color-primary-light)}
+.mission-item--checked{background:var(--color-primary-bg);border-color:var(--color-primary)}
+.mission-item input[type="checkbox"]{accent-color:var(--color-primary);width:16px;height:16px;cursor:pointer}
+.mission-item__label{flex:1;font-weight:500}
+.mission-item__desc{font-size:11px;color:var(--color-text-muted)}
+.mission-custom{display:flex;gap:6px;margin-top:6px}
+.mission-custom input{flex:1;padding:6px 10px;border:1px solid var(--color-border);border-radius:var(--radius-md);font-size:12px;font-family:var(--font-sans);outline:none}
+.mission-custom input:focus{border-color:var(--color-primary-light)}
+.form-hint{font-size:11px;color:var(--color-text-muted);margin-top:4px}
 
 /* Toast */
 .toast-container{position:fixed;top:16px;right:16px;z-index:2000;display:flex;flex-direction:column;gap:8px}
@@ -303,12 +327,13 @@ body { background: var(--color-bg); }
           <span class="toolbar__search-icon">🔍</span>
           <input type="text" placeholder="Filtrer les projets…" id="searchInput" oninput="filterProjects()">
         </div>
-        <button class="filter-chip filter-chip--active" onclick="this.classList.toggle('filter-chip--active')">Tous</button>
-        <button class="filter-chip" onclick="this.classList.toggle('filter-chip--active')">🏛️ Public</button>
-        <button class="filter-chip" onclick="this.classList.toggle('filter-chip--active')">🏢 Privé</button>
-        <button class="filter-chip" onclick="this.classList.toggle('filter-chip--active')">🟢 OK</button>
-        <button class="filter-chip" onclick="this.classList.toggle('filter-chip--active')">🟠 Attention</button>
-        <button class="filter-chip" onclick="this.classList.toggle('filter-chip--active')">🔴 Critique</button>
+        <span id="filterCounter" class="text-sm text-muted" style="white-space:nowrap">8 projets</span>
+        <button class="filter-chip filter-chip--active" data-filter="all" onclick="toggleFilter(this)">Tous</button>
+        <button class="filter-chip" data-filter="type:public" onclick="toggleFilter(this)">🏛️ Public</button>
+        <button class="filter-chip" data-filter="type:prive" onclick="toggleFilter(this)">🏢 Privé</button>
+        <button class="filter-chip" data-filter="health:ok" onclick="toggleFilter(this)">🟢 OK</button>
+        <button class="filter-chip" data-filter="health:warning" onclick="toggleFilter(this)">🟠 Attention</button>
+        <button class="filter-chip" data-filter="health:danger" onclick="toggleFilter(this)">🔴 Critique</button>
         <div class="toolbar__right">
           <div class="view-switch">
             <button class="view-switch__btn view-switch__btn--active" data-view="table" onclick="switchView('table')">☰ Liste</button>
@@ -336,7 +361,7 @@ body { background: var(--color-bg); }
                 </tr>
               </thead>
               <tbody>
-                <tr onclick="showToast('Ouverture fiche projet…','info')">
+                <tr onclick="showToast('Ouverture fiche projet…','info')" data-type="public" data-health="ok" data-name="groupe scolaire victor hugo nantes">
                   <td><div class="project-cell"><div class="project-cell__color" style="background:#1B4965"></div><div><div class="project-cell__name">Groupe scolaire Victor Hugo</div><div class="project-cell__sub">Nantes · 3 200 m²</div></div></div></td>
                   <td><span class="badge badge--primary" style="font-size:11px">Public</span></td>
                   <td><span class="badge badge--accent" style="font-size:11px">PRO</span></td>
@@ -346,7 +371,7 @@ body { background: var(--color-bg); }
                   <td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="width:24px;height:24px;font-size:9px;background:#1B4965">ML</div><span class="text-sm">M. Lefort</span></div></td>
                   <td><span class="health-dot health-dot--ok"></span></td>
                 </tr>
-                <tr onclick="showToast('Ouverture fiche projet…','info')">
+                <tr onclick="showToast('Ouverture fiche projet…','info')" data-type="prive" data-health="warning" data-name="résidence les oliviers bordeaux">
                   <td><div class="project-cell"><div class="project-cell__color" style="background:#2D6A4F"></div><div><div class="project-cell__name">Résidence Les Oliviers</div><div class="project-cell__sub">Bordeaux · 4 800 m²</div></div></div></td>
                   <td><span class="badge badge--muted" style="font-size:11px">Privé</span></td>
                   <td><span class="badge badge--accent" style="font-size:11px">DCE</span></td>
@@ -356,7 +381,7 @@ body { background: var(--color-bg); }
                   <td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="width:24px;height:24px;font-size:9px;background:#2D6A4F">TD</div><span class="text-sm">T. Durand</span></div></td>
                   <td><span class="health-dot health-dot--warning"></span></td>
                 </tr>
-                <tr onclick="showToast('Ouverture fiche projet…','info')">
+                <tr onclick="showToast('Ouverture fiche projet…','info')" data-type="public" data-health="danger" data-name="hôtel de ville extension rennes">
                   <td><div class="project-cell"><div class="project-cell__color" style="background:#E76F51"></div><div><div class="project-cell__name">Hôtel de ville — Extension</div><div class="project-cell__sub">Rennes · 1 200 m²</div></div></div></td>
                   <td><span class="badge badge--primary" style="font-size:11px">Public</span></td>
                   <td><span class="badge badge--accent" style="font-size:11px">APD</span></td>
@@ -366,7 +391,7 @@ body { background: var(--color-bg); }
                   <td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="width:24px;height:24px;font-size:9px;background:#1B4965">ML</div><span class="text-sm">M. Lefort</span></div></td>
                   <td><span class="health-dot health-dot--danger"></span></td>
                 </tr>
-                <tr onclick="showToast('Ouverture fiche projet…','info')">
+                <tr onclick="showToast('Ouverture fiche projet…','info')" data-type="public" data-health="ok" data-name="médiathèque de brest">
                   <td><div class="project-cell"><div class="project-cell__color" style="background:#5FA8D3"></div><div><div class="project-cell__name">Médiathèque de Brest</div><div class="project-cell__sub">Brest · 2 800 m²</div></div></div></td>
                   <td><span class="badge badge--primary" style="font-size:11px">Public</span></td>
                   <td><span class="badge badge--accent" style="font-size:11px">DET</span></td>
@@ -376,7 +401,7 @@ body { background: var(--color-bg); }
                   <td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="width:24px;height:24px;font-size:9px;background:#E76F51">SC</div><span class="text-sm">S. Caron</span></div></td>
                   <td><span class="health-dot health-dot--ok"></span></td>
                 </tr>
-                <tr onclick="showToast('Ouverture fiche projet…','info')">
+                <tr onclick="showToast('Ouverture fiche projet…','info')" data-type="prive" data-health="ok" data-name="ehpad les magnolias angers">
                   <td><div class="project-cell"><div class="project-cell__color" style="background:#7c3aed"></div><div><div class="project-cell__name">EHPAD Les Magnolias</div><div class="project-cell__sub">Angers · 3 600 m²</div></div></div></td>
                   <td><span class="badge badge--muted" style="font-size:11px">Privé</span></td>
                   <td><span class="badge badge--accent" style="font-size:11px">PRO</span></td>
@@ -386,7 +411,7 @@ body { background: var(--color-bg); }
                   <td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="width:24px;height:24px;font-size:9px;background:#2D6A4F">TD</div><span class="text-sm">T. Durand</span></div></td>
                   <td><span class="health-dot health-dot--ok"></span></td>
                 </tr>
-                <tr onclick="showToast('Ouverture fiche projet…','info')">
+                <tr onclick="showToast('Ouverture fiche projet…','info')" data-type="public" data-health="warning" data-name="campus numérique nantes">
                   <td><div class="project-cell"><div class="project-cell__color" style="background:#0284c7"></div><div><div class="project-cell__name">Campus Numérique</div><div class="project-cell__sub">Nantes · 5 200 m²</div></div></div></td>
                   <td><span class="badge badge--primary" style="font-size:11px">Public</span></td>
                   <td><span class="badge badge--accent" style="font-size:11px">APS</span></td>
@@ -396,7 +421,7 @@ body { background: var(--color-bg); }
                   <td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="width:24px;height:24px;font-size:9px;background:#1B4965">ML</div><span class="text-sm">M. Lefort</span></div></td>
                   <td><span class="health-dot health-dot--warning"></span></td>
                 </tr>
-                <tr onclick="showToast('Ouverture fiche projet…','info')">
+                <tr onclick="showToast('Ouverture fiche projet…','info')" data-type="prive" data-health="ok" data-name="logements quai des brumes saint-nazaire">
                   <td><div class="project-cell"><div class="project-cell__color" style="background:#059669"></div><div><div class="project-cell__name">Logements Quai des Brumes</div><div class="project-cell__sub">Saint-Nazaire · 6 400 m²</div></div></div></td>
                   <td><span class="badge badge--muted" style="font-size:11px">Privé</span></td>
                   <td><span class="badge badge--accent" style="font-size:11px">DET</span></td>
@@ -406,7 +431,7 @@ body { background: var(--color-bg); }
                   <td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="width:24px;height:24px;font-size:9px;background:#5FA8D3">JB</div><span class="text-sm">J. Bernard</span></div></td>
                   <td><span class="health-dot health-dot--ok"></span></td>
                 </tr>
-                <tr onclick="showToast('Ouverture fiche projet…','info')">
+                <tr onclick="showToast('Ouverture fiche projet…','info')" data-type="public" data-health="ok" data-name="gymnase intercommunal pays de loire">
                   <td><div class="project-cell"><div class="project-cell__color" style="background:#d97706"></div><div><div class="project-cell__name">Gymnase intercommunal</div><div class="project-cell__sub">Pays de Loire · 1 200 m²</div></div></div></td>
                   <td><span class="badge badge--primary" style="font-size:11px">Public</span></td>
                   <td><span class="badge badge--accent" style="font-size:11px">ESQ</span></td>
@@ -425,7 +450,7 @@ body { background: var(--color-bg); }
       <!-- ========== VIEW: Cards ========== -->
       <div class="view-panel" id="view-cards">
         <div class="projects-grid">
-          <div class="project-card" onclick="showToast('Ouverture fiche projet…','info')">
+          <div class="project-card" data-type="public" data-health="ok" data-name="groupe scolaire victor hugo nantes" onclick="showToast('Ouverture fiche projet…','info')">
             <div class="project-card__accent" style="background:var(--color-success)"></div>
             <div class="project-card__body">
               <div class="project-card__header"><div class="project-card__title">Groupe scolaire Victor Hugo</div><span class="health-dot health-dot--ok"></span></div>
@@ -441,7 +466,7 @@ body { background: var(--color-bg); }
             <div class="project-card__footer"><div class="avatar-stack"><div class="avatar" style="background:#1B4965">ML</div><div class="avatar" style="background:#2D6A4F">TD</div><div class="avatar" style="background:#E76F51">SC</div></div><span class="text-sm text-muted">Rendu PRO · 06/03</span></div>
           </div>
 
-          <div class="project-card" onclick="showToast('Ouverture fiche projet…','info')">
+          <div class="project-card" data-type="prive" data-health="warning" data-name="résidence les oliviers bordeaux" onclick="showToast('Ouverture fiche projet…','info')">
             <div class="project-card__accent" style="background:var(--color-warning)"></div>
             <div class="project-card__body">
               <div class="project-card__header"><div class="project-card__title">Résidence Les Oliviers</div><span class="health-dot health-dot--warning"></span></div>
@@ -457,7 +482,7 @@ body { background: var(--color-bg); }
             <div class="project-card__footer"><div class="avatar-stack"><div class="avatar" style="background:#2D6A4F">TD</div><div class="avatar" style="background:#5FA8D3">JB</div></div><span class="text-sm text-muted">Rendu DCE · 28/02</span></div>
           </div>
 
-          <div class="project-card" onclick="showToast('Ouverture fiche projet…','info')">
+          <div class="project-card" data-type="public" data-health="danger" data-name="hôtel de ville extension rennes" onclick="showToast('Ouverture fiche projet…','info')">
             <div class="project-card__accent" style="background:var(--color-danger)"></div>
             <div class="project-card__body">
               <div class="project-card__header"><div class="project-card__title">Hôtel de ville — Extension</div><span class="health-dot health-dot--danger"></span></div>
@@ -473,7 +498,7 @@ body { background: var(--color-bg); }
             <div class="project-card__footer"><div class="avatar-stack"><div class="avatar" style="background:#1B4965">ML</div></div><span class="text-sm text-danger">Retard +8j · Dépassement</span></div>
           </div>
 
-          <div class="project-card">
+          <div class="project-card" data-type="public" data-health="ok" data-name="médiathèque de brest">
             <div class="project-card__accent" style="background:var(--color-success)"></div>
             <div class="project-card__body">
               <div class="project-card__header"><div class="project-card__title">Médiathèque de Brest</div><span class="health-dot health-dot--ok"></span></div>
@@ -489,7 +514,7 @@ body { background: var(--color-bg); }
             <div class="project-card__footer"><div class="avatar-stack"><div class="avatar" style="background:#E76F51">SC</div><div class="avatar" style="background:#5FA8D3">JB</div></div><span class="text-sm text-muted">Chantier en cours</span></div>
           </div>
 
-          <div class="project-card">
+          <div class="project-card" data-type="prive" data-health="ok" data-name="ehpad les magnolias angers">
             <div class="project-card__accent" style="background:var(--color-success)"></div>
             <div class="project-card__body">
               <div class="project-card__header"><div class="project-card__title">EHPAD Les Magnolias</div><span class="health-dot health-dot--ok"></span></div>
@@ -505,7 +530,7 @@ body { background: var(--color-bg); }
             <div class="project-card__footer"><div class="avatar-stack"><div class="avatar" style="background:#2D6A4F">TD</div></div><span class="text-sm text-muted">Livraison prévue 12/2025</span></div>
           </div>
 
-          <div class="project-card">
+          <div class="project-card" data-type="public" data-health="warning" data-name="campus numérique nantes">
             <div class="project-card__accent" style="background:var(--color-warning)"></div>
             <div class="project-card__body">
               <div class="project-card__header"><div class="project-card__title">Campus Numérique</div><span class="health-dot health-dot--warning"></span></div>
@@ -630,26 +655,77 @@ body { background: var(--color-bg); }
       <button class="modal__close" onclick="closeModal()">✕</button>
     </div>
     <div class="modal__body">
-      <div class="form-group"><label>Nom du projet</label><input type="text" class="form-input" placeholder="Ex: Groupe scolaire Victor Hugo — Réhabilitation"></div>
+      <div class="form-group"><label>Nom du projet</label><input type="text" class="form-input" id="newProjectName" placeholder="Ex: Groupe scolaire Victor Hugo — Réhabilitation"></div>
+
       <div class="form-row">
-        <div class="form-group"><label>Type de marché</label><select class="form-select"><option>Marché public</option><option>Marché privé</option></select></div>
-        <div class="form-group"><label>Type d'ouvrage</label><select class="form-select"><option>Équipement scolaire</option><option>Logement</option><option>Tertiaire</option><option>Santé / EHPAD</option><option>Équipement sportif</option><option>Culturel</option></select></div>
+        <div class="form-group">
+          <label>Type de marché</label>
+          <div class="radio-group" id="typeMarche">
+            <label class="radio-group__item radio-group__item--active" onclick="selectRadio(this)"><input type="radio" name="type" value="public" checked><span>🏛️</span> Public</label>
+            <label class="radio-group__item" onclick="selectRadio(this)"><input type="radio" name="type" value="prive"><span>🏢</span> Privé</label>
+          </div>
+        </div>
+        <div class="form-group"><label>Type d'ouvrage</label><select class="form-select"><option>Équipement scolaire</option><option>Logement</option><option>Tertiaire</option><option>Santé / EHPAD</option><option>Équipement sportif</option><option>Culturel</option><option>Autre</option></select></div>
       </div>
-      <div class="form-group"><label>Maître d'ouvrage</label><select class="form-select"><option value="">Sélectionner depuis le CRM…</option><option>Ville de Nantes</option><option>Ville de Rennes</option><option>SCI Les Oliviers</option><option>Groupe Korian</option><option>+ Nouveau client</option></select></div>
+
+      <div class="form-group"><label>Maître d'ouvrage</label><select class="form-select"><option value="">Sélectionner depuis le CRM…</option><option>Ville de Nantes</option><option>Ville de Rennes</option><option>Brest Métropole</option><option>SCI Les Oliviers</option><option>Groupe Korian</option><option>Université de Nantes</option><option>+ Nouveau client</option></select></div>
+
       <div class="form-row--3">
         <div class="form-group"><label>Surface (m²)</label><input type="text" class="form-input" placeholder="3 200" style="font-family:var(--font-mono)"></div>
         <div class="form-group"><label>Montant travaux (€)</label><input type="text" class="form-input" placeholder="2 800 000" style="font-family:var(--font-mono)"></div>
         <div class="form-group"><label>Taux honoraires (%)</label><input type="text" class="form-input" placeholder="8,5" style="font-family:var(--font-mono)"></div>
       </div>
+
       <div class="form-group"><label>Adresse du projet</label><input type="text" class="form-input" placeholder="12 rue Victor Hugo, 44000 Nantes"></div>
-      <div class="form-row">
-        <div class="form-group"><label>Chef de projet</label><select class="form-select"><option>Marie Lefort</option><option>Thomas Durand</option><option>Sophie Caron</option><option>Julien Bernard</option></select></div>
-        <div class="form-group"><label>Missions</label><select class="form-select"><option>Mission de base (ESQ → AOR)</option><option>Mission partielle</option><option>Base + OPC</option><option>Base + OPC + SYN</option></select></div>
+
+      <!-- Équipe projet -->
+      <div class="form-group">
+        <label>Équipe projet</label>
+        <div class="form-hint">Chef de projet et collaborateurs affectés</div>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <select class="form-select" id="memberSelect" style="flex:1"><option value="">+ Ajouter un collaborateur…</option><option value="ML|#1B4965">Marie Lefort — Architecte associée</option><option value="TD|#2D6A4F">Thomas Durand — Architecte</option><option value="SC|#E76F51">Sophie Caron — Architecte</option><option value="JB|#5FA8D3">Julien Bernard — Dessinateur</option><option value="PR|#7c3aed">Paul Roussel — Projeteur</option><option value="LM|#059669">Lucie Martin — Assistante admin.</option></select>
+          <button class="btn btn--secondary btn--sm" onclick="addMember()">Ajouter</button>
+        </div>
+        <div class="member-tags" id="memberTags">
+          <div class="member-tag" data-id="ML"><span class="avatar" style="width:18px;height:18px;font-size:7px;background:#1B4965">ML</span> M. Lefort <span style="font-size:10px;opacity:.6">(Chef de projet)</span><button class="member-tag__remove" onclick="this.parentElement.remove()">✕</button></div>
+        </div>
+        <div class="form-hint" style="margin-top:4px">Le premier collaborateur ajouté est désigné chef de projet</div>
+      </div>
+
+      <!-- Missions -->
+      <div class="form-group">
+        <label>Missions</label>
+        <div class="mission-grid" id="missionGrid">
+          <label class="mission-item mission-item--checked" onclick="this.classList.toggle('mission-item--checked')">
+            <input type="checkbox" checked>
+            <div><div class="mission-item__label">Mission de base</div><div class="mission-item__desc">ESQ → APS → APD → PRO → DCE → ACT → VISA → DET → AOR</div></div>
+          </label>
+          <label class="mission-item" onclick="this.classList.toggle('mission-item--checked')">
+            <input type="checkbox">
+            <div><div class="mission-item__label">OPC — Ordonnancement, Pilotage, Coordination</div></div>
+          </label>
+          <label class="mission-item" onclick="this.classList.toggle('mission-item--checked')">
+            <input type="checkbox">
+            <div><div class="mission-item__label">SYN — Synthèse</div></div>
+          </label>
+          <label class="mission-item" onclick="this.classList.toggle('mission-item--checked')">
+            <input type="checkbox">
+            <div><div class="mission-item__label">DIAG — Diagnostics</div></div>
+          </label>
+          <label class="mission-item" onclick="this.classList.toggle('mission-item--checked')">
+            <input type="checkbox">
+            <div><div class="mission-item__label">SSI — Sécurité incendie</div></div>
+          </label>
+        </div>
+        <div class="mission-custom" id="missionCustom">
+          <input type="text" id="customMissionInput" placeholder="Ajouter une mission personnalisée…">
+          <button class="btn btn--secondary btn--sm" onclick="addCustomMission()">+ Ajouter</button>
+        </div>
       </div>
     </div>
     <div class="modal__footer">
       <button class="btn btn--secondary" onclick="closeModal()">Annuler</button>
-      <button class="btn btn--primary" onclick="closeModal();showToast('Projet créé avec succès ! Redirection vers la fiche…','success')">Créer le projet</button>
+      <button class="btn btn--primary" onclick="createProject()">Créer le projet</button>
     </div>
   </div>
 </div>
@@ -667,12 +743,72 @@ function switchView(view){
   document.getElementById('view-'+view).classList.add('view-panel--active');
 }
 
-// Filter projects (simple text filter on table)
-function filterProjects(){
-  const q=document.getElementById('searchInput').value.toLowerCase();
-  document.querySelectorAll('#projectsTable tbody tr').forEach(tr=>{
-    tr.style.display=tr.textContent.toLowerCase().includes(q)?'':'none';
+// Filter projects — works on both table rows and cards
+function toggleFilter(btn) {
+  const filter = btn.dataset.filter;
+  const allBtn = document.querySelector('[data-filter="all"]');
+  
+  if (filter === 'all') {
+    // Click "Tous": deactivate all others, activate "Tous"
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('filter-chip--active'));
+    allBtn.classList.add('filter-chip--active');
+  } else {
+    // Toggle this chip
+    btn.classList.toggle('filter-chip--active');
+    // Deactivate "Tous" if any specific filter is active
+    const anyActive = document.querySelectorAll('.filter-chip--active:not([data-filter="all"])').length > 0;
+    if (anyActive) {
+      allBtn.classList.remove('filter-chip--active');
+    } else {
+      // Nothing active → revert to "Tous"
+      allBtn.classList.add('filter-chip--active');
+    }
+  }
+  filterProjects();
+}
+
+function filterProjects() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  
+  // Collect active filters
+  const activeChips = document.querySelectorAll('.filter-chip--active');
+  const isAll = document.querySelector('[data-filter="all"]').classList.contains('filter-chip--active');
+  
+  const typeFilters = [];
+  const healthFilters = [];
+  activeChips.forEach(c => {
+    const f = c.dataset.filter;
+    if (!f || f === 'all') return;
+    const [key, val] = f.split(':');
+    if (key === 'type') typeFilters.push(val);
+    if (key === 'health') healthFilters.push(val);
   });
+  
+  function matches(el) {
+    // Text search
+    const name = el.dataset.name || el.textContent.toLowerCase();
+    if (q && !name.includes(q) && !el.textContent.toLowerCase().includes(q)) return false;
+    // Type filter
+    if (typeFilters.length > 0 && !typeFilters.includes(el.dataset.type)) return false;
+    // Health filter
+    if (healthFilters.length > 0 && !healthFilters.includes(el.dataset.health)) return false;
+    return true;
+  }
+  
+  // Filter table rows
+  document.querySelectorAll('#projectsTable tbody tr').forEach(tr => {
+    tr.style.display = matches(tr) ? '' : 'none';
+  });
+  
+  // Filter cards
+  document.querySelectorAll('.project-card').forEach(card => {
+    card.style.display = matches(card) ? '' : 'none';
+  });
+  
+  // Show count
+  const visible = document.querySelectorAll('#projectsTable tbody tr:not([style*="display: none"])').length;
+  const counter = document.getElementById('filterCounter');
+  if (counter) counter.textContent = visible + ' projet' + (visible > 1 ? 's' : '');
 }
 
 // Modal
@@ -683,6 +819,92 @@ function closeModal(e){if(e&&e.target!==e.currentTarget)return;const o=document.
 function showToast(msg,type='info'){const c=document.getElementById('toastContainer'),t=document.createElement('div');t.className=`toast toast--${type}`;const icons={success:'✅',info:'ℹ️'};t.innerHTML=`<span>${icons[type]||'ℹ️'}</span><span>${msg}</span>`;c.appendChild(t);setTimeout(()=>t.remove(),3000)}
 
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()})
+
+// Radio group toggle
+function selectRadio(label) {
+  label.closest('.radio-group').querySelectorAll('.radio-group__item').forEach(i => i.classList.remove('radio-group__item--active'));
+  label.classList.add('radio-group__item--active');
+}
+
+// Add team member
+function addMember() {
+  const sel = document.getElementById('memberSelect');
+  if (!sel.value) return;
+  const [initials, color] = sel.value.split('|');
+  const name = sel.options[sel.selectedIndex].text.split('—')[0].trim();
+  // Check not already added
+  if (document.querySelector(`.member-tag[data-id="${initials}"]`)) {
+    showToast(name + ' est déjà dans l\'équipe', 'info');
+    sel.value = '';
+    return;
+  }
+  const tags = document.getElementById('memberTags');
+  const isFirst = tags.children.length === 0;
+  const tag = document.createElement('div');
+  tag.className = 'member-tag';
+  tag.dataset.id = initials;
+  tag.innerHTML = `<span class="avatar" style="width:18px;height:18px;font-size:7px;background:${color}">${initials}</span> ${name} ${isFirst ? '<span style="font-size:10px;opacity:.6">(Chef de projet)</span>' : ''}<button class="member-tag__remove" onclick="this.parentElement.remove()">✕</button>`;
+  tags.appendChild(tag);
+  sel.value = '';
+}
+
+// Add custom mission
+function addCustomMission() {
+  const input = document.getElementById('customMissionInput');
+  const val = input.value.trim();
+  if (!val) return;
+  const grid = document.getElementById('missionGrid');
+  const label = document.createElement('label');
+  label.className = 'mission-item mission-item--checked';
+  label.onclick = function() { this.classList.toggle('mission-item--checked') };
+  label.innerHTML = `<input type="checkbox" checked><div><div class="mission-item__label">${val}</div><div class="mission-item__desc">Mission personnalisée</div></div>`;
+  grid.appendChild(label);
+  input.value = '';
+  showToast('Mission "' + val + '" ajoutée', 'success');
+}
+
+// Create project — adds to table + cards dynamically
+function createProject() {
+  const name = document.getElementById('newProjectName').value.trim() || 'Nouveau projet';
+  const typeActive = document.querySelector('.radio-group__item--active input');
+  const isPublic = typeActive ? typeActive.value === 'public' : true;
+  
+  // Count checked missions
+  const missions = document.querySelectorAll('#missionGrid .mission-item--checked');
+  const missionCount = missions.length;
+  
+  // Get team
+  const members = document.querySelectorAll('#memberTags .member-tag');
+  const cdp = members.length > 0 ? members[0].dataset.id : 'AM';
+  
+  closeModal();
+  showToast('Projet "' + name + '" créé avec succès ! ' + missionCount + ' mission(s), ' + members.length + ' membre(s)', 'success');
+  
+  // Add card to grid
+  const grid = document.querySelector('.projects-grid');
+  const card = document.createElement('div');
+  card.className = 'project-card';
+  card.dataset.type = isPublic ? 'public' : 'prive';
+  card.dataset.health = 'ok';
+  card.dataset.name = name.toLowerCase();
+  card.style.animation = 'fadeIn .4s ease';
+  card.innerHTML = `<div class="project-card__accent" style="background:var(--color-primary-light)"></div><div class="project-card__body"><div class="project-card__header"><div class="project-card__title">${name}</div><span class="health-dot health-dot--ok"></span></div><div class="project-card__client">${isPublic ? 'Public' : 'Privé'} · ${missionCount} mission(s)</div><div class="project-card__stats"><div><div class="project-card__stat-label">Phase</div><div class="project-card__stat-value"><span class="badge badge--accent" style="font-size:11px">ESQ</span></div></div><div><div class="project-card__stat-label">Honoraires</div><div class="project-card__stat-value project-card__stat-value--mono">— K€</div></div><div><div class="project-card__stat-label">Rentabilité</div><div class="project-card__stat-value text-muted">—</div></div><div><div class="project-card__stat-label">Équipe</div><div class="project-card__stat-value">${members.length} pers.</div></div></div><div class="project-card__progress"><div class="project-card__progress-label"><span class="text-muted">Avancement</span><span class="text-mono">0%</span></div><div class="progress"><div class="progress__bar" style="width:0%"></div></div></div></div><div class="project-card__footer"><span class="text-sm" style="color:var(--color-primary);font-weight:500">✨ Nouveau — Créé à l'instant</span></div>`;
+  grid.insertBefore(card, grid.firstChild);
+  
+  // Add row to table
+  const tbody = document.querySelector('#projectsTable tbody');
+  const tr = document.createElement('tr');
+  tr.dataset.type = isPublic ? 'public' : 'prive';
+  tr.dataset.health = 'ok';
+  tr.dataset.name = name.toLowerCase();
+  tr.style.animation = 'fadeIn .4s ease';
+  tr.onclick = () => showToast('Ouverture fiche projet…', 'info');
+  tr.innerHTML = `<td><div class="project-cell"><div class="project-cell__color" style="background:var(--color-primary-light)"></div><div><div class="project-cell__name">${name}</div><div class="project-cell__sub">Nouveau projet</div></div></div></td><td><span class="badge badge--${isPublic ? 'primary' : 'muted'}" style="font-size:11px">${isPublic ? 'Public' : 'Privé'}</span></td><td><span class="badge badge--accent" style="font-size:11px">ESQ</span></td><td><div style="display:flex;align-items:center;gap:8px"><div class="progress" style="width:70px"><div class="progress__bar" style="width:0%"></div></div><span class="mono text-sm">0%</span></div></td><td class="mono">— K€</td><td class="mono text-muted">—</td><td><span class="text-sm">${members.length} membre(s)</span></td><td><span class="health-dot health-dot--ok"></span></td>`;
+  tbody.insertBefore(tr, tbody.firstChild);
+  
+  // Update counter
+  filterProjects();
+}
 </script>
 
 </body>
